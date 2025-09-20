@@ -1,0 +1,36 @@
+{% extends "index.html" %}
+
+{% block path %}
+    <li>
+        <a href="#">
+            <span>Calendar</span>
+        </a>
+    </li>
+{% endblock %}
+
+{% block sidebar_links %}
+    {% for link in links %}
+        {% if link.type == 'external' %}
+            <li><a link-id="{{ link.id }}" href="{{ link.url }}" target="_blank">{{ link.display_name }}</a></li>
+        {% elif link.type == 'page' %}
+            <li><a link-id="{{ link.id }}" href="{{ url_for('page', id= link.url) }}">{{ link.display_name }}</a></li>
+        {% elif link.type == 'internal' %}
+            <li><a link-id="{{ link.id }}" href="{{ url_for(link.url) }}">{{ link.display_name }}</a></li>
+        {% elif link.type == 'file' %}
+            <li><a link-id="{{ link.id }}" href="{{ url_for('file', key= link.url) }}">{{ link.display_name }}</a></li>
+        {% else %}
+            <li><a link-id="{{ link.id }}">Failed</a></li>
+        {% endif %}
+    {% endfor %}
+{% endblock %}
+
+{% block right_display %}
+    display: none
+{% endblock %}
+
+{% block calendar_events %}
+{% endblock %}
+
+{% block main_content %}
+    <iframe src="https://calendar.google.com/calendar/embed?height=900&wkst=2&ctz=America%2FNew_York&showPrint=0&mode=MONTH&showTitle=0&showTz=0&showCalendars=0&src=Y2M0NzE4MDQ4NDk0YWY3MmYyYmI0YzFiMmYyMzI1NzgwNGVhZjczZjYwNDQzMWFhYmE3NjVkYWNkOTg0MjM3YkBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&color=%23ebac00" style="border-width:0; width: 100%; height: calc(100% - 100px)" frameborder="0" scrolling="no"></iframe>
+{% endblock %}

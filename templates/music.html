@@ -1,0 +1,37 @@
+{% extends "index.html" %}
+
+{% block path %}
+    <li>
+        <a href="#">
+            <span>Music</span>
+        </a>
+    </li>
+{% endblock %}
+
+{% block sidebar_links %}
+    {% for link in links %}
+        {% if link.type == 'external' %}
+            <li><a link-id="{{ link.id }}" href="{{ link.url }}" target="_blank">{{ link.display_name }}</a></li>
+        {% elif link.type == 'page' %}
+            <li><a link-id="{{ link.id }}" href="{{ url_for('page', id= link.url) }}">{{ link.display_name }}</a></li>
+        {% elif link.type == 'internal' %}
+            <li><a link-id="{{ link.id }}" href="{{ url_for(link.url) }}">{{ link.display_name }}</a></li>
+        {% elif link.type == 'file' %}
+            <li><a link-id="{{ link.id }}" href="{{ url_for('file', key= link.url) }}">{{ link.display_name }}</a></li>
+        {% else %}
+            <li><a link-id="{{ link.id }}">Failed</a></li>
+        {% endif %}
+    {% endfor %}
+{% endblock %}
+
+{% block right_display %}
+    display: none
+{% endblock %}
+
+{% block calendar_events %}
+{% endblock %}
+
+{% block main_content %}
+    <h2>{{header}}</h2>
+    <iframe id="score-iframe" style="width: 100%; height: calc(100% - 135px)" src="{{ url }}/embed" frameborder="0" allowfullscreen allow="autoplay; fullscreen"></iframe>
+{% endblock %}

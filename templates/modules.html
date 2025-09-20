@@ -1,0 +1,64 @@
+{% extends "index.html" %}
+
+{% block path %}
+    <li>
+        <a href="#">
+            <span>Modules</span>
+        </a>
+    </li>
+{% endblock %}
+
+{% block sidebar_links %}
+    {% for link in links %}
+        {% if link.type == 'external' %}
+            <li><a link-id="{{ link.id }}" href="{{ link.url }}" target="_blank">{{ link.display_name }}</a></li>
+        {% elif link.type == 'page' %}
+            <li><a link-id="{{ link.id }}" href="{{ url_for('page', id= link.url) }}">{{ link.display_name }}</a></li>
+        {% elif link.type == 'internal' %}
+            <li><a link-id="{{ link.id }}" href="{{ url_for(link.url) }}">{{ link.display_name }}</a></li>
+        {% elif link.type == 'file' %}
+            <li><a link-id="{{ link.id }}" href="{{ url_for('file', key= link.url) }}">{{ link.display_name }}</a></li>
+        {% else %}
+            <li><a link-id="{{ link.id }}">Failed</a></li>
+        {% endif %}
+    {% endfor %}
+{% endblock %}
+
+{% block right_display %}
+    display: none;
+{% endblock %}
+
+{% block calendar_events %}
+{% endblock %}
+
+{% block main_content %}
+    <div id="modules">
+        <h2>Modules</h2>
+        {% for module in modules %}
+            <div class="module" module-id="{{ module.id }}">
+                <details open>
+                    <summary> {{ module.display_name }}</summary>
+                    <ul class="module-items">
+                        {% for item in module.blocks %}
+                            <li class="module-{{item.type}}" item-id="{{ item.id }}">
+                                <span></span>
+                                {% if item.type == "header" %}
+                                    <h3>{{ item.display }}</h3>
+                                {% elif item.type == "link"%}
+                                    <a href="{{ item.url }}" target="_blank">{{ item.display }}</a>
+                                {% elif item.type == "file" %}
+                                    <a href="{{ url_for('file', key=item.url) }}">{{ item.display }}</a>
+                                {% elif item.type == "music" %}
+                                    <a href="{{ url_for('music', key=item.url) }}">{{ item.display }}</a>
+                                {% elif item.type == "page" %}
+                                    <a href="{{ url_for('page', id= item.url) }}">{{ item.display }}</a>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </details>
+            </div>
+        {% endfor %}
+    </div>
+    
+{% endblock %}

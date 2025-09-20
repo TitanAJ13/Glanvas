@@ -1,0 +1,52 @@
+{% extends "index.html" %}
+
+{% block path %}
+    <li>
+        <a href="{{ url_for('announcements') }}">
+            <span>Announcements</span>
+        </a>
+    </li>
+    <li>
+        <a href="#">
+            <span>{{announcement.title}}</span>
+        </a>
+    </li>
+{% endblock %}
+
+{% block sidebar_links %}
+    {% for link in links %}
+        {% if link.type == 'external' %}
+            <li><a link-id="{{ link.id }}" href="{{ link.url }}" target="_blank">{{ link.display_name }}</a></li>
+        {% elif link.type == 'page' %}
+            <li><a link-id="{{ link.id }}" href="{{ url_for('page', id= link.url) }}">{{ link.display_name }}</a></li>
+        {% elif link.type == 'internal' %}
+            <li><a link-id="{{ link.id }}" href="{{ url_for(link.url) }}">{{ link.display_name }}</a></li>
+        {% elif link.type == 'file' %}
+            <li><a link-id="{{ link.id }}" href="{{ url_for('file', key= link.url) }}">{{ link.display_name }}</a></li>
+        {% else %}
+            <li><a link-id="{{ link.id }}">Failed</a></li>
+        {% endif %}
+    {% endfor %}
+{% endblock %}
+
+{% block right_display %}
+    display: none;
+{% endblock %}
+
+{% block calendar_events %}
+{% endblock %}
+
+{% block main_content %}
+    <div id="announcement">
+        <div id="announcement-header">
+            <span id="profile">{{ announcement.initial }}</span>
+            <div style="float:left">
+                <p id="author">{{ announcement.author }}</p>
+                <p id="date">Posted {{ announcement.date_posted }}</p>
+            </div>
+        </div>
+        <div id="announcement-content">
+            {{ announcement.content | safe }}
+        </div>
+    </div>    
+{% endblock %}
