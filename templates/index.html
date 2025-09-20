@@ -1,0 +1,173 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <title>PMGC</title>
+</head>
+<body>
+    <ul id="menubar">
+        <li id="logo-item"></li>
+        <li>
+            <a style="padding: .4375rem 0;" href="#">
+                <div class="icon-container">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="ic-icon-svg" version="1.1" x="0" y="0" viewBox="0 0 280 280" enable-background="new 0 0 280 280" xml:space="preserve">
+                        <path d="M197.07,213.38h16.31V197.07H197.07Zm-16.31,16.31V180.76h48.92v48.92Zm-48.92-16.31h16.31V197.07H131.85Zm-16.31,16.31V180.76h48.92v48.92ZM66.62,213.38H82.93V197.07H66.62ZM50.32,229.68V180.76H99.24v48.92Zm146.75-81.53h16.31V131.85H197.07Zm-16.31,16.31V115.54h48.92v48.92Zm-48.92-16.31h16.31V131.85H131.85Zm-16.31,16.31V115.54h48.92v48.92ZM66.62,148.15H82.93V131.85H66.62ZM50.32,164.46V115.54H99.24v48.92ZM34,262.29H246V82.93H34ZM246,66.62V42.16A8.17,8.17,0,0,0,237.84,34H213.38v8.15a8.15,8.15,0,1,1-16.31,0V34H82.93v8.15a8.15,8.15,0,0,1-16.31,0V34H42.16A8.17,8.17,0,0,0,34,42.16V66.62Zm-8.15-48.92a24.49,24.49,0,0,1,24.46,24.46V278.6H17.71V42.16A24.49,24.49,0,0,1,42.16,17.71H66.62V9.55a8.15,8.15,0,0,1,16.31,0v8.15H197.07V9.55a8.15,8.15,0,1,1,16.31,0v8.15Z"></path>
+                    </svg>
+                </div>
+                <p>Calendar</p>
+            </a>
+        </li>
+        <li>
+            <a>
+
+            </a>
+        </li>
+    </ul>
+    <div id="main-wrapper">
+        <div id="header">
+            <button id="sidebar-hamburger" title="Hide Navigation Menu" type="button">
+                <div></div>
+                <div></div>
+                <div></div>
+            </button>
+            <div id="path">
+                <ul>
+                    <li></li>
+                    <li>
+                        <a href="{{ url_for('home') }}">
+                            <span>Pitt Men's Glee Club</span>
+                        </a>
+                    </li>
+                    {% block path%}
+                    {% endblock %}
+                </ul>
+            </div>
+            <div id="right-of-path"></div>
+        </div>
+        <div id="main">
+            <div id="sidebar1">
+                <div id="sidebar2">
+                    <ul>
+                        {% block sidebar_links %}
+                        <li><a href="#" class="active">Home</a></li>
+                        <li><a href="#">Announcements</a></li>
+                        <li><a href="#">Syllabus</a></li>
+                        <li><a href="#">Modules</a></li>
+                        <li><a href="#">People</a></li>
+                        <li><a href="#">Google Drive</a></li>
+                        <li><a href="#">Experience Pitt</a></li>
+                        <li><a href="#">Discord</a></li>
+                        {% endblock %}
+                    </ul>
+                </div>
+            </div>
+            <div id="big-wrapper">
+                <div id="content-wrapper">
+                    <div id="content">
+                        {% block main_content %}
+                        <div id="announcements">
+                            <h2>Recent Announcements</h2>
+                            <div class="announcement">
+                                <span>
+                                    <span class="circle"></span>
+                                </span>
+                                <div class="author">
+                                    <span>
+
+                                    </span>
+                                </div>
+                                <div class="content">
+                                    <a>
+                                        <div>
+                                            <h3>
+                                                Welcome to the new-and-improved PMGC Discord Server! :glee:
+                                            </h3>
+                                        </div>
+                                    </a>
+                                    <div>
+                                        <div>We are officially a Community server, which gives us access to cool new features like:
+                                        </div>
+                                    </div>
+                                    <a>
+                                        <div>
+                                            <span>
+                                                <span>
+                                                    <svg name="IconReply" viewBox="0 0 1920 1920" rotate="0" width="1em" height="1em" aria-hidden="true" role="presentation" focusable="false" class="css-1xnn9jb-inlineSVG-svgIcon" style="width: 1em; height: 1em;">
+                                                        <g role="presentation">
+                                                            <path d="M835.942 632.563H244.966l478.08-478.08-90.496-90.496L-.026 696.563 632.55 1329.14l90.496-90.496-478.08-478.08h590.976c504.448 0 914.816 410.368 914.816 914.816v109.184h128V1675.38c0-574.976-467.84-1042.816-1042.816-1042.816" fill-rule="evenodd"></path>
+                                                        </g>
+                                                    </svg>
+                                                    Reply
+                                                </span>
+                                            </span>
+                                        </div>
+                                    </a>
+                                </div>
+                                <div class="meta">
+                                    <div class="actions">
+                                        <span></span>
+                                    </div>
+                                    <div>
+                                        <div>
+                                            <span>
+                                                <p>Posted on:</p>
+                                            </span>
+                                            <span>
+                                                <p>May 20, 2025, 12:14 PM</p>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="modules">
+                            <h2>Modules</h2>
+                            <div class="module">
+                                <details open>
+                                    <summary>Test Module</summary>
+                                    <ul class="module-items">
+                                        <li class="module-header">
+                                            <span></span>
+                                            <h3>Test Header</h3>
+                                        </li>
+                                        <li class="module-link">
+                                            <span></span>
+                                            <a href="#">Test Link</a>
+                                        </li>
+                                        <li class="module-file">
+                                            <span></span>
+                                            <a href="#">Test File</a>
+                                        </li>
+                                    </ul>
+                                </details>
+                            </div>
+                        </div>
+                        {% endblock %}
+                    </div>
+                </div>
+                <div id="right-side-wrapper" style="{% block right_display %}{% endblock %}">
+                    <aside id="right-side">
+                        <div id="events-list">
+                            <div>
+                                <h2>Coming Up</h2>
+                                <a>
+                                    View Calendar
+                                </a>
+                            </div>
+                            <ul>
+                                {% block calendar_events %}
+                                <li>
+                                    <small>Nothing for the next week</small>
+                                </li>
+                                {% endblock %}
+                            </ul>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
