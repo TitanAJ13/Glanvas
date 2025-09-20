@@ -1,0 +1,29 @@
+[
+    {
+        "name": "Welcome",
+        "items": [
+            {
+                "type": "file | page | header | link"
+            },
+            {
+                "type": "file",
+                "display": "Handbook",
+                "url": "https://docs.google.com/file/d/1m8086GT_8HL2tLom2q6ueM_dcSTuenVZ/view"
+            },
+            {
+                "type": "page",
+                "display": "Welcome to Glee!",
+                "content": "html content"
+            },
+            {
+                "type": "header",
+                "display": "This is a subheader"
+            },
+            {
+                "type": "link",
+                "display": "Rick Roll",
+                "url": "www.youtube.com"
+            }
+        ]
+    }
+]
