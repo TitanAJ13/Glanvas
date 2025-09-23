@@ -33,5 +33,5 @@
 
 {% block main_content %}
     <h2>{{header}}</h2>
-    <iframe src="https://drive.google.com/file/d/{{id}}/preview" style=" width: 100%; height: calc(100% - 135px); border: none" allow="autoplay"></iframe>
+    <iframe src="{{ url }}" style=" width: 100%; height: calc(100% - 135px); border: none" allow="autoplay; fullscreen"></iframe>
 {% endblock %}

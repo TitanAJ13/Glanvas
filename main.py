@@ -71,6 +71,9 @@ def getModule(position):
 def getLink(position):
     return sqlSession.query(Link).filter_by(position=position).first()
 
+def getFile(key):
+    return sqlSession.query(FileData).filter_by(key=key).first()
+
 def getItem(modulePos, itemPos):
     return sqlSession.query(Item).filter_by(module_id = getModule(modulePos).id, position=itemPos).first()
 
@@ -180,11 +183,11 @@ def modules():
         try:
             newTitle = changes['display_name']
         except:
-            pass
+            newTitle = None
         try:
             visibility = changes['hidden']
         except:
-            pass
+            visibility = None
         if (visibility is None and newTitle is None):
             return error('changes attribute must include at least one of `display_name` or `hidden` attributes')
         try:
@@ -283,15 +286,15 @@ def links():
         try:
             title = changes['title']
         except:
-            pass
+            title = None
         try:
             type = changes['type']
         except:
-            pass
+            type = None
         try:
             url = changes['url']
         except:
-            pass
+            url = None
         if (title is None and type is None and url is None):
             return error('At least one of `type`, `title`, or `url` must be defined')
         try:
@@ -409,38 +412,80 @@ def files():
     filedata = request.json
     if request.method == "POST":
         try:
-            fileObj = FileData(key = filedata['key'], id = filedata['id'], display_name = filedata['display_name'])
+            key = filedata['key']
+        except:
+            return error('Missing required key attribute')
+        try:
+            url = filedata['url']
+        except:
+            return error('Missing required url attribute')
+        try:
+            title = filedata['display_name']
+        except:
+            return error('Missing required display_name attribute')
+        try:
+            fileObj = FileData(key = key, url = url, display_name = title)
             sqlSession.add(fileObj)
             sqlSession.commit()
             return success()
-        except:
-            return error('Invalid FileData Object')
+        except Exception as e:
+            return error(f'{e}')
 
     elif request.method == "DELETE":
         try:
             key = filedata['key']
-            try:
-                linkObj = sqlSession.query(FileData).get(key)
-                sqlSession.delete(linkObj)
-                sqlSession.commit()
-                return success()
-            except:
-                return error('Could not delete the file data')
         except:
-            return error('Invalid FileData Object')
+            return error('Missing required key attribute')
+        try:
+            fileObj = sqlSession.query(FileData).get(key)
+            sqlSession.delete(fileObj)
+            sqlSession.commit()
+            return success()
+        except:
+            return error('Could not delete the file data')
 
     elif request.method == "PATCH":
-        # passes a "changes" object of sorts?
-        return "Unsupported Request: Build in Progress..."
+        try:
+            key = filedata['key']
+        except:
+            return error('Missing required key attribute')
+        try:
+            changes = filedata['changes']
+        except:
+            return error('Missing required changes attribute')
+        try:
+            path = changes['path']
+        except:
+            path = None
+        try:
+            filename = changes['display_name']
+        except:
+            filename = None
+        try:
+            url = changes['url']
+        except:
+            url = None
+        try:
+            file = getFile(key)
+            if (filename is not None):
+                file.display_name = filename
+            if (path is not None):
+                file.key = path
+            if (url is not None):
+                file.url = url
+            sqlSession.commit()
+        except Exception as e:
+            return error(f'{e}')
+
 
 @app.route("/file/<key>")
 def file(key):
     data = sqlSession.query(FileData).get(key)
     if (data is None):
-        return render_template("file.html", header="Unnamed File", id=key)
+        return render_template("file.html", header="Unnamed File", url=key)
     else:
         data = data.toJSON()
-        return render_template("file.html", header= data['display_name'], id=data['id'])
+        return render_template("file.html", header= data['display_name'], url=data['url'])
     
 @app.route("/musicdata/", methods=["POST", "PATCH", "DELETE"])
 def musicdata():
