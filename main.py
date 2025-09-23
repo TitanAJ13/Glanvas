@@ -5,6 +5,17 @@ from models import Base, Link, Module, Announcement, CalendarItem, FileData, Mus
 import datetime
 import os
 
+def error(message):
+    return {
+        'status': 'error',
+        'message': message
+    }
+
+def success():
+    return {
+        'status': 'success'
+    }
+
 app = Flask(__name__)
 
 def generateSQLSession(dbName):
@@ -64,42 +75,33 @@ def getItem(modulePos, itemPos):
     return sqlSession.query(Item).filter_by(module_id = getModule(modulePos).id, position=itemPos).first()
 
 def moveLink(pos1, pos2):
-    links = sqlSession.query(Link).order_by(Link.position).all()
-    length = len(links)
-    if (pos1 > length or pos2 > length):
-        raise ValueError(f"Position cannot be greater than {length}")
-    link = getLink(pos1)
-    links.remove(link)
-    links.insert(pos2 - 1, link)
-    lowerPos = pos1 if pos1<pos2 else pos2
-    for i in range(lowerPos - 1, length):
-        links[i].position = i + 1
+    link1 = getLink(pos1)
+    linkList = sqlSession.query(Link).order_by(Link.position).all()
+    linkList.remove(link1)
+    linkList.insert(pos2 - 1, link1)
+    minPos = pos1 if pos1 < pos2 else pos2
+    for i in range(minPos, len(linkList)):
+        linkList[i].position = i+1
     sqlSession.commit()
 
 def moveModule(pos1, pos2):
-    modules = sqlSession.query(Module).order_by(Module.position).all()
-    length = len(modules)
-    if (pos1 > length or pos2 > length):
-        raise ValueError(f"Position cannot be greater than {length}")
-    module = getLink(pos1)
-    modules.remove(module)
-    modules.insert(pos2 - 1, module)
-    lowerPos = pos1 if pos1<pos2 else pos2
-    for i in range(lowerPos - 1, length):
-        modules[i].position = i + 1
+    module1 = getModule(pos1)
+    moduleList = sqlSession.query(Module).order_by(Module.position).all()
+    moduleList.remove(module1)
+    moduleList.insert(pos2 - 1, module1)
+    minPos = pos1 if pos1 < pos2 else pos2
+    for i in range(minPos, len(moduleList)):
+        moduleList[i].position = i+1
     sqlSession.commit()
 
 def moveItem(modulePos, pos1, pos2):
-    items = sqlSession.query(Item).filter_by(module_id = getModule(modulePos)).order_by(Item.position).all()
-    length = len(items)
-    if (pos1 > length or pos2 > length):
-        raise ValueError(f"Position cannot be greater than {length}")
-    item = getItem(modulePos, pos1)
-    items.remove(item)
-    items.insert(pos2 - 1, item)
-    lowerPos = pos1 if pos1<pos2 else pos2
-    for i in range(lowerPos - 1, length):
-        modules[i].position = i + 1
+    item1 = getItem(modulePos, pos1)
+    itemList = sqlSession.query(Item).filter_by(module_id = item1.module_id).order_by(Item.position).all()
+    itemList.remove(item1)
+    itemList.insert(pos2 - 1, item1)
+    minPos = pos1 if pos1 < pos2 else pos2
+    for i in range(minPos, len(itemList)):
+        itemList[i].position = i+1
     sqlSession.commit()
     
 
@@ -128,51 +130,31 @@ def modules():
         try:
             title = module['display_name']
         except:
-            return {
-                'status': 'error',
-                'message': 'Missing required `display_name` attribute'
-            }
+            return error('Missing required `display_name` attribute')
         try:
             position = module['position']
         except:
-            return {
-                'status': 'error',
-                'message': 'Missing required `position` attribute'
-            }
+            return error('Missing required `position` attribute')
         if (position is None):
             position = length + 1
         elif (position > length + 1):
-            return {
-                'status': 'error',
-                'message': f'`position` cannot be larger than the number of modules: {length + 1}'
-            }
+            return error(f'`position` cannot be larger than the number of modules: {length + 1}')
         try:
             moduleObj = Module(position = position, display_name = title, hidden = module['hidden'])
             sqlSession.add(moduleObj)
             sqlSession.commit()
-            return {
-                'status': 'success'
-            }
+            return success()
         except Exception as e:
-            return {
-                'status': 'error',
-                'message': f'{e}'
-            }
+            return error(f'{e}')
 
     elif request.method == "DELETE":
         try:
             position = module['position']
         except:
-            return {
-                'status': 'error',
-                'message': 'Missing required position attribute'
-            }
+            return error('Missing required position attribute')
         
         if (position > length + 1):
-            return {
-                'status': 'error',
-                'message': f'`position` cannot be larger than the number of modules: {length + 1}'
-            }
+            return error(f'`position` cannot be larger than the number of modules: {length + 1}')
 
         try:
             moduleObj = getModule(position)
@@ -180,35 +162,21 @@ def modules():
             sqlSession.delete(moduleObj)
             sqlSession.query(Item).filter_by(module_id = id).delete()
             sqlSession.commit()
-            return {
-                'status': 'success'
-            }
+            return success()
         except Exception as e:
-            return {
-                'status': 'error',
-                'message': f'{e}'
-            }
+            return error(f'{e}')
 
     elif request.method == "PATCH":
         try:
             position = module['position']
         except:
-            return {
-                'status': 'error',
-                'message': 'Missing required position attribute'
-            }
+            return error('Missing required position attribute')
         if (position > length + 1):
-            return {
-                'status': 'error',
-                'message': f"`position` cannot be larger than the number of modules: {length + 1}"
-            }
+            return error(f'`position` cannot be larger than the number of modules: {length + 1}')
         try:
             changes = module['changes']
         except:
-            return {
-                'status': 'error',
-                'message': 'Missing required changes attribute'
-            }
+            return error('Missing required changes attribute')
         try:
             newTitle = changes['display_name']
         except:
@@ -218,10 +186,7 @@ def modules():
         except:
             pass
         if (visibility is None and newTitle is None):
-            return {
-                'status': 'error',
-                'message': 'changes attribute must include at least one of `display_name` or `hidden` attributes'
-            }
+            return error('changes attribute must include at least one of `display_name` or `hidden` attributes')
         try:
             moduleObj = getModule(position)
             if (visibility is not None):
@@ -229,110 +194,137 @@ def modules():
             if (newTitle is not None):
                 moduleObj.display_name = newTitle
             sqlSession.commit()
-            return {
-                'status': 'success'
-            }
+            return success()
         except Exception as e:
-            return {
-                'status': 'error',
-                'message': f'{e}'
-            }
+            return error(f'{e}')
 
     elif request.method == "PUT":
         try:
             position1 = module['position1']
         except:
-            return {
-                'status': 'error',
-                'message': "Missing required position1 attribute"
-            }
+            return error('Missing required position1 attribute')
         try:
             position2 = module['position2']
         except:
-            return {
-                'status': 'error',
-                'message': "Missing required position2 attribute"
-            }
+            return error('Missing required position2 attribute')
         if (position1 > length + 1):
-            return {
-                'status': 'error',
-                'message': f'`position1` cannot be larger than the number of modules: {length + 1}'
-            }
+            return error(f'`position1` cannot be larger than the number of modules: {length + 1}')
         if (position2 > length + 1):
-            return {
-                'status': 'error',
-                'message': f'`position2` cannot be larger than the number of modules: {length + 1}'
-            }
+            return error(f'`position2` cannot be larger than the end of the list: {length + 1}')
         if (position2 == position1):
-            return {
-                'status': 'error',
-                'message': 'Positions must be different'
-            }
+            return error('Positions must be different')
         
         try:
-            module1 = getModule(position1)
-            moduleList = sqlSession.query(Module).order_by(Module.position).all()
-            moduleList.remove(module1)
-            if (position1 < position2):
-                moduleList.insert(position2 - 2, module1)
-            else:
-                moduleList.insert(position2 - 1, module1)
-            minPos = position1 if position1 < position2 else position2
-            for i in range(minPos, len(moduleList)):
-                moduleList[i].position = i+1
-            sqlSession.commit()
-            return {
-                'status': 'success'
-            }
+            moveModule(position1, position2)
+            return success()
         except Exception as e:
-            return {
-                'status': 'error',
-                'message': f'{e}'
-            }
+            return error(f'{e}')
 
     
 
 @app.route("/links/", methods=["POST","PATCH","DELETE","PUT"])
-def links():    
+def links():
+    links = getLinksJSON()
+    length = len(links)  
     link = request.json
     if request.method == "POST":
         try:
-            linkObj = Link(position = link['position'], display_name = link['display_name'], url = link['url'], type=link['type'])
+            position = link['position']
+        except:
+            return error('Missing required position attribute')
+        if (position is None):
+            position = length + 1
+        try:
+            title = link['display_name']
+        except:
+            return error('Missing required display_name attribute')
+        try:
+            type = link['type']
+        except:
+            return error('Missing required type attribute')
+        try:
+            url = link['url']
+        except:
+            return error('Missing required url attribute')
+        try:
+            linkObj = Link(position = position, display_name = title, url = url, type=type)
             sqlSession.add(linkObj)
             sqlSession.commit()
-            return {
-                'status': 'success'
-            }
-        except:
-            return {
-                'status': 'error',
-                'message': 'Invalid Link Object'
-            }
+            return success()
+        except Exception as e:
+            return error(f'{e}')
 
     elif request.method == "DELETE":
         try:
-            id = link['id']
-            try:
-                linkObj = sqlSession.query(Link).get(id)
-                sqlSession.delete(linkObj)
-                sqlSession.commit()
-                return {
-                    'status': 'success'
-                }
-            except:
-                return {
-                    'status': 'error',
-                    'message': "Could not delete the link"
-                }
+            position = link['position']
         except:
-            return {
-                'status': 'error',
-                'message': "Invalid Link Object"
-            }
+            return error('Missing required position attribute')
+        if (position > length + 1):
+            return error(f'`position` cannot be larger than the number of links: {length + 1}')
+        try:
+            linkObj = getLink(position)
+            sqlSession.delete(linkObj)
+            sqlSession.commit()
+            return success()
+        except Exception as e:
+            return error(f'{e}')
 
     elif request.method == "PATCH":
-        # passes a "changes" object of sorts?
-        return "Unsupported Request: Build in Progress..."
+        try:
+            position = link['position']
+        except:
+            return error('Missing required position attribute')
+        if (position > length + 1):
+            return error(f'`position` cannot be larger than the number of links: {length + 1}')
+        try:
+            changes = link['changes']
+        except:
+            return error('Missing required changes attribute')
+        try:
+            title = changes['title']
+        except:
+            pass
+        try:
+            type = changes['type']
+        except:
+            pass
+        try:
+            url = changes['url']
+        except:
+            pass
+        if (title is None and type is None and url is None):
+            return error('At least one of `type`, `title`, or `url` must be defined')
+        try:
+            link = getLink(position)
+            if (title is not None):
+                link.display_name = title
+            if (type is not None):
+                link.type = type
+            if (url is not None):
+                link.url = url
+            sqlSession.commit()
+        except Exception as e:
+            return error(f'{e}')
+    elif request.method == "PUT":
+        try:
+            position1 = link['position1']
+        except:
+            return error('Missing required position1 attribute')
+        try:
+            position2 = link['position2']
+        except:
+            return error('Missing required position2 attribute')
+        if (position1 > length + 1):
+            return error(f'`position1` cannot be larger than the number of items: {length + 1}')
+        if (position2 > length + 1):
+            return error(f'`position2` cannot be larger than the number of items: {length + 1}')
+        if (position1 == position2):
+            return error('Positions must be different')
+        try:
+            moveLink(position1, position2)
+            return success()
+        except Exception as e:
+            return error(f'{e}')
     
 @app.route("/items/", methods=["POST","PATCH","DELETE"])
 def items():    
@@ -342,14 +334,9 @@ def items():
             itemObj = Item(position = item['position'], display = item['display'], url = item['url'], type=item['type'], module_id=item['module_id'], hidden=item['hidden'])
             sqlSession.add(itemObj)
             sqlSession.commit()
-            return {
-                'status': 'success'
-            }
+            return success()
         except:
-            return {
-                'status': 'error',
-                'message': 'Invalid Item Object'
-            }
+            return error('Invalid Item Object')
 
     elif request.method == "DELETE":
         try:
@@ -358,19 +345,11 @@ def items():
                 itemObj = sqlSession.query(Item).get(id)
                 sqlSession.delete(itemObj)
                 sqlSession.commit()
-                return {
-                    'status': 'success'
-                }
+                return success()
             except:
-                return {
-                    'status': 'error',
-                    'message': "Could not delete the item"
-                }
+                return error('Could not delete the item')
         except:
-            return {
-                'status': 'error',
-                'message': "Invalid Item Object"
-            }
+            return error('Invalid Item Object')
 
     elif request.method == "PATCH":
         # passes a "changes" object of sorts?
@@ -394,14 +373,9 @@ def announcements():
             announcementObj = Announcement(author = announcement['author'], title = announcement['title'], date_posted = date, content = announcement['content'])
             sqlSession.add(announcementObj)
             sqlSession.commit()
-            return {
-                'status': 'success'
-            }
+            return success()
         except:
-            return {
-                'status': 'error',
-                'message': 'Invalid Announcement Object'
-            }
+            return error('Invalid Announcement Object')
 
     elif request.method == "DELETE":
         try:
@@ -438,14 +412,9 @@ def files():
             fileObj = FileData(key = filedata['key'], id = filedata['id'], display_name = filedata['display_name'])
             sqlSession.add(fileObj)
             sqlSession.commit()
-            return {
-                'status': 'success'
-            }
+            return success()
         except:
-            return {
-                'status': 'error',
-                'message': 'Invalid FileData Object'
-            }
+            return error('Invalid FileData Object')
 
     elif request.method == "DELETE":
         try:
@@ -454,19 +423,11 @@ def files():
                 linkObj = sqlSession.query(FileData).get(key)
                 sqlSession.delete(linkObj)
                 sqlSession.commit()
-                return {
-                    'status': 'success'
-                }
+                return success()
             except:
-                return {
-                    'status': 'error',
-                    'message': "Could not delete the file data"
-                }
+                return error('Could not delete the file data')
         except:
-            return {
-                'status': 'error',
-                'message': "Invalid FileData Object"
-            }
+            return error('Invalid FileData Object')
 
     elif request.method == "PATCH":
         # passes a "changes" object of sorts?
@@ -489,14 +450,9 @@ def musicdata():
             musicObj = MusicData(key = musicdata['key'], url = musicdata['url'], display_name = musicdata['display_name'])
             sqlSession.add(musicObj)
             sqlSession.commit()
-            return {
-                'status': 'success'
-            }
+            return success()
         except:
-            return {
-                'status': 'error',
-                'message': 'Invalid MusicData Object'
-            }
+            return error('Invalid MusicData Object')
 
     elif request.method == "DELETE":
         try:
@@ -505,19 +461,11 @@ def musicdata():
                 musicObj = sqlSession.query(MusicData).get(key)
                 sqlSession.delete(musicObj)
                 sqlSession.commit()
-                return {
-                    'status': 'success'
-                }
+                return success()
             except:
-                return {
-                    'status': 'error',
-                    'message': "Could not delete the music data"
-                }
+                return error('Could not delete the music data')
         except:
-            return {
-                'status': 'error',
-                'message': "Invalid MusicData Object"
-            }
+            return error('Invalid MusicData Object')
 
     elif request.method == "PATCH":
         # passes a "changes" object of sorts?

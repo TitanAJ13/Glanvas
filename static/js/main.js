@@ -3,6 +3,30 @@ window.addEventListener('load', setup);
 function setup() {
     getDomReferences();
     addEventListeners();
+
+    markActiveLink();
+}
+
+function markActiveLink() {
+    full = document.location.href
+    partial = full.split("/")[3]
+
+    links = document.querySelectorAll("#sidebar2>ul>li>a");
+    found = false;
+
+    links.forEach((value) => {
+        if (value.href == full){
+            value.classList.add("active");
+            found = true;
+        }
+    })
+    
+    if (!found) {
+        links.forEach((value) => {
+            if (value.href == partial)
+                value.classList.add("active");
+        })
+    }
 }
 
 function getDomReferences() {
@@ -13,7 +37,7 @@ function getDomReferences() {
 
 function addEventListeners() {
     hamburgerButton.addEventListener("click", sidebar_toggle);
-    document.querySelector("#sidebar2 > ul > li:nth-child(4) > a").addEventListener("click", testPost)
+    // document.querySelector("#sidebar2 > ul > li:nth-child(4) > a").addEventListener("click", testPost)
 }
 
 function sidebar_toggle() {
