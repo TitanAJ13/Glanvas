@@ -3,7 +3,7 @@ from sqlalchemy import create_engine, desc
 from sqlalchemy.orm import sessionmaker
 from models import Base, Link, Module, Announcement, CalendarItem, FileData, MusicData, Item
 import datetime
-import os
+from typing import Any
 
 def error(message):
     return {
@@ -106,6 +106,21 @@ def moveItem(modulePos, pos1, pos2):
     for i in range(minPos, len(itemList)):
         itemList[i].position = i+1
     sqlSession.commit()
+
+def requiredVar(var: dict[str, Any], item: str):
+    try:
+        test = var[item]
+        return test
+    except:
+        abort(400, f'Missing required `{item}` attribute')
+
+def optionalVar(var: dict[str, Any], item: str):
+    try:
+        test = var[item]
+        return test
+    except:
+        return None
+
     
 
 @app.route("/")
@@ -118,47 +133,43 @@ def home():
     calendarItems = getCalendarItemsJSON()
     return render_template("home.html", links=links, modules=modules, announcements=announcements, calendarItems=calendarItems)
 
+
+
 @app.route("/modules/", methods=["GET","POST","PATCH","PUT","DELETE"])
 def modules():
-    modules = getModulesJSON()
-    length = len(modules)
+    moduleList = getModulesJSON()
+    length = len(moduleList)
+
+
     if request.method == "GET":
         links = getLinksJSON()
-        for module in modules:
+        for module in moduleList:
             module['blocks'] = getItemsJSON(module['id'])
-        return render_template("modules.html", links=links, modules=modules)
+        return render_template("modules.html", links=links, modules=moduleList)
     
-    module = request.json
+    json = request.json
+    position = requiredVar(json, 'position')
+
+    if (position is None):
+        position = length + 1
+    elif (position > length + 1):
+        abort(400, f'`position` cannot be larger than {length + 1}')
+
     if request.method == "POST":
-        try:
-            title = module['display_name']
-        except:
-            return error('Missing required `display_name` attribute')
-        try:
-            position = module['position']
-        except:
-            return error('Missing required `position` attribute')
-        if (position is None):
-            position = length + 1
-        elif (position > length + 1):
-            return error(f'`position` cannot be larger than the number of modules: {length + 1}')
+
+        title = requiredVar(json, 'display_name')
+        
         try:
             moduleObj = Module(position = position, display_name = title, hidden = module['hidden'])
             sqlSession.add(moduleObj)
             sqlSession.commit()
             return success()
         except Exception as e:
-            return error(f'{e}')
+            abort(500, e)
+        
+
 
     elif request.method == "DELETE":
-        try:
-            position = module['position']
-        except:
-            return error('Missing required position attribute')
-        
-        if (position > length + 1):
-            return error(f'`position` cannot be larger than the number of modules: {length + 1}')
-
         try:
             moduleObj = getModule(position)
             id = int(moduleObj.id)
@@ -167,29 +178,19 @@ def modules():
             sqlSession.commit()
             return success()
         except Exception as e:
-            return error(f'{e}')
+            abort(500, e)
+
+
 
     elif request.method == "PATCH":
-        try:
-            position = module['position']
-        except:
-            return error('Missing required position attribute')
-        if (position > length + 1):
-            return error(f'`position` cannot be larger than the number of modules: {length + 1}')
-        try:
-            changes = module['changes']
-        except:
-            return error('Missing required changes attribute')
-        try:
-            newTitle = changes['display_name']
-        except:
-            newTitle = None
-        try:
-            visibility = changes['hidden']
-        except:
-            visibility = None
+
+        changes = requiredVar(json, 'changes')
+        newTitle = optionalVar(changes, 'display_name')
+        visibility = optionalVar(changes, 'hidden')
+
         if (visibility is None and newTitle is None):
-            return error('changes attribute must include at least one of `display_name` or `hidden` attributes')
+            abort(400, '`changes` must include at least one of `display_name` or `hidden` attributes')
+        
         try:
             moduleObj = getModule(position)
             if (visibility is not None):
@@ -199,29 +200,24 @@ def modules():
             sqlSession.commit()
             return success()
         except Exception as e:
-            return error(f'{e}')
+            abort(500, e)
+
+
 
     elif request.method == "PUT":
-        try:
-            position1 = module['position1']
-        except:
-            return error('Missing required position1 attribute')
-        try:
-            position2 = module['position2']
-        except:
-            return error('Missing required position2 attribute')
-        if (position1 > length + 1):
-            return error(f'`position1` cannot be larger than the number of modules: {length + 1}')
+
+        position2 = requiredVar(json, 'position2')
+
         if (position2 > length + 1):
-            return error(f'`position2` cannot be larger than the end of the list: {length + 1}')
-        if (position2 == position1):
-            return error('Positions must be different')
+            abort(400, f'`position2` cannot be larger than {length + 1}')
+        if (position == position2):
+            abort(400, 'Positions must be different')
         
         try:
-            moveModule(position1, position2)
+            moveModule(position, position2)
             return success()
         except Exception as e:
-            return error(f'{e}')
+            abort(500, e)
 
     
 
@@ -229,199 +225,135 @@ def modules():
 def links():
     links = getLinksJSON()
     length = len(links)  
-    link = request.json
+    json = request.json
+
+    position = requiredVar(json, 'position')
+    if (position is None):
+        position = length + 1
+    if (position > length + 1):
+        abort(400, f'`position` cannot be larger than {length + 1}')
+
     if request.method == "POST":
-        try:
-            position = link['position']
-        except:
-            return error('Missing required position attribute')
-        if (position is None):
-            position = length + 1
-        try:
-            title = link['display_name']
-        except:
-            return error('Missing required display_name attribute')
-        try:
-            type = link['type']
-        except:
-            return error('Missing required type attribute')
-        try:
-            url = link['url']
-        except:
-            return error('Missing required url attribute')
+
+        title = requiredVar(json, 'display_name')
+        type = requiredVar(json, 'type')
+        url = requiredVar(json, 'url')
+
         try:
             linkObj = Link(position = position, display_name = title, url = url, type=type)
             sqlSession.add(linkObj)
             sqlSession.commit()
             return success()
         except Exception as e:
-            return error(f'{e}')
+            abort(500, e)
+
+
 
     elif request.method == "DELETE":
-        try:
-            position = link['position']
-        except:
-            return error('Missing required position attribute')
-        if (position > length + 1):
-            return error(f'`position` cannot be larger than the number of links: {length + 1}')
         try:
             linkObj = getLink(position)
             sqlSession.delete(linkObj)
             sqlSession.commit()
             return success()
         except Exception as e:
-            return error(f'{e}')
+            abort(500, e)
+
+
 
     elif request.method == "PATCH":
-        try:
-            position = link['position']
-        except:
-            return error('Missing required position attribute')
-        if (position > length + 1):
-            return error(f'`position` cannot be larger than the number of links: {length + 1}')
-        try:
-            changes = link['changes']
-        except:
-            return error('Missing required changes attribute')
-        try:
-            title = changes['title']
-        except:
-            title = None
-        try:
-            type = changes['type']
-        except:
-            type = None
-        try:
-            url = changes['url']
-        except:
-            url = None
+
+        changes = requiredVar(json, 'changes')
+        title = optionalVar(changes, 'title')
+        type = optionalVar(changes, 'type')
+        url = optionalVar(changes, 'url')
+
         if (title is None and type is None and url is None):
-            return error('At least one of `type`, `title`, or `url` must be defined')
+            abort(400, '`changes` must include at least one of `type`, `title`, or `url` attributes')
+        
         try:
-            link = getLink(position)
+            linkObj = getLink(position)
             if (title is not None):
-                link.display_name = title
+                linkObj.display_name = title
             if (type is not None):
-                link.type = type
+                linkObj.type = type
             if (url is not None):
-                link.url = url
+                linkObj.url = url
             sqlSession.commit()
-        except Exception as e:
-            return error(f'{e}')
-    elif request.method == "PUT":
-        try:
-            position1 = link['position1']
-        except:
-            return error('Missing required position1 attribute')
-        try:
-            position2 = link['position2']
-        except:
-            return error('Missing required position2 attribute')
-        if (position1 > length + 1):
-            return error(f'`position1` cannot be larger than the number of items: {length + 1}')
-        if (position2 > length + 1):
-            return error(f'`position2` cannot be larger than the number of items: {length + 1}')
-        if (position1 == position2):
-            return error('Positions must be different')
-        try:
-            moveLink(position1, position2)
             return success()
         except Exception as e:
-            return error(f'{e}')
+            abort(500, e)
+
+
+
+    elif request.method == "PUT":
+        position2 = requiredVar(json, 'position2')
+
+        if (position2 > length + 1):
+            abort(400, f'`position2` cannot be larger than the number of items: {length + 1}')
+        if (position == position2):
+            abort(400, 'Positions must be different')
+        
+        try:
+            moveLink(position, position2)
+            return success()
+        except Exception as e:
+            abort(500, e)
+
+
     
 @app.route("/items/", methods=["POST","PATCH","DELETE", "PUT"])
 def items():    
-    item = request.json
+    json = request.json
 
-    try:
-        modulePos = item['moduleposition']
-    except:
-        return error('Missing required moduleposition attribute')
-    
-    modules = getModulesJSON()
-    mLength = len(modules)
+    modulePos = requiredVar(json, 'moduleposition')
+    mLength = len(getModulesJSON())
+
     if (modulePos > mLength):
-        return error(f'`moduleposition` cannot be larger than the number of modules: {mLength}')
+        abort(400, f'`moduleposition` cannot be larger than {mLength}')
+
     moduleObj = getModule(modulePos)
     items = getItemsJSON(moduleObj.id)
     iLength = len(items)
 
+    position = requiredVar(json, 'position')
+    if (position > iLength + 1):
+        abort(400, f'`position` cannot be larger than {iLength + 1}')
+
     if request.method == "POST":
-        try:
-            position = item['position']
-        except:
-            return error('Missing required position attribute')
-        if (position > iLength + 1):
-            return error(f'`position` cannot be larger than the number of items: {iLength + 1}')
-        try:
-            title = item['display']
-        except:
-            return error('Missing required display attribute')
-        try:
-            type = item['type']
-        except:
-            return error('Missing required type attribute')
-        try:
-            url = item['url']
-        except:
-            return error('Missing required url attribute')
-        try:
-            visibility = item['hidden']
-        except:
-            return error('Missing required hidden attribute')
-        moduleObj = getModule(modulePos)
-        if (moduleObj is None):
-            return error(f'No module exists at position {modulePos}')
+
+        title = requiredVar(json, 'display')
+        type = requiredVar(json, 'type')
+        url = requiredVar(json, 'url')
+        visibility = requiredVar(json, 'hidden')
+
         try:
             itemObj = Item(position = position, display = title, url = url, type=type, module_id=moduleObj.id, hidden=visibility)
             sqlSession.add(itemObj)
             sqlSession.commit()
             return success()
         except Exception as e:
-            return error(f'{e}')
+            abort(500, e)
+
+
 
     elif request.method == "DELETE":
-        try:
-            position = item['position']
-        except:
-            return error('Missing required position attribute')
-        if (position > iLength + 1):
-            return error(f'`position` cannot be larger than the number of items: {iLength + 1}')
         try:
             itemObj = getItem(modulePos, position)
             sqlSession.delete(itemObj)
             sqlSession.commit()
             return success()
         except Exception as e:
-            return error(f'{e}')
+            abort(500, e)
+
+
 
     elif request.method == "PATCH":
-        try:
-            position = item['position']
-        except:
-            return error('Missing required position attribute')
-        if (position > iLength + 1):
-            return error(f'`position` cannot be larger than the number of items: {iLength + 1}')
-        try:
-            changes = item['changes']
-        except:
-            return error('Missing required changes attribute')
-        try:
-            type = changes['type']
-        except:
-            type = None
-        try:
-            title = changes['display_name']
-        except:
-            title = None
-        try:
-            url = changes['url']
-        except:
-            url = None
-        try:
-            hidden = changes['hidden']
-        except:
-            hidden = None
+        changes = requiredVar(json, 'changes')
+        type = optionalVar(changes, 'type')
+        title = optionalVar(changes, 'display_name')
+        url = optionalVar(changes, 'url')
+        visibility = optionalVar(changes, 'hidden')
+
         try:
             itemObj = getItem(modulePos, position)
             if (title is not None):
@@ -430,32 +362,28 @@ def items():
                 itemObj.type = type
             if (url is not None):
                 itemObj.url = url
-            if (hidden is not None):
-                itemObj.hidden = hidden
+            if (visibility is not None):
+                itemObj.hidden = visibility
             sqlSession.commit()
             return success()
         except Exception as e:
-            return error(f'{e}')
+            abort(500, e)
+
+
+
     elif request.method == "PUT":
-        try:
-            position1 = item['position1']
-        except:
-            return error('Missing required position1 attribute')
-        try:
-            position2 = item['position2']
-        except:
-            return error('Missing required position2 attribute')
-        if (position1 > iLength + 1):
-            return error(f'`position1` cannot be larger than the number of items: {iLength + 1}')
+        position2 = requiredVar(json, 'position2')
+
         if (position2 > iLength + 1):
-            return error(f'`position2` cannot be larger than the number of items: {iLength + 1}')
-        if (position1 == position2):
-            return error('Positions must be different')
+            abort(400, f'`position2` cannot be larger than {iLength + 1}')
+        if (position == position2):
+            abort(400, 'Positions must be different')
+        
         try:
-            moveItem(modulePos, position1, position2)
+            moveItem(modulePos, position, position2)
             return success()
         except Exception as e:
-            return error(f'{e}')
+            abort(500, e)
 
     
 @app.route("/announcements/", methods=["GET","POST","PATCH","DELETE"])
@@ -509,62 +437,43 @@ def announcement(id):
 
 @app.route("/files/", methods=["POST", "PATCH", "DELETE"])
 def files():
-    filedata = request.json
+    json = request.json
+
+    key = requiredVar(json, 'key')
+
     if request.method == "POST":
-        try:
-            key = filedata['key']
-        except:
-            return error('Missing required key attribute')
-        try:
-            url = filedata['url']
-        except:
-            return error('Missing required url attribute')
-        try:
-            title = filedata['display_name']
-        except:
-            return error('Missing required display_name attribute')
+
+        url = requiredVar(json, 'url')
+        title = requiredVar(json, 'display_name')
+
         try:
             fileObj = FileData(key = key, url = url, display_name = title)
             sqlSession.add(fileObj)
             sqlSession.commit()
             return success()
         except Exception as e:
-            return error(f'{e}')
+            abort(500, e)
+
+
 
     elif request.method == "DELETE":
-        try:
-            key = filedata['key']
-        except:
-            return error('Missing required key attribute')
         try:
             fileObj = sqlSession.query(FileData).get(key)
             sqlSession.delete(fileObj)
             sqlSession.commit()
             return success()
-        except:
-            return error('Could not delete the file data')
+        except Exception as e:
+            abort(500, e)
+
+
 
     elif request.method == "PATCH":
-        try:
-            key = filedata['key']
-        except:
-            return error('Missing required key attribute')
-        try:
-            changes = filedata['changes']
-        except:
-            return error('Missing required changes attribute')
-        try:
-            path = changes['path']
-        except:
-            path = None
-        try:
-            filename = changes['display_name']
-        except:
-            filename = None
-        try:
-            url = changes['url']
-        except:
-            url = None
+
+        changes = requiredVar(json, 'changes')
+        path = optionalVar(changes, 'path')
+        filename = optionalVar(changes, 'display_name')
+        url = optionalVar(changes, 'url')
+
         try:
             file = getFile(key)
             if (filename is not None):
@@ -575,10 +484,10 @@ def files():
                 file.url = url
             sqlSession.commit()
         except Exception as e:
-            return error(f'{e}')
+            abort(500, e)
 
 
-@app.route("/file/<key>")
+@app.route("/file/<path:key>")
 def file(key):
     data = sqlSession.query(FileData).get(key)
     if (data is None):
@@ -587,29 +496,28 @@ def file(key):
         data = data.toJSON()
         return render_template("file.html", header= data['display_name'], url=data['url'])
     
+
+
 @app.route("/musicdata/", methods=["POST", "PATCH", "DELETE"])
 def musicdata():
-    musicdata = request.json
-    try:
-        path = musicdata['key']
-    except:
-        return error('Missing required key attribute')
+    json = request.json
+
+    path = requiredVar(json, 'key')
+
     if request.method == "POST":
-        try:
-            url = musicdata['url']
-        except:
-            return error('Missing required url attribute')
-        try:
-            filename = musicdata['display_name']
-        except:
-            return error('Missing required display_name attribute')
+
+        url = requiredVar(json, 'url')
+        filename = requiredVar(json, 'display_name')
+
         try:
             musicObj = MusicData(key = path, url = url, display_name = filename)
             sqlSession.add(musicObj)
             sqlSession.commit()
             return success()
         except Exception as e:
-            return error(f'{e}')
+            abort(500, e)
+
+
 
     elif request.method == "DELETE":
         try:
@@ -618,27 +526,20 @@ def musicdata():
             sqlSession.commit()
             return success()
         except Exception as e:
-            return error(f'{e}')
+            abort(500, e)
+
+
 
     elif request.method == "PATCH":
-        try:
-            changes = musicdata['changes']
-        except:
-            return error('Missing required changes attribute')
-        try:
-            new_path = changes['path']
-        except:
-            new_path = None
-        try:
-            filename = changes['display_name']
-        except:
-            filename = None
-        try:
-            url = changes['url']
-        except:
-            url = None
+
+        changes = requiredVar(json, 'changes')
+        new_path = optionalVar(changes, 'path')
+        filename = optionalVar(changes, 'display_name')
+        url = optionalVar(changes,'url')
+
         if (new_path is None and filename is None and url is None):
-            return error('At least one of `new_path`, `filename`, or `url` must be defined')
+            abort(400, 'At least one of `new_path`, `filename`, or `url` must be defined')
+
         try:
             musicObj = sqlSession.query(MusicData).get(path)
             if (new_path is not None):
@@ -649,7 +550,7 @@ def musicdata():
                 musicObj.url = url
             sqlSession.commit()
         except Exception as e:
-            return error(f'{e}')
+            abort(500, e)
 
 
 @app.route("/music/<path:key>")
