@@ -590,31 +590,67 @@ def file(key):
 @app.route("/musicdata/", methods=["POST", "PATCH", "DELETE"])
 def musicdata():
     musicdata = request.json
+    try:
+        path = musicdata['key']
+    except:
+        return error('Missing required key attribute')
     if request.method == "POST":
         try:
-            musicObj = MusicData(key = musicdata['key'], url = musicdata['url'], display_name = musicdata['display_name'])
+            url = musicdata['url']
+        except:
+            return error('Missing required url attribute')
+        try:
+            filename = musicdata['display_name']
+        except:
+            return error('Missing required display_name attribute')
+        try:
+            musicObj = MusicData(key = path, url = url, display_name = filename)
             sqlSession.add(musicObj)
             sqlSession.commit()
             return success()
-        except:
-            return error('Invalid MusicData Object')
+        except Exception as e:
+            return error(f'{e}')
 
     elif request.method == "DELETE":
         try:
-            key = musicdata['key']
-            try:
-                musicObj = sqlSession.query(MusicData).get(key)
-                sqlSession.delete(musicObj)
-                sqlSession.commit()
-                return success()
-            except:
-                return error('Could not delete the music data')
-        except:
-            return error('Invalid MusicData Object')
+            musicObj = sqlSession.query(MusicData).get(path)
+            sqlSession.delete(musicObj)
+            sqlSession.commit()
+            return success()
+        except Exception as e:
+            return error(f'{e}')
 
     elif request.method == "PATCH":
-        # passes a "changes" object of sorts?
-        return "Unsupported Request: Build in Progress..."
+        try:
+            changes = musicdata['changes']
+        except:
+            return error('Missing required changes attribute')
+        try:
+            new_path = changes['path']
+        except:
+            new_path = None
+        try:
+            filename = changes['display_name']
+        except:
+            filename = None
+        try:
+            url = changes['url']
+        except:
+            url = None
+        if (new_path is None and filename is None and url is None):
+            return error('At least one of `new_path`, `filename`, or `url` must be defined')
+        try:
+            musicObj = sqlSession.query(MusicData).get(path)
+            if (new_path is not None):
+                musicObj.key = new_path
+            if (filename is not None):
+                musicObj.display_name = filename
+            if (url is not None):
+                musicObj.url = url
+            sqlSession.commit()
+        except Exception as e:
+            return error(f'{e}')
+
 
 @app.route("/music/<path:key>")
 def music(key):
