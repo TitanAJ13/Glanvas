@@ -329,34 +329,134 @@ def links():
         except Exception as e:
             return error(f'{e}')
     
-@app.route("/items/", methods=["POST","PATCH","DELETE"])
+@app.route("/items/", methods=["POST","PATCH","DELETE", "PUT"])
 def items():    
     item = request.json
+
+    try:
+        modulePos = item['moduleposition']
+    except:
+        return error('Missing required moduleposition attribute')
+    
+    modules = getModulesJSON()
+    mLength = len(modules)
+    if (modulePos > mLength):
+        return error(f'`moduleposition` cannot be larger than the number of modules: {mLength}')
+    moduleObj = getModule(modulePos)
+    items = getItemsJSON(moduleObj.id)
+    iLength = len(items)
+
     if request.method == "POST":
         try:
-            itemObj = Item(position = item['position'], display = item['display'], url = item['url'], type=item['type'], module_id=item['module_id'], hidden=item['hidden'])
+            position = item['position']
+        except:
+            return error('Missing required position attribute')
+        if (position > iLength + 1):
+            return error(f'`position` cannot be larger than the number of items: {iLength + 1}')
+        try:
+            title = item['display']
+        except:
+            return error('Missing required display attribute')
+        try:
+            type = item['type']
+        except:
+            return error('Missing required type attribute')
+        try:
+            url = item['url']
+        except:
+            return error('Missing required url attribute')
+        try:
+            visibility = item['hidden']
+        except:
+            return error('Missing required hidden attribute')
+        moduleObj = getModule(modulePos)
+        if (moduleObj is None):
+            return error(f'No module exists at position {modulePos}')
+        try:
+            itemObj = Item(position = position, display = title, url = url, type=type, module_id=moduleObj.id, hidden=visibility)
             sqlSession.add(itemObj)
             sqlSession.commit()
             return success()
-        except:
-            return error('Invalid Item Object')
+        except Exception as e:
+            return error(f'{e}')
 
     elif request.method == "DELETE":
         try:
-            id = item['id']
-            try:
-                itemObj = sqlSession.query(Item).get(id)
-                sqlSession.delete(itemObj)
-                sqlSession.commit()
-                return success()
-            except:
-                return error('Could not delete the item')
+            position = item['position']
         except:
-            return error('Invalid Item Object')
+            return error('Missing required position attribute')
+        if (position > iLength + 1):
+            return error(f'`position` cannot be larger than the number of items: {iLength + 1}')
+        try:
+            itemObj = getItem(modulePos, position)
+            sqlSession.delete(itemObj)
+            sqlSession.commit()
+            return success()
+        except Exception as e:
+            return error(f'{e}')
 
     elif request.method == "PATCH":
-        # passes a "changes" object of sorts?
-        return "Unsupported Request: Build in Progress..."
+        try:
+            position = item['position']
+        except:
+            return error('Missing required position attribute')
+        if (position > iLength + 1):
+            return error(f'`position` cannot be larger than the number of items: {iLength + 1}')
+        try:
+            changes = item['changes']
+        except:
+            return error('Missing required changes attribute')
+        try:
+            type = changes['type']
+        except:
+            type = None
+        try:
+            title = changes['display_name']
+        except:
+            title = None
+        try:
+            url = changes['url']
+        except:
+            url = None
+        try:
+            hidden = changes['hidden']
+        except:
+            hidden = None
+        try:
+            itemObj = getItem(modulePos, position)
+            if (title is not None):
+                itemObj.display = title
+            if (type is not None):
+                itemObj.type = type
+            if (url is not None):
+                itemObj.url = url
+            if (hidden is not None):
+                itemObj.hidden = hidden
+            sqlSession.commit()
+            return success()
+        except Exception as e:
+            return error(f'{e}')
+    elif request.method == "PUT":
+        try:
+            position1 = item['position1']
+        except:
+            return error('Missing required position1 attribute')
+        try:
+            position2 = item['position2']
+        except:
+            return error('Missing required position2 attribute')
+        if (position1 > iLength + 1):
+            return error(f'`position1` cannot be larger than the number of items: {iLength + 1}')
+        if (position2 > iLength + 1):
+            return error(f'`position2` cannot be larger than the number of items: {iLength + 1}')
+        if (position1 == position2):
+            return error('Positions must be different')
+        try:
+            moveItem(modulePos, position1, position2)
+            return success()
+        except Exception as e:
+            return error(f'{e}')
+
     
 @app.route("/announcements/", methods=["GET","POST","PATCH","DELETE"])
 def announcements():

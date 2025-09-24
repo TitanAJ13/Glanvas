@@ -110,12 +110,12 @@ class FileData(Base):
     __tablename__ = "FileData"
 
     key=Column("key", String, primary_key=True,nullable=False)
-    id=Column("id", String, nullable=False)
+    url=Column("url", String, nullable=False)
     display_name=Column("display_name", String, nullable=False)
 
     def toJSON(self):
         return {
-            "id": self.id,
+            "url": self.url,
             "key": self.key,
             "display_name": self.display_name
         }
