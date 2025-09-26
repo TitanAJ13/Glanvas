@@ -73,12 +73,12 @@
     <div id="modules">
         <h2>Modules</h2>
         {% for module in modules %}
-            <div class="module" module-id="{{ module.id }}">
+            <div class="module" module-id="{{ module.id }}" {% if module.hidden %} style="display:none" {% endif %}>
                 <details open>
                     <summary> {{ module.display_name }}</summary>
                     <ul class="module-items">
                         {% for item in module.blocks %}
-                            <li class="module-{{item.type}}" item-id="{{ item.id }}">
+                            <li class="module-{{item.type}}" item-id="{{ item.id }}" {% if item.hidden %} style="display:none" {% endif %}>
                                 <span></span>
                                 {% if item.type == "header" %}
                                     <h3>{{ item.display }}</h3>

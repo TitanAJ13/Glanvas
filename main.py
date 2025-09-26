@@ -35,6 +35,11 @@ def optionalVar(var: dict[str, Any], item: str):
     except:
         return None
 
+def checkBounds(var: int, name: str, lower: int, upper: int):
+    if (var < lower):
+        abort(400, f'`{name}` cannot be smaller than {lower}')
+    elif (var > upper):
+        abort(400, f'`{name}` cannot be larger than {upper}')
     
 
 @app.route("/")
@@ -66,10 +71,10 @@ def modules():
 
     if (position is None):
         position = length + 1
-    elif (position > length + 1):
-        abort(400, f'`position` cannot be larger than {length + 1}')
+    
 
     if request.method == "POST":
+        checkBounds(position, 'position', 1, length + 1)
 
         title = requiredVar(json, 'display_name')
         visibility = requiredVar(json, 'hidden')
@@ -84,6 +89,8 @@ def modules():
 
 
     elif request.method == "DELETE":
+        checkBounds(position, 'position', 1, length)
+
         try:
             moduleObj = sqlSession.getModule(position)
             sqlSession.deleteModule(moduleObj)
@@ -94,6 +101,7 @@ def modules():
 
 
     elif request.method == "PATCH":
+        checkBounds(position, 'position', 1, length)
 
         changes = requiredVar(json, 'changes')
         newTitle = optionalVar(changes, 'display_name')
@@ -116,11 +124,11 @@ def modules():
 
 
     elif request.method == "PUT":
+        checkBounds(position, 'position1', 1, length)
 
         position2 = requiredVar(json, 'position2')
+        checkBounds(position2, 'position2', 1, length)
 
-        if (position2 > length + 1):
-            abort(400, f'`position2` cannot be larger than {length + 1}')
         if (position == position2):
             abort(400, 'Positions must be different')
         
@@ -141,10 +149,10 @@ def links():
     position = requiredVar(json, 'position')
     if (position is None):
         position = length + 1
-    if (position > length + 1):
-        abort(400, f'`position` cannot be larger than {length + 1}')
+
 
     if request.method == "POST":
+        checkBounds(position, 'position', 1, length + 1)
 
         title = requiredVar(json, 'display_name')
         type = requiredVar(json, 'type')
@@ -160,6 +168,8 @@ def links():
 
 
     elif request.method == "DELETE":
+        checkBounds(position, 'position', 1, length)
+
         try:
             linkObj = sqlSession.getLink(position)
             sqlSession.deleteLink(linkObj)
@@ -170,6 +180,7 @@ def links():
 
 
     elif request.method == "PATCH":
+        checkBounds(position, 'position', 1, length)
 
         changes = requiredVar(json, 'changes')
         title = optionalVar(changes, 'title')
@@ -195,10 +206,11 @@ def links():
 
 
     elif request.method == "PUT":
-        position2 = requiredVar(json, 'position2')
+        checkBounds(position, 'position1', 1, length)
 
-        if (position2 > length + 1):
-            abort(400, f'`position2` cannot be larger than the number of items: {length + 1}')
+        position2 = requiredVar(json, 'position2')
+        checkBounds(position2, 'position2', 1, length)
+        
         if (position == position2):
             abort(400, 'Positions must be different')
         
@@ -218,8 +230,8 @@ def items():
     modulePos = requiredVar(json, 'moduleposition')
     mLength = len(sqlSession.getModulesJSON())
 
-    if (modulePos > mLength):
-        abort(400, f'`moduleposition` cannot be larger than {mLength}')
+    
+    checkBounds(modulePos, 'moduleposition', 1, mLength)
 
     moduleObj = sqlSession.getModule(modulePos)
     items = sqlSession.getItemsJSON(moduleObj.id)
@@ -228,10 +240,9 @@ def items():
     position = requiredVar(json, 'position')
     if (position is None):
         position = iLength + 1
-    if (position > iLength + 1):
-        abort(400, f'`position` cannot be larger than {iLength + 1}')
 
     if request.method == "POST":
+        checkBounds(position, 'position', 1, iLength + 1)
 
         title = requiredVar(json, 'display')
         type = requiredVar(json, 'type')
@@ -248,6 +259,8 @@ def items():
 
 
     elif request.method == "DELETE":
+        checkBounds(position, 'position', 1, iLength)
+
         try:
             itemObj = sqlSession.getItem(modulePos, position)
             sqlSession.deleteItem(itemObj)
@@ -258,6 +271,8 @@ def items():
 
 
     elif request.method == "PATCH":
+        checkBounds(position, 'position', 1, iLength)
+
         changes = requiredVar(json, 'changes')
         type = optionalVar(changes, 'type')
         title = optionalVar(changes, 'display_name')
@@ -282,10 +297,11 @@ def items():
 
 
     elif request.method == "PUT":
-        position2 = requiredVar(json, 'position2')
+        checkBounds(position, 'position1', 1, iLength)
 
-        if (position2 > iLength + 1):
-            abort(400, f'`position2` cannot be larger than {iLength + 1}')
+        position2 = requiredVar(json, 'position2')
+        checkBounds(position2, 'position2', 1, iLength)
+
         if (position == position2):
             abort(400, 'Positions must be different')
         
@@ -366,6 +382,9 @@ def files():
     elif request.method == "DELETE":
         try:
             fileObj = sqlSession.getFile(key)
+            if (fileObj is None):
+                abort(400, f"`{path}` is not a registered path")
+
             sqlSession.deleteFile(fileObj)
             return success()
         except Exception as e:
@@ -382,6 +401,9 @@ def files():
 
         try:
             file = sqlSession.getFile(key)
+            if (file is None):
+                abort(400, f"`{path}` is not a registered path")
+
             if (filename is not None):
                 file.display_name = filename
             if (path is not None):
@@ -389,6 +411,7 @@ def files():
             if (url is not None):
                 file.url = url
             sqlSession.session.commit()
+            return success()
         except Exception as e:
             abort(500, e)
 
@@ -397,7 +420,11 @@ def files():
 def file(key):
     data = sqlSession.getFile(key)
     if (data is None):
-        return render_template("file.html", header="Unnamed File", url=key, links=sqlSession.getLinksJSON())
+        if (str(key).startswith('https://')):
+            return render_template("file.html", header="Unnamed File", url=key, links=sqlSession.getLinksJSON())
+        else:
+            return render_template("file.html", header="File Not Found", url="about:blank", links=sqlSession.getLinksJSON())
+
     else:
         data = data.toJSON()
         return render_template("file.html", header= data['display_name'], url=data['url'], links=sqlSession.getLinksJSON())
@@ -427,6 +454,9 @@ def musicdata():
     elif request.method == "DELETE":
         try:
             musicObj = sqlSession.getMusic(path)
+            if (musicObj is None):
+                abort(400, f"`{path}` is not a registered path")
+
             sqlSession.deleteMusic(musicObj)
             return success()
         except Exception as e:
@@ -446,6 +476,9 @@ def musicdata():
 
         try:
             musicObj = sqlSession.getMusic(path)
+            if (musicObj is None):
+                abort(400, f"`{path}` is not a registered path")
+
             if (new_path is not None):
                 musicObj.key = new_path
             if (filename is not None):
@@ -453,6 +486,7 @@ def musicdata():
             if (url is not None):
                 musicObj.url = url
             sqlSession.session.commit()
+            return success()
         except Exception as e:
             abort(500, e)
 
@@ -461,7 +495,10 @@ def musicdata():
 def music(key):
     data = sqlSession.getMusic(key)
     if (data is None):
-        return render_template("music.html", header="Unnamed Sheetmusic", url=key, links=sqlSession.getLinksJSON())
+        if (str(key).startswith('https://')):
+            return render_template("music.html", header="Unnamed Sheetmusic", url=key, links=sqlSession.getLinksJSON())
+        else:
+            return render_template("music.html", header="Music Not Found", url="about:blank", links=sqlSession.getLinksJSON())
     else:
         data = data.toJSON()
         return render_template("music.html", header=data['display_name'], url=data['url'], links=sqlSession.getLinksJSON())

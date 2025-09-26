@@ -136,6 +136,7 @@ class MySession():
         all.remove(module)
         for i in range(module.position - 1, len(all)):
             all[i].position = i + 1
+        self.session.query(Item).filter_by(module_id=module.id).delete()
         self.session.delete(module)
         self.session.commit()
 
