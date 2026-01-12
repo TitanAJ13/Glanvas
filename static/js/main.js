@@ -2,9 +2,14 @@ window.addEventListener('load', setup);
 
 function setup() {
     getDomReferences();
+
+    isMobile = matchMedia("screen and (max-width: 759px)");
+
     addEventListeners();
 
     markActiveLink();
+
+    mediaChanged();
 }
 
 function markActiveLink() {
@@ -33,75 +38,102 @@ function getDomReferences() {
     hamburgerButton = document.getElementById("sidebar-hamburger");
     sidebar = document.getElementById("sidebar1");
     main = document.getElementById('main');
+
+    sidebarStyle = window.getComputedStyle(sidebar);
 }
 
 function addEventListeners() {
     hamburgerButton.addEventListener("click", sidebar_toggle);
     // document.querySelector("#sidebar2 > ul > li:nth-child(4) > a").addEventListener("click", testPost)
+    isMobile.addEventListener("change", mediaChanged);
 }
 
 function sidebar_toggle() {
-    if (sidebar.style.display === "none") {
+    if (sidebarStyle.display == "none") {
         sidebar.style.display = "block";
         hamburgerButton.setAttribute('title', 'Hide Navigation Menu');
-        main.setAttribute('style','margin-left: 192px;');
+        if (!isMobile.matches)
+          main.setAttribute('style','margin-left: 192px;');
     }
     else {
         sidebar.style.display = "none";
         hamburgerButton.setAttribute('title', 'Show Navigation Menu');
+        if (!isMobile.matches)
+          main.setAttribute('style','margin-left: 0px;');
+    }
+}
+
+function mediaChanged() {
+    // List of everything that needs to be updated between mobile and desktop versions
+    if (isMobile.matches) {
+        sidebar.style.display = "none";
         main.setAttribute('style','margin-left: 0px;');
+    }
+    else {
+        sidebar.style.display = "block";
+        main.setAttribute('style','margin-left: 192px;');
+    }
+    setToggleButton();
+}
+
+function setToggleButton() {
+    if (sidebarStyle.display === "none") {
+        hamburgerButton.setAttribute('title', 'Show Navigation Menu');
+    }
+    else {
+        hamburgerButton.setAttribute('title', 'Hide Navigation Menu');
     }
 }
 
 async function postData(url, data) {
-  try {
-    const response = await fetch(url, {
-      method: 'POST', // Specify the method as POST
-      headers: {
-        'Content-Type': 'application/json', // Indicate JSON data
-      },
-      body: JSON.stringify(data), // Convert data to JSON string
-    });
+    try {
+        const response = await fetch(url, {
+        method: 'POST', // Specify the method as POST
+        headers: {
+            'Content-Type': 'application/json', // Indicate JSON data
+        },
+        body: JSON.stringify(data), // Convert data to JSON string
+        });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+        if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const responseData = await response.json(); // Parse the response as JSON
+        console.log('Success:', responseData);
+        return responseData;
+    } catch (error) {
+        console.error('Error:', error);
+        throw error; // Re-throw the error for further handling
     }
-
-    const responseData = await response.json(); // Parse the response as JSON
-    console.log('Success:', responseData);
-    return responseData;
-  } catch (error) {
-    console.error('Error:', error);
-    throw error; // Re-throw the error for further handling
-  }
 }
 
 async function deleteData(url, data) {
-  try {
-    const response = await fetch(url, {
-      method: 'DELETE', // Specify the method as POST
-      headers: {
-        'Content-Type': 'application/json', // Indicate JSON data
-      },
-      body: JSON.stringify(data), // Convert data to JSON string
-    });
+    try {
+        const response = await fetch(url, {
+        method: 'DELETE', // Specify the method as POST
+        headers: {
+            'Content-Type': 'application/json', // Indicate JSON data
+        },
+        body: JSON.stringify(data), // Convert data to JSON string
+        });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+        if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
-    const responseData = await response.json(); // Parse the response as JSON
-    if (responseData.status == 'success') {
-      console.log('Success!');
+        const responseData = await response.json(); // Parse the response as JSON
+        if (responseData.status == 'success') {
+        console.log('Success!');
+        }
+        else {
+        console.log('Error: ', responseData.message)
+        }
+        return responseData;
+    } catch (error) {
+        console.error('Error:', error);
+        throw error; // Re-throw the error for further handling
     }
-    else {
-      console.log('Error: ', responseData.message)
-    }
-    return responseData;
-  } catch (error) {
-    console.error('Error:', error);
-    throw error; // Re-throw the error for further handling
-  }
 }
 
 function postLink(display_name, position, type, url) {
@@ -122,31 +154,31 @@ function deleteLink(id) {
 }
 
 function postModule(display_name, position, hidden) {
-  const module = {
-    display_name: display_name,
-    position: position,
-    hidden: hidden
-  }
+    const module = {
+        display_name: display_name,
+        position: position,
+        hidden: hidden
+    }
 
-  postData('/modules/', module);
+    postData('/modules/', module);
 }
 
 function deleteModule(id) {
-  deleteData('/modules/', {id: id})
+    deleteData('/modules/', {id: id})
 }
 
 function postFile(key, id, display_name) {
-  const file = {
-    key: key,
-    id: id,
-    display_name: display_name
-  }
+    const file = {
+        key: key,
+        id: id,
+        display_name: display_name
+    }
 
-  postData('/files/', file)
+    postData('/files/', file)
 }
 
 function deleteFile(key) {
-  deleteData('/files/', {key: key})
+    deleteData('/files/', {key: key})
 }
 
 function postItem(module_id, position, display, type, url, hidden) {
