@@ -336,13 +336,11 @@ def announcements():
     elif request.method == "DELETE":
         try:
             id = announcement['id']
-            try:
-                announcementObj = sqlSession.query(Announcement).get(id)
-                sqlSession.deleteAnnouncement(announcementObj)
-            except:
-                return "Could not delete the announcement"
-        except:
-            return "Invalid Announcement Object"
+            announcementObj = sqlSession.session.query(Announcement).get(id)
+            sqlSession.deleteAnnouncement(announcementObj)
+            return success()
+        except Exception as e:
+            abort(500, e)
 
     elif request.method == "PATCH":
         # passes a "changes" object of sorts?

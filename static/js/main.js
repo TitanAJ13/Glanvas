@@ -224,5 +224,5 @@ function postAnnouncement(author, title, date_posted, content) {
 }
 
 function deleteAnnouncement(id) {
-  deleteData('/announcements', {id: id})
+  deleteData('/announcements/', {id: id})
 }
