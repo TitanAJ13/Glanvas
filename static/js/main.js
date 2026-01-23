@@ -68,10 +68,24 @@ function mediaChanged() {
     if (isMobile.matches) {
         sidebar.style.display = "none";
         main.setAttribute('style','margin-left: 0px;');
+        let currentUrl = document.location.href.split("/")[3];
+        if (currentUrl == 'file') {
+            let iframe = document.getElementById("file-iframe");
+            let fileURL = iframe.src.split("/");
+            fileURL[fileURL.length - 1] = 'mobilebasic'
+            iframe.src = fileURL.join("/");
+        }
     }
     else {
         sidebar.style.display = "block";
         main.setAttribute('style','margin-left: 192px;');
+        let currentUrl = document.location.href.split("/")[3];
+        if (currentUrl == 'file') {
+            let iframe = document.getElementById("file-iframe");
+            let fileURL = iframe.src.split("/");
+            fileURL[fileURL.length - 1] = 'preview'
+            iframe.src = fileURL.join("/");
+        }
     }
     setToggleButton();
 }

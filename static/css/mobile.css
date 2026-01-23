@@ -131,14 +131,20 @@ img {
 
 #main-wrapper {
     background-color: #121212;
+    height: calc(100% - 4.5rem);
+}
+
+iframe {
     height: 100%;
+    width: 100%;
+    border: 0;
 }
 
 #header {
     display: flex;
     align-items: center;
     border-bottom: 1px solid #424344;
-    padding: 0 24px;
+    padding: 0 10px;
     min-height: 4.5rem;
     box-sizing: border-box;
     background-color: #1536a1;
@@ -149,7 +155,7 @@ img {
 }
 
 #sidebar-hamburger {
-    margin-right: 58px;
+    margin: 0 23px;
     padding: 0;
     width: 36px;
     height: 36px;
@@ -356,9 +362,8 @@ img {
 }
 
 #content {
-    padding: min(48px, 50% - 233px);
+    padding: 10px;
     min-height: calc(100% - 84px);
-    padding-top: 36px;
 }
 
 #right-side-wrapper {
