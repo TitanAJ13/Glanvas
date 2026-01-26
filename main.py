@@ -531,6 +531,6 @@ def page(id):
 #     except:
 #         return 'There was a problem deleting that task'
 
-if __name__ == "__main__":
-    # app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT",8080))) #for google cloud
-    app.run(debug=True) #for localhost
+# if __name__ == "__main__":
+#     # app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT",8080))) #for google cloud
+#     app.run(debug=True) #for localhost
