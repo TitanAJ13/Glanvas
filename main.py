@@ -532,7 +532,7 @@ def calendar():
     return render_template("calendar.html", links=links)
 
 @app.route("/savestate/")
-def saveCurrentState():
+def savestate():
     return sqlSession.saveState()
 
 @app.route("/page/<id>")
