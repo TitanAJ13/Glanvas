@@ -91,7 +91,7 @@ class Item(Base):
 class Announcement(Base):
     __tablename__ = "Announcements"
 
-    id = Column("id", Integer, primary_key=True, autoincrement=True)
+    id = Column("id", Integer, primary_key=True, autoincrement=False)
     author = Column("author", String, nullable=False)
     title = Column("title", String, nullable=False)
     date_posted = Column("date_posted", DateTime, nullable=False,default=datetime.datetime.now(datetime.timezone.utc))
