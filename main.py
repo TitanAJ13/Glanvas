@@ -319,23 +319,29 @@ def announcements():
         links = sqlSession.getLinksJSON()
         # calendarItems = sqlSession.getCalendarItemsJSON()
         return render_template("announcements.html", links=links, announcements=announcements)
-    announcement = request.json
+    
+
+    json = request.json
+    id = requiredVar(json, 'id')
+
     if request.method == "POST":
+        date = requiredVar(json, 'date_posted')
+        author = requiredVar(json, 'author')
+        title = requiredVar(json, 'title')
+        content = requiredVar(json, 'content')
+
         try:
-            date = announcement['date_posted']
             if not isinstance(date,datetime.datetime):
-                print("Not a date")
                 date = datetime.datetime.fromisoformat(date)
-            print(date, type(date))
-            announcementObj = Announcement(author = announcement['author'], title = announcement['title'], date_posted = date, content = announcement['content'])
+
+            announcementObj = Announcement(author = author, title = title, date_posted = date, content = content, id = id)
             sqlSession.addAnnouncement(announcementObj)
             return success()
-        except:
-            return error('Invalid Announcement Object')
+        except Exception as e:
+            abort(500, e)
 
     elif request.method == "DELETE":
         try:
-            id = announcement['id']
             announcementObj = sqlSession.session.query(Announcement).get(id)
             sqlSession.deleteAnnouncement(announcementObj)
             return success()
@@ -343,8 +349,27 @@ def announcements():
             abort(500, e)
 
     elif request.method == "PATCH":
-        # passes a "changes" object of sorts?
-        return "Unsupported Request: Build in Progress..."
+        changes = requiredVar(json, 'changes')
+        newTitle = optionalVar(changes, 'title')
+        newContent = optionalVar(changes, 'content')
+
+        if (newTitle is None and newContent is None):
+            abort(400, '`changes` must include at least one of `title` or `content` attributes')
+
+        try:
+            announcement = sqlSession.getAnnouncement(id)
+            if (announcement is None):
+                abort(400, f"This Announcement has not been posted yet")
+
+            if (newTitle is not None):
+                announcement.title = newTitle
+            if (newContent is not None):
+                announcement.content = newContent
+            
+            sqlSession.session.commit()
+            return success()
+        except Exception as e:
+            abort(500, e)
 
 
 @app.route("/announcement/<id>")

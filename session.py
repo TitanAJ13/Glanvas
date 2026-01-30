@@ -63,6 +63,9 @@ class MySession():
 
     def getItem(self, modulePos, itemPos) -> Item | None:
         return self.session.query(Item).filter_by(module_id = self.getModule(modulePos).id, position=itemPos).first()
+    
+    def getAnnouncement(self, id) -> Announcement | None:
+        return self.session.query(Announcement).filter_by(id = id).first()
 
     def moveLink(self, pos1, pos2):
         link1 = self.getLink(pos1)
