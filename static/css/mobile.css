@@ -595,6 +595,10 @@ iframe {
     display: none;
 }
 
+.content-body hr {
+    display: none;
+}
+
 .announcement .content div {
     white-space: nowrap;
     overflow: hidden;
