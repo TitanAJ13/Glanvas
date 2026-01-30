@@ -58,8 +58,16 @@ class MySession():
         announcements = self.session.query(Announcement).order_by(desc(Announcement.date_posted)).all()
         obj = []
         for announcement in announcements:
-            announcement.date_posted = announcement.date_posted
             obj.append(announcement.toJSON())
+        return obj
+
+    def getAnnouncementsJSONSerialized(self) -> list[dict[str, Any]]:
+        announcements = self.session.query(Announcement).order_by(desc(Announcement.date_posted)).all()
+        obj = []
+        for announcement in announcements:
+            temp = announcement.toJSON()
+            temp['date_posted'] = temp['date_posted'].isoformat()
+            obj.append(temp)
         return obj
 
     def getCalendarItemsJSON(self) -> list[dict[str, Any]]:
@@ -197,7 +205,7 @@ class MySession():
     def saveState(self) -> str:
         root = {}
         modules = self.getModulesJSON()
-        announcements = self.getAnnouncementsJSON()
+        announcements = self.getAnnouncementsJSONSerialized()
         files = self.getFilesJSON()
         links = self.getLinksJSON()
         music = self.getMusicsJSON()
