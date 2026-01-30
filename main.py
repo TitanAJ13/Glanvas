@@ -531,6 +531,10 @@ def calendar():
     links = sqlSession.getLinksJSON()
     return render_template("calendar.html", links=links)
 
+@app.route("/savestate/")
+def saveCurrentState():
+    return sqlSession.saveState()
+
 @app.route("/page/<id>")
 def page(id):
     pass

@@ -3,6 +3,8 @@ from sqlalchemy.orm import sessionmaker, Session
 from models import Base, Link, Module, Announcement, CalendarItem, FileData, MusicData, Item
 import datetime
 from typing import Any
+from zoneinfo import ZoneInfo
+import json
 
 class MySession():
     def __init__(self, session: Session):
@@ -31,11 +33,32 @@ class MySession():
             obj.append(item.toJSON())
         return obj
 
+    def getFilesJSON(self) -> list[dict[str, Any]]:
+        files = self.session.query(FileData).order_by(FileData.display_name).all()
+        obj = []
+        for item in files:
+            obj.append(item.toJSON())
+        return obj
+
+    def getMusicsJSON(self) -> list[dict[str, Any]]:
+        musics = self.session.query(MusicData).order_by(MusicData.display_name).all()
+        obj = []
+        for item in musics:
+            obj.append(item.toJSON())
+        return obj
+    
+    def getAllItemsJSON(self) -> list[dict[str, Any]]:
+        items = self.session.query(Item).order_by(Item.module_id, Item.position).all()
+        obj = []
+        for item in items:
+            obj.append(item.toJSON())
+        return obj
+
     def getAnnouncementsJSON(self) -> list[dict[str, Any]]:
         announcements = self.session.query(Announcement).order_by(desc(Announcement.date_posted)).all()
         obj = []
         for announcement in announcements:
-            announcement.date_posted = announcement.date_posted.date()
+            announcement.date_posted = announcement.date_posted
             obj.append(announcement.toJSON())
         return obj
 
@@ -170,6 +193,27 @@ class MySession():
     def deleteAnnouncement(self, announcement: Announcement):
         self.session.delete(announcement)
         self.session.commit()
+
+    def saveState(self) -> str:
+        root = {}
+        modules = self.getModulesJSON()
+        announcements = self.getAnnouncementsJSON()
+        files = self.getFilesJSON()
+        links = self.getLinksJSON()
+        music = self.getMusicsJSON()
+        items = self.getAllItemsJSON()
+
+        current = datetime.datetime.now().astimezone(ZoneInfo("America/New_York")).isoformat()
+
+        root['saveDate'] = current
+        root['links'] = links
+        root['announcements'] = announcements
+        root['modules'] = modules
+        root['items'] = items
+        root['files'] = files
+        root['music'] = music
+
+        return json.dumps(root, indent=4)
 
 def generateSQLSession(dbName) -> MySession:
     engine = create_engine("sqlite:///" + dbName)
