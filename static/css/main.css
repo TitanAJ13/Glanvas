@@ -174,6 +174,49 @@ iframe {
     margin-top: 0;
 }
 
+.draggable-link {
+    display: flex;
+    align-items: center;
+}
+
+.draggable-link a {
+    text-overflow: ellipsis;
+    max-width: 90px;
+}
+
+.link-drag-handle {
+    margin-right: 5px;
+    padding: 0;
+    width: 24px;
+    height: 12px;
+    border-color: transparent;
+    cursor: grab;
+    color: #003594;
+    background-color: transparent;
+    background-image: none;
+    box-shadow: none;
+}
+
+.link-drag-handle div {
+    height: 2px;
+    width: 20px;
+    margin-top: 5px;
+    margin-left: 4px;
+    background-color: #c0c3f8;
+}
+
+.link-drag-handle div:first-of-type {
+    margin-top: 0;
+}
+
+.edit-link {
+    border: none;
+    background: none;
+    width: 30px;
+    height: 30px;
+    margin-left: auto;
+}
+
 #path {
     display: flex;
     flex: 1;

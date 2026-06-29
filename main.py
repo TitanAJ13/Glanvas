@@ -1,10 +1,13 @@
 from flask import Flask, render_template, abort, redirect, request, url_for
+from flask import session as ses
 # from sqlalchemy import create_engine, desc
 # from sqlalchemy.orm import sessionmaker
 from models import Base, Link, Module, Announcement, CalendarItem, FileData, MusicData, Item
 import datetime
 from typing import Any
 from session import MySession, generateSQLSession
+from dotenv import load_dotenv
+import os
 
 def error(message):
     return {
@@ -17,7 +20,10 @@ def success():
         'status': 'success'
     }
 
+load_dotenv()
 app = Flask(__name__)
+app.secret_key = os.getenv('SECRET_KEY')
+app.permanent_session_lifetime = datetime.timedelta(minutes=30)
 
 sqlSession = generateSQLSession('data.db')
 
@@ -525,6 +531,52 @@ def music(key):
     else:
         data = data.toJSON()
         return render_template("music.html", header=data['display_name'], url=data['url'], links=sqlSession.getLinksJSON())
+    
+@app.route("/login/", methods=["GET", "POST"])
+def login():
+    if request.method == "GET":
+        if "username" in ses:
+            return redirect(url_for("adminpage"))
+        if "lockout" in ses and datetime.datetime.now(tz=datetime.timezone.utc) - ses["lockout"] > datetime.timedelta(minutes=10):
+            ses.clear()
+        if "failcount" in ses:
+            return render_template("login.html", failed=True, failcount=ses["failcount"])
+        else:
+            return render_template("login.html", failed=False, failcount=0)
+    
+    elif request.method == "POST":
+        username = request.form["user"]
+        password = request.form["pass"]
+        if username == "tony" and password == "twoshoes":
+            ses.clear()
+            ses["username"] = username
+            return redirect(url_for("adminpage"))
+        else:
+            if "failcount" in ses:
+                ses["failcount"] = ses["failcount"] + 1
+            else:
+                ses["failcount"] = 1
+            if ses["failcount"] >= 6: ses["lockout"] = datetime.datetime.now(tz=datetime.timezone.utc)
+            return render_template("login.html", failed=True, failcount=ses["failcount"])
+        
+@app.route("/logout/")
+def logout():
+    ses.clear()
+    return redirect(url_for("home"))
+
+    
+@app.route("/admin/")
+def adminpage():
+    if "username" not in ses:
+        return redirect( url_for("login"))
+    else:
+        links = sqlSession.getLinksJSON()
+        modules = sqlSession.getModulesJSON()
+        for module in modules:
+            module['blocks'] = sqlSession.getItemsJSON(module['id'])
+        announcements = sqlSession.getAnnouncementsJSON()[0:3]
+        calendarItems = sqlSession.getCalendarItemsJSON()
+        return render_template("admin.html", links=links, modules=modules, announcements=announcements, calendarItems=calendarItems)
 
 @app.route("/calendar/")
 def calendar():
@@ -560,6 +612,6 @@ def page(id):
 #     except:
 #         return 'There was a problem deleting that task'
 
-# if __name__ == "__main__":
-#     # app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT",8080))) #for google cloud
-#     app.run(debug=True) #for localhost
+if __name__ == "__main__":
+    # app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT",8080))) #for google cloud
+    app.run(debug=True) #for localhost
