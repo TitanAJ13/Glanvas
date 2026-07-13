@@ -18,6 +18,10 @@
             <li><a link-id="{{ link.id }}" href="{{ url_for(link.url) }}">{{ link.display_name }}</a></li>
         {% elif link.type == 'file' %}
             <li><a link-id="{{ link.id }}" href="{{ url_for('file', key= link.url) }}">{{ link.display_name }}</a></li>
+        {% elif link.type == 'announcement' %}
+            <li><a link-id="{{ link.id }}" href="{{ url_for('announcement', id= link.url) }}">{{ link.display_name }}</a></li>
+        {% elif link.type == 'music' %}
+            <li><a link-id="{{ link.id }}" href="{{ url_for('music', key= link.url) }}">{{ link.display_name }}</a></li>
         {% else %}
             <li><a link-id="{{ link.id }}">Failed</a></li>
         {% endif %}

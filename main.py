@@ -41,12 +41,17 @@ def optionalVar(var: dict[str, Any], item: str):
     except:
         return None
 
-def checkBounds(var: int, name: str, lower: int, upper: int):
-    if (var < lower):
+def checkBounds(vari: int, name: str, lower: int, upper: int):
+    if (vari < lower):
         abort(400, f'`{name}` cannot be smaller than {lower}')
-    elif (var > upper):
+    elif (vari > upper):
         abort(400, f'`{name}` cannot be larger than {upper}')
     
+
+@app.before_request
+def refresh_session():
+    if 'username' in ses:
+        ses.modified = True
 
 @app.route("/")
 def home():
@@ -577,6 +582,22 @@ def adminpage():
         announcements = sqlSession.getAnnouncementsJSON()[0:3]
         calendarItems = sqlSession.getCalendarItemsJSON()
         return render_template("admin.html", links=links, modules=modules, announcements=announcements, calendarItems=calendarItems)
+    
+@app.route("/admin/link/<position>")
+def adminGetLink(position):
+    if "username" not in ses:
+        abort(403)
+    
+    position = int(position)
+    try:
+        links = sqlSession.getLinksJSON()
+        length = len(links)
+        checkBounds(position, 'position', 1, length)
+
+        link = sqlSession.getLink(position)
+        return link.toJSON()
+    except Exception as e:
+        abort(500, e)
 
 @app.route("/calendar/")
 def calendar():

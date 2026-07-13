@@ -1,0 +1,291 @@
+
+.over {
+    border-top: 2px solid white;
+}
+
+.dragging {
+    position:absolute;
+}
+
+.dragging > .link-drag-handle{
+    cursor: grabbing !important;
+}
+
+.draggable-link {
+    display: flex;
+    align-items: center;
+}
+
+.draggable-link a {
+    text-overflow: ellipsis;
+    max-width: 90px;
+}
+
+.link-drag-handle {
+    margin-right: 5px;
+    padding: 0;
+    width: 24px;
+    height: 12px;
+    border-color: transparent;
+    cursor: grab;
+    color: #003594;
+    background-color: transparent;
+    background-image: none;
+    box-shadow: none;
+}
+
+.link-drag-handle div {
+    height: 2px;
+    width: 20px;
+    margin-top: 5px;
+    margin-left: 4px;
+    background-color: #a0bded;
+}
+
+.link-drag-handle div:first-of-type {
+    margin-top: 0;
+}
+
+.edit-link {
+    border: none;
+    background: none;
+    width: 30px;
+    height: 30px;
+    margin-left: auto;
+    cursor: pointer;
+}
+
+#add-link {
+    width: 100%;
+    height: 30px;
+    color: #a0bded;
+    background-color: transparent;
+    border: 2px solid #a0bded;
+    border-radius: 10px;
+    font: inherit;
+    font-size: larger;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.25s;
+}
+
+#add-link:hover {
+    transition: all 0.25s;
+    background-color: black;
+    color: #ffb81c;
+    border: 2px solid #ffb81c;
+}
+
+#overlay {
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    background-color: #000000CC;
+    z-index: 1;
+    align-items: center;
+    top:0;
+}
+
+.dialog {
+    width: 500px;
+    height: fit-content;
+    margin: auto;
+    background: #121212;
+    overflow: clip;
+}
+
+#overlay h3 {
+    background-color: #1536a1;
+    margin: 0;
+    padding: 10px;
+    text-align: center;
+    border: 2px solid white;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+}
+
+#overlay .menu {
+    width: calc(100% - 4px);
+    height: calc(100% - 49px);
+    border: 2px solid #ffb81c;
+    border-top: none;
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
+}
+
+#overlay form {
+    padding: 30px;
+    margin-bottom: 0;
+}
+
+#overlay form label {
+    font-size: large;
+}
+
+#overlay form input[type="text"], #overlay form input[type="url"] {
+    appearance: none;
+    display: inline-block;
+    width: 100%;
+    height: 30px;
+    border-radius: 15px;
+    border: 0.5px solid #767676;
+    padding-left: 15px;
+    padding-right: 15px;
+    margin-top: 10px;
+    background-color: #424344;
+    color: white;
+    font: inherit;
+}
+
+#overlay form select {
+    appearance: base-select;
+    margin-top: 10px;
+    width: 40%;
+    height: 30px;
+    border-radius: 15px;
+    padding-left: 15px;
+    padding-right: 15px;
+    background-color: #424344;
+    color: white;
+    border: 0.5px solid #767676;
+    align-items: center;
+    cursor: pointer;
+    anchor-name: --select-anchor;
+}
+
+#overlay form select:open {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+#overlay form select::picker-icon {
+    transition: rotate 0.25s, translate 0.25s;
+}
+
+#overlay form select:open::picker-icon {
+    transition: rotate 0.25s, translate 0.25s;
+    rotate: 90deg;
+    translate: -2px -1px;
+}
+
+.scope {
+    anchor-scope: --select-anchor;
+}
+
+#overlay form ::picker(select) {
+    appearance: base-select;
+    background-color: rgba(0, 0, 0, 0);
+    container-type: anchored;
+    position: fixed;
+    position-area: bottom center;
+    position-anchor: --select-anchor;
+    position-try-fallbacks: none;
+    border-radius: 0 0 15px 15px;
+    border: 0.5px solid #767676;
+    border-top: none;
+}
+
+#overlay form select option {
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 3px;
+    padding-left: 15px;
+    background-color: #424344;
+    color: white;
+    border-top: 1px solid #767676;
+}
+
+#overlay form select option:first-of-type {
+    border-top: 1px solid white;
+}
+
+#overlay form select option:last-of-type {
+    border-radius: 0 0 14px 14px;
+}
+
+#overlay form select option::checkmark {
+    order: 1;
+    margin-left: auto;
+    padding-right: 11px;
+}
+
+#overlay form select option:hover {
+    background-color: #363636;
+}
+
+/* @container anchored(fallback: flip-block) {
+    
+    #overlay form select:open {
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+    }
+    
+    #overlay form select option:first-of-type {
+        border-radius: 14px 14px 0 0;
+        border-top: none;
+    }
+
+    #overlay form select option:last-of-type {
+        border-bottom: 1px solid white;
+        border-radius: 0;
+    }
+} */
+
+#overlay form input[type="submit"].menuSubmit {
+    height: 30px;
+    width: 80px;
+    border-radius: 15px;
+    border: 0.5px solid white;
+    color: white;
+    appearance: none;
+    font: inherit;
+    align-items: center;
+    float: right;
+    background-color: green;
+    cursor: pointer;
+}
+
+#overlay form input[type="submit"].menuSubmit:hover {
+    background-color: rgb(0, 75, 0);
+}
+
+#overlay form button.menuCancel {
+    height: 30px;
+    width: 80px;
+    border-radius: 15px;
+    border: 0.5px solid white;
+    color: white;
+    appearance: none;
+    font: inherit;
+    align-items: center;
+    background-color: #424344;
+    cursor: pointer;
+    float: left;
+}
+
+#overlay form button.menuDelete {
+    height: 30px;
+    width: 80px;
+    border-radius: 15px;
+    border: 0.5px solid white;
+    color: white;
+    appearance: none;
+    font: inherit;
+    align-items: center;
+    background-color: #bf1010;
+    cursor: pointer;
+}
+
+#overlay form button.menuCancel:hover {
+    background-color: #222424;
+}
+
+#overlay form button.menuDelete:hover {
+    background-color: #941010;
+}
+
+#overlay form div.buttonHolder {
+    text-align: center;
+}

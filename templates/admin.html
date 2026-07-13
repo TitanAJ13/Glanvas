@@ -11,7 +11,7 @@
                     <div></div>
                 </div>
                 <a link-id="{{ link.id }}" href="{{ link.url }}" target="_blank">{{ link.display_name }}</a>
-                <button class="edit-link">
+                <button class="edit-link" type="button" onclick="editLink(this.parentNode)">
                     <img src="{{ url_for('static', filename='images/edit.svg') }}">
                 </button>
             </li>
@@ -22,7 +22,7 @@
                     <div></div>
                 </div>
                 <a link-id="{{ link.id }}" href="{{ url_for('page', id= link.url) }}">{{ link.display_name }}</a>
-                <button class="edit-link">
+                <button class="edit-link" type="button" onclick="editLink(this.parentNode)">
                     <img src="{{ url_for('static', filename='images/edit.svg') }}">
                 </button>
             </li>
@@ -33,7 +33,7 @@
                     <div></div>
                 </div>
                 <a link-id="{{ link.id }}" href="{{ url_for(link.url) }}">{{ link.display_name }}</a>
-                <button class="edit-link">
+                <button class="edit-link" type="button" onclick="editLink(this.parentNode)">
                     <img src="{{ url_for('static', filename='images/edit.svg') }}">
                 </button>
             </li>
@@ -44,7 +44,29 @@
                     <div></div>
                 </div>
                 <a link-id="{{ link.id }}" href="{{ url_for('file', key= link.url) }}">{{ link.display_name }}</a>
-                <button class="edit-link">
+                <button class="edit-link" type="button" onclick="editLink(this.parentNode)">
+                    <img src="{{ url_for('static', filename='images/edit.svg') }}">
+                </button>
+            </li>
+        {% elif link.type == 'announcement' %}
+            <li class="draggable-link">
+                <div class="link-drag-handle">
+                    <div></div>
+                    <div></div>
+                </div>
+                <a link-id="{{ link.id }}" href="{{ url_for('announcement', id= link.url) }}">{{ link.display_name }}</a>
+                <button class="edit-link" type="button" onclick="editLink(this.parentNode)">
+                    <img src="{{ url_for('static', filename='images/edit.svg') }}">
+                </button>
+            </li>
+        {% elif link.type == 'music' %}
+            <li class="draggable-link">
+                <div class="link-drag-handle">
+                    <div></div>
+                    <div></div>
+                </div>
+                <a link-id="{{ link.id }}" href="{{ url_for('music', key= link.url) }}">{{ link.display_name }}</a>
+                <button class="edit-link" type="button" onclick="editLink(this.parentNode)">
                     <img src="{{ url_for('static', filename='images/edit.svg') }}">
                 </button>
             </li>
@@ -52,6 +74,7 @@
             <li><a link-id="{{ link.id }}">Failed</a></li>
         {% endif %}
     {% endfor %}
+    <li><button id="add-link" onclick="addLink()">+</button></li>
 {% endblock %}
 
 {% block right_display %}

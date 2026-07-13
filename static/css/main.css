@@ -52,7 +52,7 @@ body {
 
 a {
     text-decoration: none;
-    color: #c6ccf0;
+    color: #a0bded;
 }
 
 img {
@@ -167,54 +167,11 @@ iframe {
     width: 24px;
     margin-top: 5px;
     margin-left: 4px;
-    background-color: #c0c3f8;
+    background-color: #a0bded;
 }
 
 #sidebar-hamburger div:first-of-type {
     margin-top: 0;
-}
-
-.draggable-link {
-    display: flex;
-    align-items: center;
-}
-
-.draggable-link a {
-    text-overflow: ellipsis;
-    max-width: 90px;
-}
-
-.link-drag-handle {
-    margin-right: 5px;
-    padding: 0;
-    width: 24px;
-    height: 12px;
-    border-color: transparent;
-    cursor: grab;
-    color: #003594;
-    background-color: transparent;
-    background-image: none;
-    box-shadow: none;
-}
-
-.link-drag-handle div {
-    height: 2px;
-    width: 20px;
-    margin-top: 5px;
-    margin-left: 4px;
-    background-color: #c0c3f8;
-}
-
-.link-drag-handle div:first-of-type {
-    margin-top: 0;
-}
-
-.edit-link {
-    border: none;
-    background: none;
-    width: 30px;
-    height: 30px;
-    margin-left: auto;
 }
 
 #path {
@@ -295,7 +252,7 @@ iframe {
     min-width: 1px;
     position: relative;
     box-sizing: border-box;
-    height: calc(100% - 4.5rem);
+    height: max-content;
 }
 
 #sidebar1 {
@@ -838,11 +795,11 @@ iframe {
 }
 
 .module summary {
-    background-color: #222424;
+    background-color: #1536a1;
     border: 1px solid #424344;
     padding: 18px 6px;
     padding-left: 15px;
-    color: #c2cbd1;
+    color: #ffb81c;
     font-weight: bold;
     font-size: 1rem;
     text-overflow: ellipsis;
@@ -886,7 +843,7 @@ iframe {
     margin-top: 2px;
     line-height: 1.3;
     font-weight: bold;
-    color: #fffbd1;
+    color: #a0bded;
     text-decoration: none;
 }
 
@@ -899,6 +856,11 @@ iframe {
     display: inline;
     font-size: 1.125rem;
     margin: 10px 6px;
+}
+
+.module-header {
+    background-color: #222424;
+    color: #ffb81c !important;
 }
 
 .module-header span {
