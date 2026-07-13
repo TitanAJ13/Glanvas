@@ -55,6 +55,38 @@
     cursor: pointer;
 }
 
+.edit-link svg {
+    stroke: #a0bded;
+    vertical-align: middle;
+    transition: 0.25s;
+}
+
+.edit-link:hover svg {
+    stroke: #ffb81c;
+    transition: 0.25s;
+}
+
+#add-link {
+    width: 100%;
+    height: 30px;
+    color: #a0bded;
+    background-color: transparent;
+    border: 2px solid #a0bded;
+    border-radius: 10px;
+    font: inherit;
+    font-size: larger;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.25s;
+}
+
+#add-link:hover {
+    transition: all 0.25s;
+    background-color: black;
+    color: #ffb81c;
+    border: 2px solid #ffb81c;
+}
+
 #overlay {
     position: fixed;
     top: 0;
@@ -66,7 +98,11 @@
     align-items: center;
 }
 
-#main-wrapper.dialog {
+.dialog {
+    width: 500px;
+    height: fit-content;
+    margin: auto;
+    background: #121212;
     overflow: clip;
 }
 
@@ -88,7 +124,7 @@
     border-top-right-radius: 15px;
 }
 
-#overlay div div {
+#overlay .menu {
     width: calc(100% - 4px);
     height: calc(100% - 49px);
     border: 2px solid #ffb81c;
@@ -206,8 +242,30 @@
     align-items: center;
     background-color: #424344;
     cursor: pointer;
+    float: left;
+}
+
+#overlay form button.menuDelete {
+    height: 30px;
+    width: 80px;
+    border-radius: 15px;
+    border: 0.5px solid white;
+    color: white;
+    appearance: none;
+    font: inherit;
+    align-items: center;
+    background-color: #bf1010;
+    cursor: pointer;
 }
 
 #overlay form button.menuCancel:hover {
     background-color: #222424;
+}
+
+#overlay form button.menuDelete:hover {
+    background-color: #941010;
+}
+
+#overlay form div.buttonHolder {
+    text-align: center;
 }

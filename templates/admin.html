@@ -4,75 +4,39 @@
 
 {% block sidebar_links %}
     {% for link in links %}
-        {% if link.type == 'external' %}
-            <li class="draggable-link">
-                <div class="link-drag-handle">
-                    <div></div>
-                    <div></div>
-                </div>
-                <a link-id="{{ link.id }}" href="{{ link.url }}" target="_blank">{{ link.display_name }}</a>
-                <button class="edit-link" type="button" onclick="editLink(this.parentNode)">
-                    <img src="{{ url_for('static', filename='images/edit.svg') }}">
-                </button>
-            </li>
-        {% elif link.type == 'page' %}
-            <li class="draggable-link">
-                <div class="link-drag-handle">
-                    <div></div>
-                    <div></div>
-                </div>
-                <a link-id="{{ link.id }}" href="{{ url_for('page', id= link.url) }}">{{ link.display_name }}</a>
-                <button class="edit-link" type="button" onclick="editLink(this.parentNode)">
-                    <img src="{{ url_for('static', filename='images/edit.svg') }}">
-                </button>
-            </li>
-        {% elif link.type == 'internal' %}
-            <li class="draggable-link">
-                <div class="link-drag-handle">
-                    <div></div>
-                    <div></div>
-                </div>
-                <a link-id="{{ link.id }}" href="{{ url_for(link.url) }}">{{ link.display_name }}</a>
-                <button class="edit-link" type="button" onclick="editLink(this.parentNode)">
-                    <img src="{{ url_for('static', filename='images/edit.svg') }}">
-                </button>
-            </li>
-        {% elif link.type == 'file' %}
-            <li class="draggable-link">
-                <div class="link-drag-handle">
-                    <div></div>
-                    <div></div>
-                </div>
-                <a link-id="{{ link.id }}" href="{{ url_for('file', key= link.url) }}">{{ link.display_name }}</a>
-                <button class="edit-link" type="button" onclick="editLink(this.parentNode)">
-                    <img src="{{ url_for('static', filename='images/edit.svg') }}">
-                </button>
-            </li>
-        {% elif link.type == 'announcement' %}
-            <li class="draggable-link">
-                <div class="link-drag-handle">
-                    <div></div>
-                    <div></div>
-                </div>
-                <a link-id="{{ link.id }}" href="{{ url_for('announcement', id= link.url) }}">{{ link.display_name }}</a>
-                <button class="edit-link" type="button" onclick="editLink(this.parentNode)">
-                    <img src="{{ url_for('static', filename='images/edit.svg') }}">
-                </button>
-            </li>
-        {% elif link.type == 'music' %}
-            <li class="draggable-link">
-                <div class="link-drag-handle">
-                    <div></div>
-                    <div></div>
-                </div>
-                <a link-id="{{ link.id }}" href="{{ url_for('music', key= link.url) }}">{{ link.display_name }}</a>
-                <button class="edit-link" type="button" onclick="editLink(this.parentNode)">
-                    <img src="{{ url_for('static', filename='images/edit.svg') }}">
-                </button>
-            </li>
-        {% else %}
-            <li><a link-id="{{ link.id }}">Failed</a></li>
-        {% endif %}
+        <li class="draggable-link">
+            <div class="link-drag-handle">
+                <div></div>
+                <div></div>
+            </div>
+            {% if link.type == 'external' %}
+            <a link-id="{{ link.id }}" href="{{ link.url }}" target="_blank">{{ link.display_name }}</a>
+            {% elif link.type == 'page' %}
+            <a link-id="{{ link.id }}" href="{{ url_for('page', id= link.url) }}">{{ link.display_name }}</a>
+            {% elif link.type == 'internal' %}
+            <a link-id="{{ link.id }}" href="{{ url_for(link.url) }}">{{ link.display_name }}</a>
+            {% elif link.type == 'file' %}
+            <a link-id="{{ link.id }}" href="{{ url_for('file', key= link.url) }}">{{ link.display_name }}</a>
+            {% elif link.type == 'announcement' %}
+            <a link-id="{{ link.id }}" href="{{ url_for('announcement', id= link.url) }}">{{ link.display_name }}</a>
+            {% elif link.type == 'music' %}
+            <a link-id="{{ link.id }}" href="{{ url_for('music', key= link.url) }}">{{ link.display_name }}</a>
+            {% else %}
+            <a link-id="{{ link.id }}">Failed</a>
+            {% endif %}
+            <button class="edit-link" type="button" onclick="editLink(this.parentNode)">
+                <svg xmlns="http://www.w3.org/2000/svg" x="0" y="0" viewBox="0 0 400 400">
+                    <g>
+                        <path id="svg_6" d="m167.78745,30.3895c0,0 -68.70836,-0.74997 -72,-0.66667c-12.24984,0.04169 -30.66667,6.66667 -49.33334,23.33334c-18.66666,16.66666 -27.08334,39.4587 -27.33333,49.33333c-0.37499,17.87432 -1.33333,205.33333 -1.33333,205.33333c-0.62498,11.62456 8,34 26,50.66667c18,16.66667 46,22.66667 54.66666,22.66667c96,0 172.79159,-0.54175 192,-1.33334c19.20841,-0.79159 46.66666,-16.99999 58,-28.66666c11.33334,-11.66667 19.74985,-27.83362 19.87485,-36.04181c0.20834,-15.54152 0.79182,-83.95819 0.79182,-83.95819" opacity="NaN" stroke-width="31" fill="none"/>
+                        <g id="svg_14">
+                            <path id="svg_8" d="m124.12078,272.3895c0,0 64.99519,-7.84425 64.99519,-7.84425c20.17092,-1.12061 170.33221,-171.45282 170.33221,-171.45282c0,0 43.70366,-34.73881 10.08546,-68.35701c-29.13577,-27.45486 -66.11579,16.2488 -66.11579,16.2488c0,0 -161.36736,159.12615 -161.92766,159.12615c-16.8091,12.32667 -17.3694,72.27913 -17.3694,72.27913z" opacity="NaN" stroke-width="30" fill="none"/>
+                            <path id="svg_9" d="m143.1711,193.94704c0,0 56.03033,61.63337 56.03033,61.63337" opacity="NaN" stroke-width="20" fill="none"/>
+                            <path id="svg_10" d="m309.02088,32.01937c0,0 56.03034,61.63336 56.03034,61.63336" opacity="NaN" stroke-width="20" fill="none"/>
+                        </g>
+                    </g>
+                </svg>
+            </button>
+        </li>
     {% endfor %}
     <li><button id="add-link" onclick="addLink()">+</button></li>
 {% endblock %}

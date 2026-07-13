@@ -55,6 +55,17 @@
     cursor: pointer;
 }
 
+.edit-link svg {
+    stroke: #a0bded;
+    vertical-align: middle;
+    transition: 0.25s;
+}
+
+.edit-link:hover svg {
+    stroke: #ffb81c;
+    transition: 0.25s;
+}
+
 #add-link {
     width: 100%;
     height: 30px;

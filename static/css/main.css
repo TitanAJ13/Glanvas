@@ -252,7 +252,8 @@ iframe {
     min-width: 1px;
     position: relative;
     box-sizing: border-box;
-    height: max-content;
+    min-height: calc(100% - 4.5rem);
+    height: auto;
 }
 
 #sidebar1 {
@@ -798,14 +799,34 @@ iframe {
     background-color: #1536a1;
     border: 1px solid #424344;
     padding: 18px 6px;
-    padding-left: 15px;
+    padding-left: 35px;
     color: #ffb81c;
     font-weight: bold;
-    font-size: 1rem;
+    font-size: 20px;
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
     cursor: pointer;
+    list-style-type: none;
+    position: relative;
+}
+
+.module details[open] summary::after {
+    content: '▼';
+    font-size: 18px;
+    position: absolute;
+    left: 11px;
+    transition: 0.25s;
+    rotate: 0deg;
+}
+
+.module summary::after {
+    content: '▼';
+    font-size: 18px;
+    position: absolute;
+    left: 11px;
+    transition: 0.25s;
+    rotate: -90deg;
 }
 
 .module-items {

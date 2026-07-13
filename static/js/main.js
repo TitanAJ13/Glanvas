@@ -10,14 +10,35 @@ function setup() {
     markActiveLink();
 
     mediaChanged();
+
+    generateTitle();
+}
+
+function generateTitle() {
+    let full = document.location.pathname;
+    let parts = full.split('/');
+    let title = '';
+
+    if (parts.length == 2) {
+        title = 'Home';
+    }
+    else if (parts[2].length == 0) {
+        title = parts[1].charAt(0).toUpperCase() + parts[1].slice(1);
+    }
+    else {
+        title = document.getElementById('title').innerText;
+    }
+
+    document.title = `Glanvas | ${title}`;
+
 }
 
 function markActiveLink() {
-    full = document.location.href
-    partial = full.split("/")[3]
+    let full = document.location.href
+    let partial = full.split("/")[3]
 
-    links = document.querySelectorAll("#sidebar2>ul>li>a");
-    found = false;
+    let links = document.querySelectorAll("#sidebar2>ul>li>a");
+    let found = false;
 
     links.forEach((value) => {
         if (value.href == full){
