@@ -19,13 +19,14 @@
 .draggable-link a {
     text-overflow: ellipsis;
     max-width: calc(100% - 75px);
+    margin-left: 10px;
+    padding-left: 0;
 }
 
 .link-drag-handle {
-    margin-right: 5px;
-    padding: 0;
-    width: 24px;
-    height: 12px;
+    padding: 5px;
+    width: 30px;
+    height: 30px;
     border-color: transparent;
     cursor: grab;
     color: #003594;
@@ -38,12 +39,12 @@
     height: 2px;
     width: 20px;
     margin-top: 5px;
-    margin-left: 4px;
+    margin-left: 5px;
     background-color: #a0bded;
 }
 
 .link-drag-handle div:first-of-type {
-    margin-top: 0;
+    margin-top: 10;
 }
 
 .edit-link {
@@ -53,6 +54,7 @@
     height: 30px;
     margin-left: auto;
     cursor: pointer;
+    padding: 2px;
 }
 
 .edit-link svg {

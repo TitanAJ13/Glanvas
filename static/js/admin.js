@@ -24,6 +24,8 @@ function linkDragAndDrop() {
 
             // let pos2 = e.clientY;
             let offset = e.clientY - dragged_link.getBoundingClientRect().top;
+
+            document.addEventListener("touchmove", preventTouchScroll, {passive: false});
             
             document.onpointermove = (e2) => {
                 e2.preventDefault();
@@ -85,6 +87,7 @@ function linkDragAndDrop() {
                 e2.preventDefault();
                 document.onpointermove = null;
                 document.onpointerup = null;
+                document.removeEventListener("touchmove", preventTouchScroll,{passive: false});
                 dragged_link.classList.remove("dragging");
                 dragged_link.removeAttribute("style");
 
@@ -105,6 +108,10 @@ function linkDragAndDrop() {
         }
             // getLinkListTarget(e.target).setAttribute('draggable', true);
     });
+}
+
+function preventTouchScroll(event) {
+    event.preventDefault();
 }
 
 function getLinkListTarget(element) {

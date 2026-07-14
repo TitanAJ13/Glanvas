@@ -259,6 +259,22 @@ iframe {
     background-color: #0e2267;
 }
 
+#mobile-login-button {
+    text-align: center;
+    color: white;
+    padding: 10px;
+    width: 62.53px;
+}
+
+#mobile-login-button p {
+    margin: 0;
+    margin-top: 5px;
+}
+
+#mobile-login-button:hover {
+    background-color: #0e2267;
+}
+
 #right-of-path {
     display: flex;
     flex: 1;

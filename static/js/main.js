@@ -74,13 +74,22 @@ function sidebar_toggle() {
         sidebar.style.display = "block";
         hamburgerButton.setAttribute('title', 'Hide Navigation Menu');
         if (!isMobile.matches)
-          main.setAttribute('style','margin-left: 192px;');
+            main.setAttribute('style','margin-left: 192px;');
+        else {
+            document.getElementById('mobile-login-button').removeAttribute('style');
+            document.getElementById('mobile-cal-button').style.display = "none";
+
+        }
     }
     else {
         sidebar.style.display = "none";
         hamburgerButton.setAttribute('title', 'Show Navigation Menu');
         if (!isMobile.matches)
-          main.setAttribute('style','margin-left: 0px;');
+            main.setAttribute('style','margin-left: 0px;');
+        else {
+            document.getElementById('mobile-login-button').style.display = "none";
+            document.getElementById('mobile-cal-button').removeAttribute('style');
+        }
     }
 }
 
