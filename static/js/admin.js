@@ -15,7 +15,6 @@ function linkDragAndDrop() {
             dragged_link = getLinkListTarget(e.target);
 
             let position1 = [...document.querySelector('#sidebar2>ul').children].indexOf(dragged_link) + 1;
-            console.log(position1);
 
             spacer = document.createElement('LI');
             spacer.style.height = dragged_link.getBoundingClientRect().height - 2;
@@ -83,7 +82,7 @@ function linkDragAndDrop() {
                 }
             }
 
-            document.onpointerup = (e2) => {
+            document.onpointerup = async (e2) => {
                 e2.preventDefault();
                 document.onpointermove = null;
                 document.onpointerup = null;
@@ -95,10 +94,25 @@ function linkDragAndDrop() {
                 if (last_over) {
                     let position2 = [...document.querySelectorAll('#sidebar2>ul>li:not(.spacer)')].indexOf(last_over) + 1;
                     if (position2 > position1) position2--;
-                    console.log(position2);
-                    
-                    last_over.classList.remove('over');
-                    link_list.insertBefore(dragged_link, last_over);
+
+                    if (position2 != position1) {
+                        let obj = {
+                            position: position1,
+                            position2: position2
+                        };
+
+                        try {
+                            let response = await putData('/links/', obj);
+                            if (response) {
+                                last_over.classList.remove('over');
+                                link_list.insertBefore(dragged_link, last_over);
+                                // location.reload();
+                            }
+                        }
+                        catch (error) {
+                            alert(`Server Error: ${error}`);
+                        }
+                    }
                 }
                 
             
@@ -236,7 +250,6 @@ async function editLink(item) {
         return;
     }
     let link = response.link;
-    console.log(link);
 
     let form = linkMenu('Edit Link',link.display_name, link.type, link.url, true);
 
@@ -244,7 +257,6 @@ async function editLink(item) {
         event.preventDefault();
 
         const data = new FormData(form);
-        console.log(Object.fromEntries(data.entries()));
         let obj = {
             position: position,
             changes: {
@@ -259,7 +271,10 @@ async function editLink(item) {
             if (response) {
                 window.prevent = false;
                 document.body.removeChild(overlay);
-                location.reload();
+                // location.reload();
+
+                item.querySelector('a').innerText = obj.changes.title;
+                item.querySelector('a').href = response.extra.href;
             }
         }
         catch (error) {
@@ -278,7 +293,8 @@ async function editLink(item) {
             if (response){
                 window.prevent = false;
                 document.body.removeChild(overlay);
-                location.reload();
+                // location.reload();
+                item.parentNode.removeChild(item);
             }
         }
         catch (error) {
@@ -297,7 +313,6 @@ async function addLink() {
         event.preventDefault();
 
         const data = new FormData(form);
-        console.log(Object.fromEntries(data.entries()));
         let obj = {
             position: null,
             display_name: data.get('title'),
@@ -310,7 +325,30 @@ async function addLink() {
             if (response) {
                 window.prevent = false;
                 document.body.removeChild(overlay);
-                location.reload();
+                // location.reload();
+                let newLink = document.createElement('li');
+                newLink.classList.add('draggable-link');
+                newLink.innerHTML = `
+                <div class="link-drag-handle">
+                    <div></div>
+                    <div></div>
+                </div>
+                
+                <a link-id="${response.extra.id}" href="${response.extra.href}">${obj.display_name}</a>
+                
+                <button class="edit-link" type="button" onclick="editLink(this.parentNode)">
+                    <svg xmlns="http://www.w3.org/2000/svg" x="0" y="0" viewBox="0 0 400 400">
+                        <g>
+                            <path id="svg_6" d="m167.78745,30.3895c0,0 -68.70836,-0.74997 -72,-0.66667c-12.24984,0.04169 -30.66667,6.66667 -49.33334,23.33334c-18.66666,16.66666 -27.08334,39.4587 -27.33333,49.33333c-0.37499,17.87432 -1.33333,205.33333 -1.33333,205.33333c-0.62498,11.62456 8,34 26,50.66667c18,16.66667 46,22.66667 54.66666,22.66667c96,0 172.79159,-0.54175 192,-1.33334c19.20841,-0.79159 46.66666,-16.99999 58,-28.66666c11.33334,-11.66667 19.74985,-27.83362 19.87485,-36.04181c0.20834,-15.54152 0.79182,-83.95819 0.79182,-83.95819" opacity="NaN" stroke-width="31" fill="none"></path>
+                            <g id="svg_14">
+                                <path id="svg_8" d="m124.12078,272.3895c0,0 64.99519,-7.84425 64.99519,-7.84425c20.17092,-1.12061 170.33221,-171.45282 170.33221,-171.45282c0,0 43.70366,-34.73881 10.08546,-68.35701c-29.13577,-27.45486 -66.11579,16.2488 -66.11579,16.2488c0,0 -161.36736,159.12615 -161.92766,159.12615c-16.8091,12.32667 -17.3694,72.27913 -17.3694,72.27913z" opacity="NaN" stroke-width="30" fill="none"></path>
+                                <path id="svg_9" d="m143.1711,193.94704c0,0 56.03033,61.63337 56.03033,61.63337" opacity="NaN" stroke-width="20" fill="none"></path>
+                                <path id="svg_10" d="m309.02088,32.01937c0,0 56.03034,61.63336 56.03034,61.63336" opacity="NaN" stroke-width="20" fill="none"></path>
+                            </g>
+                        </g>
+                    </svg>
+                </button>`
+                document.querySelector('#sidebar2>ul').insertBefore(newLink, document.querySelector('#sidebar2>ul>li:last-of-type'));
             }
         }
         catch (error) {
@@ -371,6 +409,27 @@ async function postData(url, data) {
     try {
         const response = await fetch(url, {
         method: 'POST', // Specify the method as POST
+        headers: {
+            'Content-Type': 'application/json', // Indicate JSON data
+        },
+        body: JSON.stringify(data), // Convert data to JSON string
+        });
+
+        if (!response.ok) {
+        throw new Error(`${response.status}: ${response.statusText}`);
+        }
+
+        const responseData = await response.json(); // Parse the response as JSON
+        return responseData;
+    } catch (error) {
+        throw error; // Re-throw the error for further handling
+    }
+}
+
+async function putData(url, data) {
+    try {
+        const response = await fetch(url, {
+        method: 'PUT', // Specify the method as POST
         headers: {
             'Content-Type': 'application/json', // Indicate JSON data
         },

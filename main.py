@@ -15,9 +15,10 @@ def error(message):
         'message': message
     }
 
-def success():
+def success(obj: dict[str, Any] = None):
     return {
-        'status': 'success'
+        'status': 'success',
+        'extra': obj
     }
 
 load_dotenv()
@@ -150,6 +151,15 @@ def modules():
             abort(500, e)
 
     
+def formatLink(type: str, url: str) -> str:
+    if (type == 'internal'):
+        return url_for(url)
+    if (type == 'external'):
+        return url
+    if (type == 'announcement'):
+        return url_for('announcement', id=url)
+    
+    return url_for(type, key=url)
 
 @app.route("/links/", methods=["POST","PATCH","DELETE","PUT"])
 def links():
@@ -172,7 +182,7 @@ def links():
         try:
             linkObj = Link(position = position, display_name = title, url = url, type=type)
             sqlSession.addLink(linkObj)
-            return success()
+            return success({'id': linkObj.id, 'href': formatLink(type, url)})
         except Exception as e:
             abort(500, e)
 
@@ -210,7 +220,7 @@ def links():
             if (url is not None):
                 linkObj.url = url
             sqlSession.session.commit()
-            return success()
+            return success({'href': formatLink(linkObj.type, linkObj.url)})
         except Exception as e:
             abort(500, e)
 
@@ -608,8 +618,8 @@ def calendar():
 def savestate():
     return sqlSession.saveState()
 
-@app.route("/page/<id>")
-def page(id):
+@app.route("/page/<key>")
+def page(key):
     pass
 
 # @app.route("/kitchen/")
