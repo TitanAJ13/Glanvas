@@ -897,9 +897,13 @@ iframe {
 }
 
 .module-music span {
-    background-image: url("../images/Page.svg")
+    background-image: url("../images/Music.svg")
 }
 
 .module-page span {
     background-image: url("../images/Page.svg")
+}
+
+.module-announcement span {
+    background-image: url("../images/Announcement.svg")
 }

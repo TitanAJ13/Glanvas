@@ -154,7 +154,7 @@ def modules():
 def formatLink(type: str, url: str) -> str:
     if (type == 'internal'):
         return url_for(url)
-    if (type == 'external'):
+    if (type == 'external' or type == 'link'):
         return url
     if (type == 'announcement'):
         return url_for('announcement', id=url)
@@ -273,6 +273,8 @@ def items():
         try:
             itemObj = Item(position = position, display = title, url = url, type=type, module_id=moduleObj.id, hidden=visibility)
             sqlSession.addItem(itemObj)
+            if (itemObj.type != 'header'):
+                return success({'href': formatLink(itemObj.type, itemObj.url)})
             return success()
         except Exception as e:
             abort(500, e)
@@ -311,6 +313,8 @@ def items():
             if (visibility is not None):
                 itemObj.hidden = visibility
             sqlSession.session.commit()
+            if (itemObj.type != 'header'):
+                return success({'href': formatLink(itemObj.type, itemObj.url)})
             return success()
         except Exception as e:
             abort(500, e)
@@ -600,12 +604,115 @@ def adminGetLink(position):
     
     position = int(position)
     try:
-        links = sqlSession.getLinksJSON()
-        length = len(links)
-        checkBounds(position, 'position', 1, length)
-
         link = sqlSession.getLink(position)
         return link.toJSON()
+    except Exception as e:
+        abort(500, e)
+    
+@app.route("/admin/item/<modulepos>/<position>")
+def adminGetItem(modulepos, position):
+    if "username" not in ses:
+        abort(403)
+    
+    modulepos = int(modulepos)
+    position = int(position)
+    try:
+        item = sqlSession.getItem(modulepos, position)
+        return item.toJSON()
+    except Exception as e:
+        abort(500, e)
+    
+@app.route("/admin/announcement/<id>")
+def adminGetAnnouncement(id: str):
+    if "username" not in ses:
+        abort(403)
+    
+    if (id != 'all'):
+        try:
+            announcement = sqlSession.getAnnouncement(id)
+            return announcement.toJSON()
+        except Exception as e:
+            abort(500, e)
+    else:
+        try:
+            announcements = sqlSession.getAnnouncementsJSON()
+            for announcement in announcements:
+                del announcement['content']
+                del announcement['date_posted']
+                del announcement['author']
+            return announcements
+        except Exception as e:
+            abort(500, e)
+    
+@app.route("/admin/file/<key>")
+def adminGetFile(key: str):
+    if "username" not in ses:
+        abort(403)
+    
+    if (key != 'all'):
+        try:
+            file = sqlSession.getFile(key)
+            return file.toJSON()
+        except Exception as e:
+            abort(500, e)
+    else:
+        try:
+            return sqlSession.getFilesJSON()
+        except Exception as e:
+            abort(500, e)
+    
+@app.route("/admin/music/<key>")
+def adminGetMusic(key: str):
+    if "username" not in ses:
+        abort(403)
+    
+    if (key != 'all'):
+        try:
+            music = sqlSession.getMusic(key)
+            return music.toJSON()
+        except Exception as e:
+            abort(500, e)
+    else:
+        try:
+            return sqlSession.getMusicsJSON()
+        except Exception as e:
+            abort(500, e)
+    
+@app.route("/admin/page/<key>")
+def adminGetPage(key: str):
+    if "username" not in ses:
+        abort(403)
+    
+    if (key != 'all'):
+        try:
+            # music = sqlSession.getMusic(key)
+            # return music.toJSON()
+            return {}
+        except Exception as e:
+            abort(500, e)
+    else:
+        try:
+            # return sqlSession.getMusicsJSON()
+            return []
+        except Exception as e:
+            abort(500, e)
+    
+@app.route("/admin/internal/all")
+def adminGetInternal():
+    if "username" not in ses:
+        abort(403)
+    
+    try:
+        obj = []
+        for rule in app.url_map.iter_rules():
+            if ('GET' in rule.methods and len(rule.defaults if rule.defaults is not None else ()) >= len(rule.arguments if rule.arguments is not None else ())):
+                url = rule.rule.split('/')
+                if len(url) > 3: continue
+
+                name = url[1].capitalize()
+                if len(url) < 3: name = 'Home'
+                obj.append({'key': rule.endpoint, 'display_name': name})
+        return obj
     except Exception as e:
         abort(500, e)
 

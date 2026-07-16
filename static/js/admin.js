@@ -3,6 +3,7 @@ window.prevent = false;
 
 function adminsetup() {
     linkDragAndDrop();
+    itemDragAndDrop();
 }
 
 function linkDragAndDrop() {
@@ -104,7 +105,6 @@ function linkDragAndDrop() {
                         try {
                             let response = await putData('/links/', obj);
                             if (response) {
-                                last_over.classList.remove('over');
                                 link_list.insertBefore(dragged_link, last_over);
                                 // location.reload();
                             }
@@ -113,6 +113,7 @@ function linkDragAndDrop() {
                             alert(`Server Error: ${error}`);
                         }
                     }
+                    last_over.classList.remove('over');
                 }
                 
             
@@ -135,7 +136,7 @@ function getLinkListTarget(element) {
     else return element.parentNode.parentNode;
 }
 
-function linkMenu(title, display_name, type, url, hasDelete) {
+async function linkMenu(title, display_name, type, url, hasDelete) {
     let overlay = document.createElement("div");
     overlay.id = 'overlay';
     overlay.innerHTML = `
@@ -157,18 +158,15 @@ function linkMenu(title, display_name, type, url, hasDelete) {
                     </select>
                 </div><br><br>
                 <div>
-                    <label id="labelURL1" for="linkURL1" ${(type == 'internal'? '': 'style="display: none;" disabled')}>URL:</label>
-                    <label id="labelURL2" for="linkURL2" ${(type == 'internal'? 'style="display: none;" disabled': '')}>${(type == 'announcement'? 'ID:': 'Path:')}</label>
+                    <label id="labelURL1" for="linkURL1" ${(type != 'external')? '': 'style="display: none;" disabled'}>Name:</label>
+                    <label id="labelURL2" for="linkURL2" ${(type != 'external')? 'style="display: none;" disabled': ''}>URL:</label>
                 </div>
                 <div>
                     <div class="scope">
-                        <select id="linkURL1" name="url1" ${(type == 'internal')? 'required': 'style="display: none;" disabled'}>
-                            <option value="home"${(url == 'home')? ' selected=""': ''}>Home</option>
-                            <option value="modules"${(url == 'modules')? ' selected=""': ''}>Modules</option>
-                            <option value="announcements"${(url == 'announcements')? ' selected=""': ''}>Announcements</option>
+                        <select class="big-select" id="linkURL1" name="url1" ${(type != 'external')? 'required': 'style="display: none;" disabled'}>
                         </select>
                     </div>
-                    <input type="${(type == 'external')? 'url': 'text'}" id="linkURL2" name="url2" placeholder="${url}" value="${url}" ${(type == 'internal')? 'style="display: none;" disabled': 'required'}>
+                    <input type="url" id="linkURL2" name="url2" placeholder="${url}" value="${url}" ${(type != 'external')? 'style="display: none;" disabled': 'required'}>
                 </div>
                 <br><br><br>
                 <div class="buttonHolder">
@@ -183,13 +181,13 @@ function linkMenu(title, display_name, type, url, hasDelete) {
     document.body.appendChild(overlay);
 
     overlay.querySelectorAll('#linkType > option').forEach((element) => {
-        element.addEventListener('pointerup', (event) => {
+        element.addEventListener('pointerup', async (event) => {
             let urlSelect = overlay.querySelector('#linkURL1');
             let label1 = overlay.querySelector('#labelURL1');
             let url2 = overlay.querySelector('#linkURL2');
             let label2 = overlay.querySelector('#labelURL2');
 
-            if (element.value == 'internal') {
+            if (element.value != 'external') {
                 urlSelect.setAttribute('required', '');
                 urlSelect.removeAttribute('style');
                 urlSelect.removeAttribute('disabled');
@@ -199,6 +197,14 @@ function linkMenu(title, display_name, type, url, hasDelete) {
                 url2.setAttribute('disabled', '');
                 url2.style.display = 'none';
                 label2.style.display = 'none';
+
+                let response = await getOptions(element.value);
+                let newoptions = '';
+                response.options.forEach((obj) => {
+                    newoptions = newoptions + `\n<option value="${obj.id ?? obj.key}">${obj.title ?? obj.display_name}</option>`
+                })
+
+                urlSelect.innerHTML = newoptions;
             }
             else {
                 urlSelect.removeAttribute('required');
@@ -210,16 +216,6 @@ function linkMenu(title, display_name, type, url, hasDelete) {
                 url2.removeAttribute('disabled');
                 url2.removeAttribute('style');
                 label2.removeAttribute('style');
-
-                if (element.value == 'external') {
-                    label2.innerText = "URL:";
-                    url2.type = "url";
-                }
-                else {
-                    url2.type = 'text';
-                    if (element.value == 'announcement') label2.innerText = "ID:";
-                    else label2.innerText = "Path:";
-                }
             }
         })
     })
@@ -230,6 +226,16 @@ function linkMenu(title, display_name, type, url, hasDelete) {
         window.prevent = false;
         document.body.removeChild(overlay);
     })
+
+    if (type != 'external') {
+        let response = await getOptions(type);
+        let newoptions = '';
+        response.options.forEach((obj) => {
+            newoptions = newoptions + `\n<option value="${obj.id ?? obj.key}" ${(url == (obj.id ?? obj.key))? 'selected=""': ''}>${obj.title ?? obj.display_name}</option>`
+        })
+    
+        form.querySelector('#linkURL1').innerHTML = newoptions;
+    }
 
     window.prevent = true;
     return form;
@@ -251,7 +257,7 @@ async function editLink(item) {
     }
     let link = response.link;
 
-    let form = linkMenu('Edit Link',link.display_name, link.type, link.url, true);
+    let form = await linkMenu('Edit Link',link.display_name, link.type, link.url, true);
 
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
@@ -308,7 +314,7 @@ async function addLink() {
 
     if (window.prevent) return;
 
-    let form = linkMenu('Create New Link', 'New Link', 'external', '', false);
+    let form = await linkMenu('Create New Link', 'New Link', 'external', '', false);
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
 
@@ -374,6 +380,483 @@ async function getLink(position) {
         const obj = {
             'status': 'success',
             'link': responseData
+        }
+        return obj;
+    } catch (error) {
+        const obj = {
+            'status': 'error',
+            'error': error
+        }
+    }
+}
+
+function itemDragAndDrop() {
+    let item_lists = [...document.querySelectorAll('.module-items')];
+    let dragged_item = null;
+    let spacer = null;
+    item_lists.forEach( (item_list) => {item_list.addEventListener("pointerdown", (e) => {
+        if (e.button == 0 && e.target.tagName == 'DIV') {
+            e.preventDefault();
+            dragged_item = getItemListTarget(e.target);
+
+            let position1 = [...item_list.querySelectorAll('.draggable-item')].indexOf(dragged_item) + 1;
+
+            spacer = document.createElement('LI');
+            spacer.style.height = dragged_item.getBoundingClientRect().height - 2;
+            spacer.classList.add('spacer');
+            let spaceInserted = false;
+
+            // let pos2 = e.clientY;
+            let offset = e.clientY - dragged_item.getBoundingClientRect().top;
+
+            document.addEventListener("touchmove", preventTouchScroll, {passive: false});
+            
+            document.onpointermove = (e2) => {
+                e2.preventDefault();
+                if (!dragged_item.classList.contains("dragging")) {
+                    dragged_item.style.width = dragged_item.getBoundingClientRect().width;
+                    dragged_item.classList.add("dragging");
+                }
+                
+                // let pos1 = pos2 - e2.clientY;
+                // dragged_link.style.top = Math.min(Math.max(link_list.offsetTop, dragged_link.offsetTop - pos1), link_list.lastElementChild.offsetTop);
+                // if (link_list.offsetTop <= dragged_link.offsetTop - pos1 && dragged_link.offsetTop - pos1 <= link_list.lastElementChild.offsetTop) {
+                //     pos2 = e2.clientY;
+
+                // }
+                dragged_item.style.top = Math.min(Math.max(item_list.parentElement.offsetTop, e2.clientY - offset + item_list.offsetTop - item_list.getBoundingClientRect().top), item_list.lastElementChild.offsetTop - dragged_item.offsetHeight);
+                if (!spaceInserted) {
+                    item_list.insertBefore(spacer, dragged_item);
+                    spaceInserted = true;
+                }
+
+                let draggables = [...item_list.querySelectorAll('li.draggable-item:not(.dragging)')];
+                let closestItem = null;
+                let closestOffset = Number.NEGATIVE_INFINITY;
+
+                for (let i = 0; i < draggables.length; i++) {
+                    let box = draggables[i].getBoundingClientRect();
+                    let offset = e2.clientY - box.top - box.height / 2;
+                    if (offset < 0 && offset > closestOffset) {
+                        closestItem = draggables[i].previousElementSibling;
+                        closestOffset = offset;
+                    }
+                }
+
+                let last_over = item_list.querySelector('li.over');
+
+                if (closestItem) {
+                    if (last_over && last_over != closestItem) {
+                        last_over.classList.remove('over');
+                        closestItem.classList.add('over');
+                    }
+                    else if (!last_over) {
+                        closestItem.classList.add('over');
+                    }
+                    // link_list.insertBefore(dragged_link, closestLink);
+                }
+                else {
+                    if (last_over && last_over != item_list.lastElementChild) {
+                        last_over.classList.remove('over');
+                        item_list.lastElementChild.classList.add('over');
+                    }
+                    if (!last_over) {
+                        item_list.lastElementChild.classList.add('over');
+                    }
+                    // link_list.appendChild(dragged_link);
+                }
+            }
+
+            document.onpointerup = async (e2) => {
+                e2.preventDefault();
+                document.onpointermove = null;
+                document.onpointerup = null;
+                document.removeEventListener("touchmove", preventTouchScroll,{passive: false});
+                dragged_item.classList.remove("dragging");
+                dragged_item.removeAttribute("style");
+
+                let last_over = item_list.querySelector('li.over');
+                if (last_over) {
+                    let position2 = [...item_list.querySelectorAll('li.add-item')].indexOf(last_over) + 1;
+                    if (position2 > position1) position2--;
+
+                    if (position2 != position1) {
+                        let obj = {
+                            moduleposition: getModulePos(dragged_item),
+                            position: position1,
+                            position2: position2
+                        };
+
+                        try {
+                            let response = await putData('/items/', obj);
+                            if (response) {
+                                // location.reload();
+                                let afterButton = dragged_item.nextElementSibling;
+                                item_list.insertBefore(afterButton, last_over);
+                                item_list.insertBefore(dragged_item, last_over);
+                            }
+                        }
+                        catch (error) {
+                            alert(`Server Error: ${error}`);
+                        }
+                    }
+                    last_over.classList.remove('over');
+                }
+                
+            
+                dragged_item = null;
+                if (spaceInserted) item_list.removeChild(spacer);
+            }
+        }
+            // getLinkListTarget(e.target).setAttribute('draggable', true);
+    });});
+}
+
+function getItemListTarget(element) {
+    const classlist = element.classList;
+    if (classlist.contains('draggable-item')) return element;
+    else if (classlist.contains('item-drag-handle') || classlist.contains('edit-item') || ['A', 'SPAN', 'H3', 'INPUT'].includes(element.tagName)) return element.parentNode;
+    else return element.parentNode.parentNode;
+}
+
+function getModulePos(item) {
+    let modulelist = [...document.getElementById('modules').querySelectorAll('div.module')];
+    return modulelist.indexOf(item.parentElement.parentElement.parentElement) + 1;
+}
+
+/**
+ * 
+ * @param {HTMLElement} item 
+ */
+async function toggleItemVisibility(item) {
+    let obj = {
+        moduleposition: getModulePos(item.parentElement),
+        position: [...item.parentElement.parentElement.querySelectorAll('.draggable-item')].indexOf(item.parentElement) + 1,
+        changes: {
+            hidden: item.checked
+        }
+    };
+
+    try {
+        let response = await patchData('/items/', obj);
+        if (response) {
+            item.parentElement.classList.toggle('hidden-item', item.checked);
+        }
+    }
+    catch (error) {
+        alert(`Server Error: ${error}`);
+    }
+}
+
+async function itemMenu(title, display_name, type, url, hasDelete) {
+    let overlay = document.createElement("div");
+    overlay.id = 'overlay';
+    overlay.innerHTML = `
+    <div class="dialog">
+        <h3>${title}</h3>
+        <div class="menu">
+            <form id="itemForm">
+                <label for="itemTitle">Title:</label><br>
+                <input type="text" id="itemTitle" name="title" placeholder="${display_name}" value="${display_name}" required><br><br><br>
+                <label for="itemType">Type:</label><br>
+                <div class="scope">
+                    <select id="itemType" name="type" required>
+                        <option value="header"${(type == 'header')? ' selected=""': ''}>Header</option>
+                        <option value="link"${(type == 'link')? ' selected=""': ''}>Link</option>
+                        <option value="page"${(type == 'page')? ' selected=""': ''}>Page</option>
+                        <option value="announcement"${(type == 'announcement')? ' selected=""': ''}>Announcement</option>
+                        <option value="file"${(type == 'file')? ' selected=""': ''}>File</option>
+                        <option value="music"${(type == 'music')? ' selected=""': ''}>Music</option>
+                    </select>
+                </div><br><br>
+                <div>
+                    <label id="labelURL1" for="itemURL1" ${(type != 'header' && type != 'link')? '': 'style="display: none;" disabled'}>Name:</label>
+                    <label id="labelURL2" for="itemURL2" ${(type != 'link')? 'style="display: none;" disabled': ''}>URL:</label>
+                </div>
+                <div>
+                    <div class="scope">
+                        <select class="big-select" id="itemURL1" name="url1" ${(type != 'header' && type != 'link')? 'required': 'style="display: none;" disabled'}>
+                        </select>
+                    </div>
+                    <input type="url" id="itemURL2" name="url2" placeholder="${url}" value="${url}" ${(type != 'link')? 'style="display: none;" disabled': 'required'}>
+                </div>
+                <br><br><br>
+                <div class="buttonHolder">
+                    <button type="button" class="menuCancel">Cancel</button>
+                    ${(hasDelete)? '<button type="button" class="menuDelete">Delete</button>': ''}
+                    <input type="submit" class="menuSubmit" value="Submit">
+                </div><br>
+            </form>
+        </div>
+    </div>`;
+
+    document.body.appendChild(overlay);
+
+    overlay.querySelectorAll('#itemType > option').forEach((element) => {
+        element.addEventListener('pointerup', async (event) => {
+            let urlSelect = overlay.querySelector('#itemURL1');
+            let label1 = overlay.querySelector('#labelURL1');
+            let url2 = overlay.querySelector('#itemURL2');
+            let label2 = overlay.querySelector('#labelURL2');
+
+            if (element.value != 'header' && element.value != 'link') {
+                urlSelect.setAttribute('required', '');
+                urlSelect.removeAttribute('style');
+                urlSelect.removeAttribute('disabled');
+                label1.removeAttribute('style');
+
+                url2.removeAttribute('required');
+                url2.setAttribute('disabled', '');
+                url2.style.display = 'none';
+                label2.style.display = 'none';
+
+                let response = await getOptions(element.value);
+                let newoptions = '';
+                response.options.forEach((obj) => {
+                    newoptions = newoptions + `\n<option value="${obj.id ?? obj.key}">${obj.title ?? obj.display_name}</option>`
+                })
+
+                urlSelect.innerHTML = newoptions;
+            }
+            else {
+                urlSelect.removeAttribute('required');
+                urlSelect.setAttribute('disabled', '');
+                urlSelect.style.display = 'none';
+                label1.style.display= 'none';
+                
+                if (element.value == 'link') {
+                    url2.setAttribute('required', '');
+                    url2.removeAttribute('disabled');
+                    url2.removeAttribute('style');
+                    label2.removeAttribute('style');
+                }
+                else {
+                    url2.removeAttribute('required');
+                    url2.setAttribute('disabled', '');
+                    url2.style.display = 'none';
+                    label2.style.display = 'none';
+                }
+            }
+        })
+    })
+
+    let form = overlay.querySelector('#itemForm');
+        
+    form.querySelector('.menuCancel').addEventListener('click', (event) => {
+        window.prevent = false;
+        document.body.removeChild(overlay);
+    })
+
+    if (type != 'header' && type != 'link') {
+        let response = await getOptions(type);
+        let newoptions = '';
+        response.options.forEach((obj) => {
+            newoptions = newoptions + `\n<option value="${obj.id ?? obj.key}" ${(url == (obj.id ?? obj.key))? 'selected=""': ''}>${obj.title ?? obj.display_name}</option>`
+        })
+    
+        form.querySelector('#itemURL1').innerHTML = newoptions;
+    }
+
+    window.prevent = true;
+    return form;
+}
+
+/**
+ * 
+ * @param {HTMLElement} listitem 
+ * @returns 
+ */
+async function editItem(listitem) {
+
+    if (window.prevent) return;
+
+    let modulepos = getModulePos(listitem);
+    let position = [...listitem.parentElement.querySelectorAll('.draggable-item')].indexOf(listitem) + 1;
+    let response = await getItem(modulepos, position);
+    if (!response) {
+        alert("Error: No response from server");
+        return;
+    }
+    if (response.status == 'error') {
+        alert(response.error);
+        return;
+    }
+    let item = response.item;
+
+    let form = await itemMenu('Edit Item', item.display, item.type, item.url, true);
+
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const data = new FormData(form);
+        let obj = {
+            moduleposition: modulepos,
+            position: position,
+            changes: {
+                display_name: data.get('title'),
+                type: data.get('type'),
+                url: data.get('url1') ?? data.get('url2')
+            }
+        };
+
+        try {
+            let response = await patchData('/items/', obj);
+            if (response) {
+                window.prevent = false;
+                document.body.removeChild(overlay);
+                // location.reload();
+
+                listitem.classList.remove('module-header', 'module-link', 'module-page', 'module-announcement', 'module-music', 'module-file');
+                listitem.classList.add(`module-${obj.changes.type}`)
+
+                listitem.removeChild(listitem.querySelector('a') ?? listitem.querySelector('h3'))
+                let newelement = document.createElement((obj.changes.type == 'header')? 'h3': 'a');
+                newelement.innerText = obj.changes.display_name;
+                if (obj.changes.type != 'header') newelement.href = response.extra.href;
+                listitem.insertBefore(newelement, listitem.querySelector('.visibility-toggle'));
+            }
+        }
+        catch (error) {
+            alert(`Server Error: ${error}`);
+        }
+    })
+
+    form.querySelector('.menuDelete').addEventListener('click', async (event) => {
+
+        if (!window.confirm('Delete this item?\nThis action cannot be undone')) return;
+
+        let obj = {moduleposition: modulepos, position: position};
+
+        try {
+            let response = await deleteData('/items/', obj);
+            if (response){
+                window.prevent = false;
+                document.body.removeChild(overlay);
+                // location.reload();
+                listitem.parentNode.removeChild(listitem.previousElementSibling);
+                listitem.parentNode.removeChild(listitem);
+            }
+        }
+        catch (error) {
+            alert(`Server Error: ${error}`);
+        }
+
+    })
+}
+
+/**
+ * 
+ * @param {HTMLElement} item 
+ * @returns 
+ */
+async function addItem(item) {
+
+    if (window.prevent) return;
+
+    let buttons = [...item.parentElement.querySelectorAll('.add-item')];
+
+    let modulepos = getModulePos(item);
+    let position = buttons.indexOf(item) + 1;
+
+    let form = await itemMenu(`${(position < buttons.length)? 'Insert': 'Add'} New Item`, 'New Item', 'header', '', false);
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const data = new FormData(form);
+        let obj = {
+            moduleposition: modulepos,
+            position: position,
+            display: data.get('title'),
+            type: data.get('type'),
+            url: data.get('url1') ?? data.get('url2'),
+            hidden: false
+        };
+
+        try {
+            let response = await postData('/items/', obj);
+            if (response) {
+                window.prevent = false;
+                document.body.removeChild(overlay);
+                // location.reload();
+                let newItem = document.createElement('li');
+                newItem.classList.add('draggable-item',`module-${obj.type}`);
+                newItem.innerHTML = `
+                <div class="link-drag-handle">
+                    <div></div>
+                    <div></div>
+                </div>
+                <span></span>
+                ${(obj.type == 'header')? `<h3>${obj.display}</h3>` : `<a href="${response.extra.href}">${obj.display}</a>`}
+                <input type="checkbox" class="visibility-toggle" onclick="toggleItemVisibility(this)">      
+                <button class="edit-item" type="button" onclick="editItem(this.parentNode)">
+                    <svg xmlns="http://www.w3.org/2000/svg" x="0" y="0" viewBox="0 0 400 400">
+                        <g>
+                            <path id="svg_6" d="m167.78745,30.3895c0,0 -68.70836,-0.74997 -72,-0.66667c-12.24984,0.04169 -30.66667,6.66667 -49.33334,23.33334c-18.66666,16.66666 -27.08334,39.4587 -27.33333,49.33333c-0.37499,17.87432 -1.33333,205.33333 -1.33333,205.33333c-0.62498,11.62456 8,34 26,50.66667c18,16.66667 46,22.66667 54.66666,22.66667c96,0 172.79159,-0.54175 192,-1.33334c19.20841,-0.79159 46.66666,-16.99999 58,-28.66666c11.33334,-11.66667 19.74985,-27.83362 19.87485,-36.04181c0.20834,-15.54152 0.79182,-83.95819 0.79182,-83.95819" opacity="NaN" stroke-width="31" fill="none"></path>
+                            <g id="svg_14">
+                                <path id="svg_8" d="m124.12078,272.3895c0,0 64.99519,-7.84425 64.99519,-7.84425c20.17092,-1.12061 170.33221,-171.45282 170.33221,-171.45282c0,0 43.70366,-34.73881 10.08546,-68.35701c-29.13577,-27.45486 -66.11579,16.2488 -66.11579,16.2488c0,0 -161.36736,159.12615 -161.92766,159.12615c-16.8091,12.32667 -17.3694,72.27913 -17.3694,72.27913z" opacity="NaN" stroke-width="30" fill="none"></path>
+                                <path id="svg_9" d="m143.1711,193.94704c0,0 56.03033,61.63337 56.03033,61.63337" opacity="NaN" stroke-width="20" fill="none"></path>
+                                <path id="svg_10" d="m309.02088,32.01937c0,0 56.03034,61.63336 56.03034,61.63336" opacity="NaN" stroke-width="20" fill="none"></path>
+                            </g>
+                        </g>
+                    </svg>
+                </button>`;
+
+                let newButton = document.createElement('li');
+                newButton.classList.add('add-item');
+                newButton.innerHTML = `<button onclick="addItem(this.parentNode)"><div></div>+<div></div></button>`;
+
+                item.parentElement.insertBefore(newButton, item);
+                item.parentElement.insertBefore(newItem, item);
+            }
+        }
+        catch (error) {
+            alert(`Server Error: ${error}`);
+        }
+    })
+
+    window.prevent = true;
+}
+
+async function getItem(modulepos, position) {
+    try {
+        const response = await fetch(`./item/${modulepos}/${position}`, {
+        headers: {
+            'Content-Type': 'application/json', // Indicate JSON data
+        }});
+
+        if (!response.ok) {
+            throw new Error(`${response.status}: ${response.statusText}`);
+        }
+
+        const responseData = await response.json(); // Parse the response as JSON
+        const obj = {
+            'status': 'success',
+            'item': responseData
+        }
+        return obj;
+    } catch (error) {
+        const obj = {
+            'status': 'error',
+            'error': error
+        }
+    }
+}
+
+async function getOptions(url) {
+    try {
+        const response = await fetch(`./${url}/all`, {
+        headers: {
+            'Content-Type': 'application/json', // Indicate JSON data
+        }});
+
+        if (!response.ok) {
+            throw new Error(`${response.status}: ${response.statusText}`);
+        }
+
+        const responseData = await response.json(); // Parse the response as JSON
+        const obj = {
+            'status': 'success',
+            'options': responseData
         }
         return obj;
     } catch (error) {

@@ -87,6 +87,185 @@
     border: 2px solid #ffb81c;
 }
 
+.dragging > .item-drag-handle{
+    cursor: grabbing !important;
+}
+
+
+.draggable-item a {
+    text-overflow: ellipsis;
+    max-width: calc(100% - 100px);
+}
+
+.module-items li.hidden-item {
+    background-color: black;
+}
+
+.module-items li.hidden-item span::before{
+    content: '';
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.55);
+    display: inline-block;
+}
+
+.module-items li.hidden-item a {
+    color: gray;
+}
+
+.module-items li.hidden-item h3 {
+    color: gray;
+}
+
+.item-drag-handle {
+    margin-right: 5px;
+    padding: 0;
+    width: 24px;
+    height: 12px;
+    border-color: transparent;
+    cursor: grab;
+    color: #003594;
+    background-color: transparent;
+    background-image: none;
+    box-shadow: none;
+}
+
+.item-drag-handle div {
+    height: 2px;
+    width: 20px;
+    margin-top: 5px;
+    margin-left: 4px;
+    background-color: #a0bded;
+}
+
+.item-drag-handle div:first-of-type {
+    margin-top: 0;
+}
+
+.edit-item {
+    border: none;
+    background: none;
+    width: 30px;
+    height: 30px;
+    margin-left: 5px;
+    cursor: pointer;
+}
+
+.edit-item svg {
+    stroke: #a0bded;
+    vertical-align: middle;
+    transition: 0.25s;
+}
+
+.edit-item:hover svg {
+    stroke: #ffb81c;
+    transition: 0.25s;
+}
+
+.visibility-toggle {
+    appearance: none;
+    float: right;
+    width: 30px;
+    height: 30px;
+    background-image: url(/static/images/visible.svg);
+    background-size: 70%;
+    background-repeat: no-repeat;
+    background-position-x: center;
+    background-position-y: center;
+    margin: 0;
+    margin-left: auto;
+    transition: all 0.25s;
+    cursor: pointer;
+}
+
+.visibility-toggle:hover {
+    background-image: url(/static/images/visible-hover.svg);
+    transition: all 0.25s;
+}
+
+.visibility-toggle:checked {
+    background-image: url(/static/images/not-visible.svg);
+    transition: all 0.25s;
+}
+
+.visibility-toggle:checked:hover {
+    background-image: url(/static/images/not-visible-hover.svg);
+    transition: all 0.25s;
+}
+
+.module details[open] summary {
+    border-bottom: 0 !important;
+}
+
+.module-items li {
+    border-bottom: 0;
+}
+
+.module-items li.add-item {
+    border: none;
+    padding: 0;
+    position: relative;
+    z-index: 1;
+}
+
+.add-item div {
+    height: 2px;
+    width: calc(50% - 15px);
+    background-color: #424344;
+    transition: all 0.25s;
+    display: inline-block;
+}
+
+.add-item button{
+    width: 100%;
+    height: 10px;
+    color: #a0bded;
+    background-color: transparent;
+    border: none;
+    font-size: x-large;
+    cursor: pointer;
+    transition: all 0.25s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0;
+    margin-top: -17px;
+    margin-bottom: -17px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+
+.add-item button:hover {
+    transition: all 0.25s;
+    color: #ffb81c;
+}
+
+.add-item button:hover div {
+    background-color: #ffb81c;
+    transition: all 0.25s;
+}
+
+.module-items li.add-item.over {
+    border-top: 2px solid white !important;
+    z-index: 1;
+}
+
+.module-items li.add-item.over button:hover {
+    color: #a0bded;
+}
+
+.module-items li.add-item.over button:hover div{
+    background-color: #424344;
+}
+
+.module-items li.dragging .item-drag-handle{
+    z-index: 2;
+}
+
+.add-item.over button {
+    display: none;
+}
+
 #overlay {
     position: fixed;
     height: 100%;
@@ -165,6 +344,14 @@
     anchor-name: --select-anchor;
 }
 
+#overlay form select.big-select {
+    width: stretch;
+    timeline-scope: --scroll;
+    animation: --scroll forwards;
+    animation-timeline: --scroll;
+    container-name: --scroll;
+}
+
 #overlay form select:open {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
@@ -195,6 +382,9 @@
     border-radius: 0 0 15px 15px;
     border: 0.5px solid #767676;
     border-top: none;
+    margin-bottom: 50px;
+    overflow-y: auto;
+    scroll-timeline: --scroll y;
 }
 
 #overlay form select option {
@@ -214,6 +404,19 @@
 
 #overlay form select option:last-of-type {
     border-radius: 0 0 14px 14px;
+}
+
+@keyframes --scroll {
+    0%,to{--scroll: 1;}
+}
+@container --scroll style(--scroll: 1) {
+    #overlay form ::picker(select) {
+        border-bottom-right-radius: 0;
+    }
+
+    #overlay form select option:last-of-type {
+        border-bottom-right-radius: 0;
+    }
 }
 
 #overlay form select option::checkmark {
