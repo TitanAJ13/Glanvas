@@ -100,7 +100,7 @@
                 <details open>
                     <summary> {{ module.display_name }}</summary>
                     <ul class="module-items">
-                        <li class="add-item"><button onclick="addItem(this)"><div></div>+<div></div></button></li>
+                        <li class="add-item"><button onclick="addItem(this.parentNode)"><div></div>+<div></div></button></li>
                         {% for item in module.blocks %}
                             <li class="module-{{item.type}} draggable-item {% if item.hidden %} hidden-item {% endif %}" item-id="{{ item.id }}">
                                 <div class="item-drag-handle">

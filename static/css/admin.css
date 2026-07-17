@@ -373,7 +373,7 @@
 
 #overlay form ::picker(select) {
     appearance: base-select;
-    background-color: rgba(0, 0, 0, 0);
+    background-color: transparent;
     container-type: anchored;
     position: fixed;
     position-area: bottom center;

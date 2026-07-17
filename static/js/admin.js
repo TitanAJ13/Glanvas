@@ -399,6 +399,11 @@ function itemDragAndDrop() {
             e.preventDefault();
             dragged_item = getItemListTarget(e.target);
 
+            if (dragged_item.classList.contains('add-item')) {
+                dragged_item = null;
+                return;
+            }
+
             let position1 = [...item_list.querySelectorAll('.draggable-item')].indexOf(dragged_item) + 1;
 
             spacer = document.createElement('LI');
