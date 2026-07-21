@@ -197,8 +197,373 @@
     transition: all 0.25s;
 }
 
+.module-buttons {
+    display: flex;
+    align-items: center;
+    padding: 5px;
+    border: 1px solid #424344;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    justify-content: space-evenly;
+    background-color: #1536a1;
+    border-bottom: 1px solid white;
+    flex-wrap: wrap;
+}
+
+.module-top-bar {
+    width: 100%;
+    height: 16px;
+    margin-bottom: 10px;
+}
+
+.module-drag-handle {
+    width: 24px;
+    margin: 0 auto;
+    align-items: center;
+    padding: 5px;
+    margin-top: -5px;
+    cursor: grab;
+}
+
+.module-drag-handle div {
+    width: 5px;
+    aspect-ratio: 1;
+    background-color: #a0bded;
+    border-radius: 50%;
+    display: inline-block;
+    margin: 1.5px;
+}
+
+.delete-module {
+    appearance: none;
+    width: 30px;
+    height: 30px;
+    background-image: url(/static/images/Trash.svg);
+    background-size: 90%;
+    background-repeat: no-repeat;
+    background-position-x: center;
+    background-position-y: center;
+    margin: 0;
+    transition: all 0.25s;
+    cursor: pointer;
+    border-radius: 5px;
+    background-color: transparent;
+    border: none;
+}
+
+.delete-module:hover {
+    background-color: rgba(0, 0, 0, 0.55);
+}
+
+
+.add-module {
+    width: 100%;
+    height: 30px;
+    color: #a0bded;
+    background-color: transparent;
+    border: 2px solid #a0bded;
+    border-radius: 10px;
+    font: inherit;
+    font-size: larger;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    margin-top: 30px;
+}
+
+.add-module:first-of-type {
+    margin-top: 10px;
+}
+
+.add-module:hover {
+    transition: all 0.25s;
+    background-color: black;
+    color: #ffb81c;
+    border: 2px solid #ffb81c;
+}
+
+.module {
+    translate: 0;
+    margin-top: 20px;
+    padding-top: 10px;
+}
+
+.hidden-module .module-buttons {
+    background-color: #091849;
+    border-bottom: 1px solid #767676;
+}
+
+.hidden-module summary {
+    background-color: #091849;
+    color: #73530d;
+}
+
+.hidden-module .item-drag-handle div {
+    background-color: #48556b;
+}
+
+.hidden-module .module-items li.draggable-item input::before{
+    content: '';
+    width: 100%;
+    height: 70%;
+    background-color: rgba(0, 0, 0, 0.55);
+    display: inline-block;
+    border-radius: 50%;
+    margin-top: 15%;
+}
+
+.hidden-module .module-items li.draggable-item input:checked::before{
+    content: '';
+    width: 100%;
+    height: 105%;
+    background-color: rgba(0, 0, 0, 0.55);
+    display: inline-block;
+    margin: 0;
+    margin-top: -1px;
+}
+
+.hidden-module .module-buttons input.visibility-toggle::before{
+    content: '';
+    width: 100%;
+    height: 76%;
+    background-color: rgba(0, 0, 0, 0.55);
+    display: inline-block;
+    margin-top: 13%;
+    border-top-right-radius: 50%;
+    border-bottom-left-radius: 50%;
+}
+
+.hidden-module .module-items li.draggable-item span::before{
+    content: '';
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.55);
+    display: inline-block;
+}
+
+.hidden-module .module-items li.hidden-item span::before{
+    content: '';
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7975);
+    display: inline-block;
+}
+
+.hidden-module .module-items li.draggable-item .edit-item svg{
+    stroke: #48556b;
+}
+
+.hidden-module .module-items li.draggable-item .edit-item:hover svg{
+    stroke: #73530d;
+}
+
+.hidden-module .module-buttons .edit-module svg{
+    stroke: #48556b;
+}
+
+.hidden-module .module-buttons .edit-module:hover svg{
+    stroke: #73530d;
+}
+
+.hidden-module .module-items li.draggable-item h3{
+    color: #73530d;
+}
+
+.hidden-module .module-items li.draggable-item a{
+    color: #48556b;
+}
+
+.hidden-module .module-items li.draggable-item.hidden-item a{
+    color: #202630;
+}
+
+.hidden-module .add-item button {
+    color: #48556b;
+}
+
+.hidden-module .add-item button:hover {
+    color: #73530d;
+}
+
+.hidden-module .add-item button:hover div{
+    background-color: #73530d;
+}
+
+.module-buttons .visibility-toggle {
+    margin: 0;
+}
+
+.move-module {
+    margin: 0;
+    cursor: move;
+}
+
+.edit-module {
+    padding: 2px;
+    border: none;
+    background: none;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+}
+
+.edit-module svg {
+    stroke: #a0bded;
+    vertical-align: middle;
+    transition: 0.25s;
+}
+
+.edit-module:hover svg {
+    stroke: #ffb81c;
+    transition: 0.25s;
+}
+
+.module-editor {
+    z-index: 1;
+    margin-left: 0;
+    position: absolute;
+    top: 92px;
+    left: 33px;
+    right: 6px;
+    height: 34px;
+    display: flex;
+    margin-bottom: 0;
+    background-color: #1536a1;
+}
+
+.hidden-module .module-editor {
+    background-color: #091849;
+}
+
+.module-editor input[type="text"] {
+    height: 100%;
+    width: calc(100% - 80px);
+    margin-right: auto;
+    background-color: transparent;
+    appearance: none;
+    border: none;
+    color: #ffb81c;
+    font: inherit;
+    font-size: 20px;
+    font-weight: bold;
+    border: 1px solid white;
+}
+
+.hidden-module .module-editor input[type="text"] {
+    color: #73530d;
+}
+
+.module-editor input[type="submit"] {
+    appearance: none;
+    width: 30px;
+    height: 30px;
+    background-color: green;
+    color: white;
+    font: inherit;
+    border: 1px solid white;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.module-editor input[type="submit"]:hover {
+    background-color: #004b00;
+}
+
+.module-editor button {
+    appearance: none;
+    width: 30px;
+    height: 30px;
+    background-color: #bf1010;
+    color: white;
+    font: inherit;
+    border: 1px solid white;
+    border-radius: 10px;
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+.module-editor button:hover {
+    background-color: #941010;
+}
+
+.module-adder {
+    z-index: 1;
+    margin-left: 0;
+    position: absolute;
+    top: 92px;
+    left: 33px;
+    right: 6px;
+    height: 34px;
+    display: flex;
+    margin-bottom: 0;
+    background-color: #1536a1;
+}
+
+.module-adder input[type="text"] {
+    height: 100%;
+    width: calc(100% - 80px);
+    margin-right: auto;
+    background-color: transparent;
+    appearance: none;
+    border: none;
+    color: #ffb81c;
+    font: inherit;
+    font-size: 20px;
+    font-weight: bold;
+    border: 1px solid white;
+}
+
+.module-adder input[type="submit"] {
+    appearance: none;
+    width: 30px;
+    height: 30px;
+    background-color: green;
+    color: white;
+    font: inherit;
+    border: 1px solid white;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.module-adder input[type="submit"]:hover {
+    background-color: #004b00;
+}
+
+.module-adder button {
+    appearance: none;
+    width: 30px;
+    height: 30px;
+    background-color: #bf1010;
+    color: white;
+    font: inherit;
+    border: 1px solid white;
+    border-radius: 10px;
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+.module-adder button:hover {
+    background-color: #941010;
+}
+
+#modules>div:last-child {
+    margin-top: 20px;
+}
+
+.module.dragging {
+    margin: 0;
+    padding: 0;
+    z-index: 1;
+    opacity: 0.5;
+}
+
 .module details[open] summary {
     border-bottom: 0 !important;
+}
+
+.module details.disabled summary {
+    pointer-events: none;
+    user-select: none;
 }
 
 .module-items li {
@@ -456,7 +821,7 @@
 }
 
 #overlay form input[type="submit"].menuSubmit:hover {
-    background-color: rgb(0, 75, 0);
+    background-color: #004b00;
 }
 
 #overlay form button.menuCancel {

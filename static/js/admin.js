@@ -894,6 +894,7 @@ function moduleDragAndDrop() {
             let position1 = [...document.querySelectorAll('.draggable-module')].indexOf(dragged_module) + 1;
             
             let offset = e.clientY - dragged_module.getBoundingClientRect().top;
+            console.log(offset);
             
             let opened = [];
 
@@ -940,9 +941,12 @@ function moduleDragAndDrop() {
 
                 // }
 
-                let module_list = document.getElementById('modules')
+                let module_list = document.getElementById('modules');
 
-                dragged_module.style.top = Math.min(Math.max(module_list.offsetTop + 50, e2.clientY - offset - document.getElementById('main').getBoundingClientRect().top), module_list.lastElementChild.offsetTop);
+                let mobileOffset = (isMobile)? 72: 0;
+
+                dragged_module.style.top = Math.min(Math.max(module_list.offsetTop + 50, e2.clientY - offset + mobileOffset - document.getElementById('main').getBoundingClientRect().top), module_list.lastElementChild.offsetTop);
+
                 if (!spaceInserted) {
                     module_list.insertBefore(spacer, dragged_module);
                     spaceInserted = true;
