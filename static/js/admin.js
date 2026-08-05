@@ -279,9 +279,9 @@ async function editLink(item) {
         let obj = {
             position: position,
             changes: {
-                title: data.get('title'),
-                type: data.get('type'),
-                url: data.get('url1') ?? data.get('url2')
+                title: data.get('title').trim(),
+                type: data.get('type').trim(),
+                url: data.get('url1').trim() ?? data.get('url2').trim()
             }
         };
 
@@ -340,9 +340,9 @@ async function addLink() {
         const data = new FormData(form);
         let obj = {
             position: null,
-            display_name: data.get('title'),
-            type: data.get('type'),
-            url: data.get('url1') ?? data.get('url2')
+            display_name: data.get('title').trim(),
+            type: data.get('type').trim(),
+            url: data.get('url1').trim() ?? data.get('url2').trim()
         };
 
         try {
@@ -737,9 +737,9 @@ async function editItem(listitem) {
             moduleposition: modulepos,
             position: position,
             changes: {
-                display_name: data.get('title'),
-                type: data.get('type'),
-                url: data.get('url1') ?? data.get('url2')
+                display_name: data.get('title').trim(),
+                type: data.get('type').trim(),
+                url: data.get('url1').trim() ?? data.get('url2').trim()
             }
         };
 
@@ -816,9 +816,9 @@ async function addItem(item) {
         let obj = {
             moduleposition: modulepos,
             position: position,
-            display: data.get('title'),
-            type: data.get('type'),
-            url: data.get('url1') ?? data.get('url2'),
+            display: data.get('title').trim(),
+            type: data.get('type').trim(),
+            url: data.get('url1').trim() ?? data.get('url2').trim(),
             hidden: false
         };
 
@@ -1093,7 +1093,7 @@ function editModule(item) {
         let obj = {
             position: position,
             changes: {
-                display_name: data.get('title')
+                display_name: data.get('title').trim()
             }
         };
 
@@ -1235,7 +1235,7 @@ function addModule(item) {
         const data = new FormData(form);
         let obj = {
             position: position,
-            display_name: data.get('title'),
+            display_name: data.get('title').trim(),
             hidden: false
         };
 
@@ -1257,6 +1257,354 @@ function addModule(item) {
                 windowPrevent(false);
                 itemDragAndDrop();
                 moduleDragAndDrop();
+            }
+            else {
+                alert(`Error: ${response.error}`)
+            }
+        }
+        catch (error) {
+            alert(`Server Error: ${error}`);
+        }
+    })
+
+    windowPrevent(true);
+}
+
+async function fileMenu(title, type, display_name, key, url, hasDelete) {
+    let urlLabel = "Drive";
+    if (type == 'music')
+        urlLabel = "MuseScore";
+    let overlay = document.createElement("div");
+    overlay.id = 'overlay';
+    overlay.innerHTML = `
+    <div class="dialog">
+        <h3>${title}</h3>
+        <div class="menu">
+            <form id="fileForm">
+                <label for="fileTitle">Title:</label><br>
+                <input type="text" id="fileTitle" name="title" placeholder="${display_name}" value="${display_name}" required>
+                <br><br><br>
+                <label for="fileKey">Glanvas URL:</label>
+                <input type="text" id="fileKey" name="key" placeholder="${key}" value="${key}" required>
+                <br><br><br>
+                <label for="fileURL">${urlLabel} URL:</label>
+                <input type="url" id="fileURL" name="url" placeholder="${url}" value="${url}" required>
+                <br><br><br>
+                <div class="buttonHolder">
+                    <button type="button" class="menuCancel">Cancel</button>
+                    ${(hasDelete)? '<button type="button" class="menuDelete">Delete</button>': ''}
+                    <input type="submit" class="menuSubmit" value="Submit">
+                </div><br>
+            </form>
+        </div>
+    </div>`;
+
+    document.body.appendChild(overlay);
+
+    let form = overlay.querySelector('#fileForm');
+        
+    form.querySelector('.menuCancel').addEventListener('click', (event) => {
+        windowPrevent(false);
+        document.body.removeChild(overlay);
+    })
+
+    windowPrevent(true);
+    return form;
+}
+
+/**
+ * 
+ * @param {HTMLElement} tablerow 
+ * @returns 
+ */
+async function editFile(tablerow) {
+
+    if (window.prevent) return;
+
+    let response = await getFile(tablerow.key);
+    if (!response) {
+        alert("Error: No response from server");
+        return;
+    }
+    if (response.status == 'error') {
+        alert(response.error);
+        return;
+    }
+    let file = response.file;
+
+    let form = await fileMenu('Edit File', 'file', file.display_name, file.key, file.url, true);
+
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const data = new FormData(form);
+        let obj = {
+            key: tablerow.key,
+            changes: {
+                display_name: data.get('title').trim(),
+                path: data.get('key').trim(),
+                url: data.get('url').trim()
+            }
+        };
+
+        try {
+            let response = await patchData('/files/', obj);
+            if (response && response.status == 'success') {
+                windowPrevent(false);
+                document.body.removeChild(overlay);
+                // location.reload();
+
+                let link = tablerow.querySelector('td.title a');
+                link.innerText = obj.changes.display_name;
+                link.href = response.extra.href;
+
+                tablerow.querySelector('td.key').innerText = obj.changes.path;
+                tablerow.querySelector('td.key').title = obj.changes.path;
+                tablerow.querySelector('td.url').innerText = obj.changes.url;
+                tablerow.querySelector('td.url').title = obj.changes.url;
+                tablerow.key = obj.changes.path;
+                tablerow.dataset.key = obj.changes.path;
+                tablerow.display = obj.changes.display_name;
+                tablerow.dataset.display = obj.changes.display_name;
+                alphabetizeTable(tablerow.parentElement, tablerow.parentElement.removeChild(tablerow));
+                tablerow.scrollIntoView({block: "center"});
+            }
+            else {
+                alert(`Error: ${response.error}`)
+            }
+        }
+        catch (error) {
+            alert(`Server Error: ${error}`);
+        }
+    })
+
+    form.querySelector('.menuDelete').addEventListener('click', async (event) => {
+
+        if (!window.confirm('Delete this file?\nThis action cannot be undone')) return;
+
+        let obj = {key: tablerow.key};
+
+        try {
+            let response = await deleteData('/files/', obj);
+            if (response && response.status == 'success'){
+                windowPrevent(false);
+                document.body.removeChild(overlay);
+                // location.reload();
+                tablerow.parentNode.removeChild(tablerow);
+            }
+            else {
+                alert(`Error: ${response.error}`)
+            }
+        }
+        catch (error) {
+            alert(`Server Error: ${error}`);
+        }
+
+    })
+}
+
+async function addFile() {
+
+    if (window.prevent) return;
+
+    let form = await fileMenu('Add New File', 'file', 'New File', '', '', false);
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const data = new FormData(form);
+        let obj = {
+            key: data.get('key').trim(),
+            display_name: data.get('title').trim(),
+            url: data.get('url').trim()
+        };
+
+        try {
+            let response = await postData('/files/', obj);
+            if (response && response.status == 'success') {
+                windowPrevent(false);
+                document.body.removeChild(overlay);
+                // location.reload();
+                let newFile = document.createElement('tr');
+                newFile.key = obj.key;
+                newFile.dataset.key = obj.key;
+                newFile.display = obj.display_name;
+                newFile.dataset.display = obj.display_name;
+                newFile.innerHTML = `
+                <td class="title">
+                    <a href="${response.extra.href}" target="_blank"> ${obj.display_name}</a>
+                </td>
+                <td class="key" title="${obj.key}">${obj.key}</td>
+                <td class="url" title="${obj.url}">${obj.url}</td>
+                <td class="button">
+                    <button class="table-edit-button" type="button" onclick="editFile(this.parentNode.parentNode)">
+                        <svg xmlns="http://www.w3.org/2000/svg" x="0" y="0" viewBox="0 0 400 400">
+                            <g>
+                                <path id="svg_6" d="m167.78745,30.3895c0,0 -68.70836,-0.74997 -72,-0.66667c-12.24984,0.04169 -30.66667,6.66667 -49.33334,23.33334c-18.66666,16.66666 -27.08334,39.4587 -27.33333,49.33333c-0.37499,17.87432 -1.33333,205.33333 -1.33333,205.33333c-0.62498,11.62456 8,34 26,50.66667c18,16.66667 46,22.66667 54.66666,22.66667c96,0 172.79159,-0.54175 192,-1.33334c19.20841,-0.79159 46.66666,-16.99999 58,-28.66666c11.33334,-11.66667 19.74985,-27.83362 19.87485,-36.04181c0.20834,-15.54152 0.79182,-83.95819 0.79182,-83.95819" opacity="NaN" stroke-width="31" fill="none"/>
+                                <g id="svg_14">
+                                    <path id="svg_8" d="m124.12078,272.3895c0,0 64.99519,-7.84425 64.99519,-7.84425c20.17092,-1.12061 170.33221,-171.45282 170.33221,-171.45282c0,0 43.70366,-34.73881 10.08546,-68.35701c-29.13577,-27.45486 -66.11579,16.2488 -66.11579,16.2488c0,0 -161.36736,159.12615 -161.92766,159.12615c-16.8091,12.32667 -17.3694,72.27913 -17.3694,72.27913z" opacity="NaN" stroke-width="30" fill="none"/>
+                                    <path id="svg_9" d="m143.1711,193.94704c0,0 56.03033,61.63337 56.03033,61.63337" opacity="NaN" stroke-width="20" fill="none"/>
+                                    <path id="svg_10" d="m309.02088,32.01937c0,0 56.03034,61.63336 56.03034,61.63336" opacity="NaN" stroke-width="20" fill="none"/>
+                                </g>
+                            </g>
+                        </svg>
+                    </button>
+                </td>`;
+
+                alphabetizeTable(document.getElementById('files').querySelector('tbody'), newFile);
+                newFile.scrollIntoView({block: "center"});
+            }
+            else {
+                alert(`Error: ${response.error}`)
+            }
+        }
+        catch (error) {
+            alert(`Server Error: ${error}`);
+        }
+    })
+
+    windowPrevent(true);
+}
+
+/**
+ * 
+ * @param {HTMLElement} tablerow 
+ * @returns 
+ */
+async function editMusic(tablerow) {
+
+    if (window.prevent) return;
+
+    let response = await getMusic(tablerow.key);
+    if (!response) {
+        alert("Error: No response from server");
+        return;
+    }
+    if (response.status == 'error') {
+        alert(response.error);
+        return;
+    }
+    let music = response.music;
+
+    let form = await fileMenu('Edit Music', 'music', music.display_name, music.key, music.url, true);
+
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const data = new FormData(form);
+        let obj = {
+            key: tablerow.key,
+            changes: {
+                display_name: data.get('title').trim(),
+                path: data.get('key').trim(),
+                url: data.get('url').trim()
+            }
+        };
+
+        try {
+            let response = await patchData('/musicdata/', obj);
+            if (response && response.status == 'success') {
+                windowPrevent(false);
+                document.body.removeChild(overlay);
+                // location.reload();
+
+                let link = tablerow.querySelector('td.title a');
+                link.innerText = obj.changes.display_name;
+                link.href = response.extra.href;
+
+                tablerow.querySelector('td.key').innerText = obj.changes.path;
+                tablerow.querySelector('td.key').title = obj.changes.path;
+                tablerow.querySelector('td.url').innerText = obj.changes.url;
+                tablerow.querySelector('td.url').title = obj.changes.url;
+                tablerow.key = obj.changes.path;
+                tablerow.dataset.key = obj.changes.path;
+                tablerow.display = obj.changes.display_name;
+                tablerow.dataset.display = obj.changes.display_name;
+                alphabetizeTable(tablerow.parentElement, tablerow.parentElement.removeChild(tablerow));
+                tablerow.scrollIntoView({block: "center"});
+            }
+            else {
+                alert(`Error: ${response.error}`)
+            }
+        }
+        catch (error) {
+            alert(`Server Error: ${error}`);
+        }
+    })
+
+    form.querySelector('.menuDelete').addEventListener('click', async (event) => {
+
+        if (!window.confirm('Delete this Sheetmusic?\nThis action cannot be undone')) return;
+
+        let obj = {key: tablerow.key};
+
+        try {
+            let response = await deleteData('/musicdata/', obj);
+            if (response && response.status == 'success'){
+                windowPrevent(false);
+                document.body.removeChild(overlay);
+                // location.reload();
+                tablerow.parentNode.removeChild(tablerow);
+            }
+            else {
+                alert(`Error: ${response.error}`)
+            }
+        }
+        catch (error) {
+            alert(`Server Error: ${error}`);
+        }
+
+    })
+}
+
+async function addMusic() {
+
+    if (window.prevent) return;
+
+    let form = await fileMenu('Add New Sheetmusic', 'music', 'New Sheetmusic', '', '', false);
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const data = new FormData(form);
+        let obj = {
+            key: data.get('key').trim(),
+            display_name: data.get('title').trim(),
+            url: data.get('url').trim()
+        };
+
+        try {
+            let response = await postData('/musicdata/', obj);
+            if (response && response.status == 'success') {
+                windowPrevent(false);
+                document.body.removeChild(overlay);
+                // location.reload();
+                let newFile = document.createElement('tr');
+                newFile.key = obj.key;
+                newFile.dataset.key = obj.key;
+                newFile.display = obj.display_name;
+                newFile.dataset.display = obj.display_name;
+                newFile.innerHTML = `
+                <td class="title">
+                    <a href="${response.extra.href}" target="_blank"> ${obj.display_name}</a>
+                </td>
+                <td class="key" title="${obj.key}">${obj.key}</td>
+                <td class="url" title="${obj.url}">${obj.url}</td>
+                <td class="button">
+                    <button class="table-edit-button" type="button" onclick="editMusic(this.parentNode.parentNode)">
+                        <svg xmlns="http://www.w3.org/2000/svg" x="0" y="0" viewBox="0 0 400 400">
+                            <g>
+                                <path id="svg_6" d="m167.78745,30.3895c0,0 -68.70836,-0.74997 -72,-0.66667c-12.24984,0.04169 -30.66667,6.66667 -49.33334,23.33334c-18.66666,16.66666 -27.08334,39.4587 -27.33333,49.33333c-0.37499,17.87432 -1.33333,205.33333 -1.33333,205.33333c-0.62498,11.62456 8,34 26,50.66667c18,16.66667 46,22.66667 54.66666,22.66667c96,0 172.79159,-0.54175 192,-1.33334c19.20841,-0.79159 46.66666,-16.99999 58,-28.66666c11.33334,-11.66667 19.74985,-27.83362 19.87485,-36.04181c0.20834,-15.54152 0.79182,-83.95819 0.79182,-83.95819" opacity="NaN" stroke-width="31" fill="none"/>
+                                <g id="svg_14">
+                                    <path id="svg_8" d="m124.12078,272.3895c0,0 64.99519,-7.84425 64.99519,-7.84425c20.17092,-1.12061 170.33221,-171.45282 170.33221,-171.45282c0,0 43.70366,-34.73881 10.08546,-68.35701c-29.13577,-27.45486 -66.11579,16.2488 -66.11579,16.2488c0,0 -161.36736,159.12615 -161.92766,159.12615c-16.8091,12.32667 -17.3694,72.27913 -17.3694,72.27913z" opacity="NaN" stroke-width="30" fill="none"/>
+                                    <path id="svg_9" d="m143.1711,193.94704c0,0 56.03033,61.63337 56.03033,61.63337" opacity="NaN" stroke-width="20" fill="none"/>
+                                    <path id="svg_10" d="m309.02088,32.01937c0,0 56.03034,61.63336 56.03034,61.63336" opacity="NaN" stroke-width="20" fill="none"/>
+                                </g>
+                            </g>
+                        </svg>
+                    </button>
+                </td>`;
+
+                alphabetizeTable(document.getElementById('music').querySelector('tbody'), newFile);
+                newFile.scrollIntoView({block: "center"});
             }
             else {
                 alert(`Error: ${response.error}`)
@@ -1295,6 +1643,56 @@ async function getItem(modulepos, position) {
     }
 }
 
+async function getFile(key) {
+    try {
+        const response = await fetch(`../file/${key}`, {
+        headers: {
+            'Content-Type': 'application/json', // Indicate JSON data
+        }});
+
+        if (!response.ok) {
+            throw new Error(`${response.status}: ${response.statusText}`);
+        }
+
+        const responseData = await response.json(); // Parse the response as JSON
+        const obj = {
+            'status': 'success',
+            'file': responseData
+        }
+        return obj;
+    } catch (error) {
+        const obj = {
+            'status': 'error',
+            'error': error
+        }
+    }
+}
+
+async function getMusic(key) {
+    try {
+        const response = await fetch(`../music/${key}`, {
+        headers: {
+            'Content-Type': 'application/json', // Indicate JSON data
+        }});
+
+        if (!response.ok) {
+            throw new Error(`${response.status}: ${response.statusText}`);
+        }
+
+        const responseData = await response.json(); // Parse the response as JSON
+        const obj = {
+            'status': 'success',
+            'music': responseData
+        }
+        return obj;
+    } catch (error) {
+        const obj = {
+            'status': 'error',
+            'error': error
+        }
+    }
+}
+
 async function getOptions(url) {
     try {
         const response = await fetch(`./${url}/all`, {
@@ -1318,6 +1716,32 @@ async function getOptions(url) {
             'error': error
         }
     }
+}
+
+/**
+ * 
+ * @param {HTMLElement} tablebody 
+ * @param {HTMLElement} tablerow 
+ * @returns 
+ */
+function alphabetizeTable(tablebody, tablerow) {
+    tablerow.style.animationName = "highlighted-file";
+    tablerow.style.animationDuration = "1.5s";
+    tablerow.onanimationend = () => {
+        tablerow.removeAttribute('style');
+        tablerow.onanimationend = null;
+    }
+    let rows = [...tablebody.querySelectorAll('tr')];
+    console.log(rows);
+    console.log(tablerow);
+    for (const row of rows) {
+        let comparison = row.display.localeCompare(tablerow.display);
+        if (comparison > 0 || (comparison == 0 && row.key.localeCompare(tablerow.key) > 0)) {
+            tablebody.insertBefore(tablerow, row);
+            return;
+        }
+    }
+    tablebody.appendChild(tablerow);
 }
 
 async function patchData(url, data) {
@@ -1474,7 +1898,7 @@ function deleteModule(id) {
 function postFile(key, id, display_name) {
     const file = {
         key: key,
-        id: id,
+        url: id,
         display_name: display_name
     }
 

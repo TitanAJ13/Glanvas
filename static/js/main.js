@@ -98,24 +98,31 @@ function mediaChanged() {
     if (isMobile.matches) {
         sidebar.style.display = "none";
         main.setAttribute('style','margin-left: 0px;');
-        let currentUrl = document.location.href.split("/")[3];
-        if (currentUrl == 'file') {
-            let iframe = document.getElementById("file-iframe");
-            let fileURL = iframe.src.split("/");
-            fileURL[fileURL.length - 1] = 'mobilebasic'
-            iframe.src = fileURL.join("/");
-        }
+        // let currentUrl = document.location.href.split("/")[3];
+        // if (currentUrl == 'file') {
+        //     let iframe = document.getElementById("file-iframe");
+        //     if (iframe.src != 'about:blank') {
+        //         // let fileURL = iframe.src.split("/");
+        //         // fileURL[fileURL.length - 1].replace('preview', 'mobilebasic');
+        //         // let newSrc = fileURL.join("/");
+        //         let newSrc = iframe.src.replace('preview', 'mobilebasic');
+        //         if (iframe.src != newSrc) iframe.src = newSrc; 
+        //     }
+        // }
     }
     else {
         sidebar.style.display = "block";
         main.setAttribute('style','margin-left: 192px;');
-        let currentUrl = document.location.href.split("/")[3];
-        if (currentUrl == 'file') {
-            let iframe = document.getElementById("file-iframe");
-            let fileURL = iframe.src.split("/");
-            fileURL[fileURL.length - 1] = 'preview'
-            iframe.src = fileURL.join("/");
-        }
+        // let currentUrl = document.location.href.split("/")[3];
+        // if (currentUrl == 'file') {
+        //     let iframe = document.getElementById("file-iframe");
+        //     if (iframe.src != 'about:blank') {
+        //         let fileURL = iframe.src.split("/");
+        //         fileURL[fileURL.length - 1].replace('mobilebasic', 'preview');
+        //         let newSrc = fileURL.join("/");
+        //         if (iframe.src != newSrc) iframe.src = newSrc; 
+        //     }
+        // }
     }
     setToggleButton();
 }
@@ -211,15 +218,15 @@ function deleteModule(id) {
     deleteData('/modules/', {id: id})
 }
 
-function postFile(key, id, display_name) {
-    const file = {
-        key: key,
-        id: id,
-        display_name: display_name
-    }
+// function postFile(key, id, display_name) {
+//     const file = {
+//         key: key,
+//         id: id,
+//         display_name: display_name
+//     }
 
-    postData('/files/', file)
-}
+//     postData('/files/', file)
+// }
 
 function deleteFile(key) {
     deleteData('/files/', {key: key})

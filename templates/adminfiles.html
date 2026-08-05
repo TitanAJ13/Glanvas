@@ -1,0 +1,149 @@
+{% extends "admin_index.html" %}
+
+{% block path %}
+    <li>
+        <a href="#">
+            <span>Files</span>
+        </a>
+    </li>
+{% endblock %}
+
+{% block sidebar_links %}
+    {% for link in links %}
+        <li>
+            {% if link.type == 'external' %}
+            <a link-id="{{ link.id }}" href="{{ link.url }}" target="_blank">{{ link.display_name }}</a>
+            {% elif link.type == 'page' %}
+            <a link-id="{{ link.id }}" href="{{ url_for('page', id= link.url) }}">{{ link.display_name }}</a>
+            {% elif link.type == 'internal' %}
+            <a link-id="{{ link.id }}" href="{{ url_for(link.url) }}">{{ link.display_name }}</a>
+            {% elif link.type == 'file' %}
+            <a link-id="{{ link.id }}" href="{{ url_for('file', key= link.url) }}">{{ link.display_name }}</a>
+            {% elif link.type == 'announcement' %}
+            <a link-id="{{ link.id }}" href="{{ url_for('announcement', id= link.url) }}">{{ link.display_name }}</a>
+            {% elif link.type == 'music' %}
+            <a link-id="{{ link.id }}" href="{{ url_for('music', key= link.url) }}">{{ link.display_name }}</a>
+            {% else %}
+            <a link-id="{{ link.id }}">Failed</a>
+            {% endif %}
+        </li>
+    {% endfor %}
+{% endblock %}
+
+{% block right_display %}
+    display: none;
+{% endblock %}
+
+{% block calendar_events %}
+{% endblock %}
+
+{% block main_content %}
+<div id="filesystem">
+    <div id="files">
+        <div>
+            <h2>Files</h2>
+            <button type="button" class="add-file" onclick="addFile()">Add</button>
+        </div>
+        <table>
+            <colgroup>
+                <col span="1" class="title">
+                <col span="1" class="key">
+                <col span="1" class="url">
+                <col span="1" class="buttoncol">
+            </colgroup>
+            <thead>
+                <tr>
+                    <th class="title">Title</th><th class="key">Glanvas URL</th><th class="url">Drive URL</th><th class="buttoncol"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for file in files %}
+                    <tr data-key="{{ file.key }}" data-display="{{ file.display_name }}">
+                        <td class="title">
+                            <a href="{{ url_for('file', key= file.key) }}" target="_blank">{{ file.display_name }}</a>
+                        </td>
+                        <td class="key" title="{{ file.key }}">{{ file.key }}</td>
+                        <td class="url" title="{{ file.url }}">{{ file.url }}</td>
+                        <td class="button">
+                            <button class="table-edit-button" type="button" onclick="editFile(this.parentNode.parentNode)">
+                                <svg xmlns="http://www.w3.org/2000/svg" x="0" y="0" viewBox="0 0 400 400">
+                                    <g>
+                                        <path id="svg_6" d="m167.78745,30.3895c0,0 -68.70836,-0.74997 -72,-0.66667c-12.24984,0.04169 -30.66667,6.66667 -49.33334,23.33334c-18.66666,16.66666 -27.08334,39.4587 -27.33333,49.33333c-0.37499,17.87432 -1.33333,205.33333 -1.33333,205.33333c-0.62498,11.62456 8,34 26,50.66667c18,16.66667 46,22.66667 54.66666,22.66667c96,0 172.79159,-0.54175 192,-1.33334c19.20841,-0.79159 46.66666,-16.99999 58,-28.66666c11.33334,-11.66667 19.74985,-27.83362 19.87485,-36.04181c0.20834,-15.54152 0.79182,-83.95819 0.79182,-83.95819" opacity="NaN" stroke-width="31" fill="none"/>
+                                        <g id="svg_14">
+                                            <path id="svg_8" d="m124.12078,272.3895c0,0 64.99519,-7.84425 64.99519,-7.84425c20.17092,-1.12061 170.33221,-171.45282 170.33221,-171.45282c0,0 43.70366,-34.73881 10.08546,-68.35701c-29.13577,-27.45486 -66.11579,16.2488 -66.11579,16.2488c0,0 -161.36736,159.12615 -161.92766,159.12615c-16.8091,12.32667 -17.3694,72.27913 -17.3694,72.27913z" opacity="NaN" stroke-width="30" fill="none"/>
+                                            <path id="svg_9" d="m143.1711,193.94704c0,0 56.03033,61.63337 56.03033,61.63337" opacity="NaN" stroke-width="20" fill="none"/>
+                                            <path id="svg_10" d="m309.02088,32.01937c0,0 56.03034,61.63336 56.03034,61.63336" opacity="NaN" stroke-width="20" fill="none"/>
+                                        </g>
+                                    </g>
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div id="music">
+        <div>
+            <h2>Sheetmusic</h2>
+            <button type="button" class="add-file" onclick="addMusic()">Add</button>
+        </div>
+        <table>
+            <colgroup>
+                <col span="1" class="title">
+                <col span="1" class="key">
+                <col span="1" class="url">
+                <col span="1" class="buttoncol">
+            </colgroup>
+            <thead>
+                <tr>
+                    <th class="title">Title</th><th class="key">Glanvas URL</th><th class="url">MuseScore URL</th><th class="buttoncol"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for music in musics %}
+                    <tr data-key="{{ music.key }}" data-display="{{ music.display_name }}">
+                        <td class="title">
+                            <a href="{{ url_for('music', key= music.key) }}" target="_blank">{{ music.display_name }}</a>
+                        </td>
+                        <td class="key" title="{{ music.key }}">{{ music.key }}</td>
+                        <td class="url" title="{{ music.url }}">{{ music.url }}</td>
+                        <td class="button">
+                            <button class="table-edit-button" type="button" onclick="editMusic(this.parentNode.parentNode)">
+                                <svg xmlns="http://www.w3.org/2000/svg" x="0" y="0" viewBox="0 0 400 400">
+                                    <g>
+                                        <path id="svg_6" d="m167.78745,30.3895c0,0 -68.70836,-0.74997 -72,-0.66667c-12.24984,0.04169 -30.66667,6.66667 -49.33334,23.33334c-18.66666,16.66666 -27.08334,39.4587 -27.33333,49.33333c-0.37499,17.87432 -1.33333,205.33333 -1.33333,205.33333c-0.62498,11.62456 8,34 26,50.66667c18,16.66667 46,22.66667 54.66666,22.66667c96,0 172.79159,-0.54175 192,-1.33334c19.20841,-0.79159 46.66666,-16.99999 58,-28.66666c11.33334,-11.66667 19.74985,-27.83362 19.87485,-36.04181c0.20834,-15.54152 0.79182,-83.95819 0.79182,-83.95819" opacity="NaN" stroke-width="31" fill="none"/>
+                                        <g id="svg_14">
+                                            <path id="svg_8" d="m124.12078,272.3895c0,0 64.99519,-7.84425 64.99519,-7.84425c20.17092,-1.12061 170.33221,-171.45282 170.33221,-171.45282c0,0 43.70366,-34.73881 10.08546,-68.35701c-29.13577,-27.45486 -66.11579,16.2488 -66.11579,16.2488c0,0 -161.36736,159.12615 -161.92766,159.12615c-16.8091,12.32667 -17.3694,72.27913 -17.3694,72.27913z" opacity="NaN" stroke-width="30" fill="none"/>
+                                            <path id="svg_9" d="m143.1711,193.94704c0,0 56.03033,61.63337 56.03033,61.63337" opacity="NaN" stroke-width="20" fill="none"/>
+                                            <path id="svg_10" d="m309.02088,32.01937c0,0 56.03034,61.63336 56.03034,61.63336" opacity="NaN" stroke-width="20" fill="none"/>
+                                        </g>
+                                    </g>
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script class="toDelete">
+    document.getElementById('files').querySelectorAll('tbody tr').forEach((element) => {
+        element.key = element.dataset.key;
+        element.display = element.dataset.display;
+    })
+    document.getElementById('music').querySelectorAll('tbody tr').forEach((element) => {
+        element.key = element.dataset.key;
+        element.display = element.dataset.display;
+    })
+</script>
+<script class="toDelete">
+    document.querySelectorAll('script.toDelete').forEach((script) => {
+        script.parentElement.removeChild(script);
+    })
+</script>
+{% endblock %}

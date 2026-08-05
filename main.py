@@ -1,5 +1,6 @@
 from flask import Flask, render_template, abort, redirect, request, url_for
 from flask import session as ses
+from werkzeug.exceptions import HTTPException
 # from sqlalchemy import create_engine, desc
 # from sqlalchemy.orm import sessionmaker
 from models import Base, Link, Module, Announcement, CalendarItem, FileData, MusicData, Item
@@ -8,6 +9,7 @@ from typing import Any
 from session import MySession, generateSQLSession
 from dotenv import load_dotenv
 import os
+import re
 
 def error(message):
     return {
@@ -407,21 +409,33 @@ def announcement(id):
     else:
         return redirect(url_for("announcements"))
 
+def handleDriveURL(url: str) -> str:
+    if re.fullmatch(r'https://.+\.google\.com/.+/d/.+/(edit|view|preview)(\?.*)?', url) is None: return url
+    
+    full = url.split('/')
+    partial = full[-1].split('?')
+    full[-1] = 'preview' + ('?' + partial[1] if len(partial) > 1 else '')
+    return '/'.join(full)
+
 @app.route("/files/", methods=["POST", "PATCH", "DELETE"])
 def files():
     json = request.json
 
     key = requiredVar(json, 'key')
+    if (key == ''):
+        abort(400, '`key` cannot be empty whitespace')
 
     if request.method == "POST":
 
-        url = requiredVar(json, 'url')
+        url = handleDriveURL(requiredVar(json, 'url'))
         title = requiredVar(json, 'display_name')
+        if (sqlSession.getFile(key)):
+            abort(400, f'key `{key}` is already in use')
 
         try:
             fileObj = FileData(key = key, url = url, display_name = title)
             sqlSession.addFile(fileObj)
-            return success()
+            return success({'href': formatLink('file', fileObj.key)})
         except Exception as e:
             abort(500, e)
 
@@ -455,12 +469,16 @@ def files():
             if (filename is not None):
                 file.display_name = filename
             if (path is not None):
+                if (sqlSession.getFile(path) and path != key):
+                    abort(400, f'key `{path}` is already in use')
                 file.key = path
             if (url is not None):
-                file.url = url
+                file.url = handleDriveURL(url)
             sqlSession.session.commit()
-            return success()
+            return success({'href': formatLink('file', file.key)})
         except Exception as e:
+            if isinstance(e, HTTPException):
+                abort(e.code, e.description)
             abort(500, e)
 
 
@@ -484,16 +502,20 @@ def musicdata():
     json = request.json
 
     path = requiredVar(json, 'key')
+    if (path == ''):
+        abort(400, '`key` cannot be empty whitespace')
 
     if request.method == "POST":
 
         url = requiredVar(json, 'url')
         filename = requiredVar(json, 'display_name')
+        if (sqlSession.getMusic(path)):
+            abort(400, f'key `{path}` is already in use')
 
         try:
             musicObj = MusicData(key = path, url = url, display_name = filename)
             sqlSession.addMusic(musicObj)
-            return success()
+            return success({'href': formatLink('music', musicObj.key)})
         except Exception as e:
             abort(500, e)
 
@@ -528,14 +550,18 @@ def musicdata():
                 abort(400, f"`{path}` is not a registered path")
 
             if (new_path is not None):
+                if (sqlSession.getMusic(new_path) and new_path != path):
+                    abort(400, f'key `{new_path}` is already in use')
                 musicObj.key = new_path
             if (filename is not None):
                 musicObj.display_name = filename
             if (url is not None):
                 musicObj.url = url
             sqlSession.session.commit()
-            return success()
+            return success({'href': formatLink('music', musicObj.key)})
         except Exception as e:
+            if isinstance(e, HTTPException):
+                abort(e.code, e.description)
             abort(500, e)
 
 
@@ -596,6 +622,16 @@ def adminpage():
         announcements = sqlSession.getAnnouncementsJSON()[0:3]
         calendarItems = sqlSession.getCalendarItemsJSON()
         return render_template("admin.html", links=links, modules=modules, announcements=announcements, calendarItems=calendarItems)
+    
+@app.route("/admin/files/")
+def adminfiles():
+    if "username" not in ses:
+        return redirect( url_for("login"))
+    else:
+        links = sqlSession.getLinksJSON()
+        files = sqlSession.getFilesJSON()
+        music = sqlSession.getMusicsJSON()
+        return render_template("adminfiles.html", links=links, files=files, musics=music)
     
 @app.route("/admin/link/<position>")
 def adminGetLink(position):

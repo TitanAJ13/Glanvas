@@ -327,7 +327,7 @@ iframe {
     box-sizing: border-box;
     min-width: 1px;
     max-width: 100%;
-    min-height: 100%;
+    min-height: calc(100% - 4.5rem);
     flex-wrap: wrap;
     justify-content:center;
 }
@@ -343,6 +343,7 @@ iframe {
     padding: min(48px, 50% - 233px);
     min-height: calc(100% - 84px);
     padding-top: 36px;
+    padding-bottom: 36px;
 }
 
 #right-side-wrapper {
