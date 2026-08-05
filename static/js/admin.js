@@ -1732,8 +1732,6 @@ function alphabetizeTable(tablebody, tablerow) {
         tablerow.onanimationend = null;
     }
     let rows = [...tablebody.querySelectorAll('tr')];
-    console.log(rows);
-    console.log(tablerow);
     for (const row of rows) {
         let comparison = row.display.localeCompare(tablerow.display);
         if (comparison > 0 || (comparison == 0 && row.key.localeCompare(tablerow.key) > 0)) {

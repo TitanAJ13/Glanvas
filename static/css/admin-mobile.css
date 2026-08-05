@@ -862,3 +862,197 @@
 #overlay form div.buttonHolder {
     text-align: center;
 }
+
+.adminlink:first-of-type {
+    border-top: 2px solid white;
+    margin-top: 10px;
+}
+
+.adminlink {
+    display: block;
+    padding-top: 15px;
+    font-size: 16pt;
+}
+
+.adminlink:hover {
+    text-decoration: underline;
+}
+
+#filesystem {
+    height: calc(100cqh - 92px);
+}
+
+#files {
+    height: calc(50% - 7px);
+    border-bottom: 2px solid white;
+    margin-bottom: 10px;
+    overflow-y: auto;
+}
+
+#files div {
+    position: sticky;
+    top: 0;
+    background-color: #121212;
+}
+
+#music {
+    height: calc(50% - 5px);
+    overflow-y: auto;
+    margin-top: 10px;
+}
+
+#music div {
+    position: sticky;
+    top: 0;
+    background-color: #121212;
+}
+
+#filesystem h2 {
+    display: inline-block;
+}
+
+.add-file {
+    float: right;
+    width: 70px;
+    height: 30px;
+    margin-right: 10px;
+    color: #a0bded;
+    background-color: transparent;
+    border: 2px solid #a0bded;
+    border-radius: 10px;
+    font: inherit;
+    font-size: larger;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.25s;
+}
+
+.add-file:hover {
+    transition: all 0.25s;
+    background-color: black;
+    color: #ffb81c;
+    border: 2px solid #ffb81c;
+}
+
+@keyframes highlighted-file {
+    from {background-color: #ffb81c;}
+    to {background-color: none;}
+}
+
+#filesystem table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    width: calc(100% - 10px);
+    table-layout: fixed;
+    vertical-align: middle;
+}
+
+#filesystem thead {
+    position: sticky;
+    top: 35px;
+    background-color: #121212;
+    display:block;
+    width: calc(10000% / 35);
+    container-type: inline-size;
+    height: fit-content;
+}
+
+#filesystem thead tr {
+    display: flex;
+    width: 100%;
+    height: fit-content;
+}
+
+#filesystem th {
+    border-right: 2px solid #48556b;
+    border-bottom: 2px solid #48556b;
+    padding: 5px;
+    display: inline-flex;
+    height: stretch;
+    align-items: center;
+    justify-content: center;
+}
+
+#filesystem col.title {
+    width: 35%;
+}
+
+#filesystem col.key {
+    width: 30%;
+}
+
+#filesystem col.buttoncol {
+    width: 30px;
+}
+
+#filesystem th.title {
+    width: calc(35% - 12px);
+}
+
+#filesystem th.key {
+    width: calc(30% - 12px);
+}
+
+#filesystem th.url {
+    width: calc(35% - 42px)
+}
+
+#filesystem th.buttoncol {
+    width: 20px;
+}
+
+#filesystem th.buttoncol {
+    border-right: none;
+}
+
+#filesystem th:not(.buttoncol):hover {
+    background-color: #1c2329;
+}
+
+#filesystem tr {
+    height: 40px;
+}
+    
+#filesystem tbody tr:hover {
+    background-color: #1c2329;
+}
+
+#filesystem td {
+    padding: 5px;
+}
+
+#filesystem td.url {
+    text-wrap: nowrap;
+    text-overflow: ellipsis;
+    overflow: clip;
+}
+
+#filesystem td.key {
+    text-wrap: nowrap;
+    text-overflow: ellipsis;
+    overflow: clip;
+}
+
+#filesystem td.button {
+    padding: 0;
+}
+
+.table-edit-button {
+    border: none;
+    background: none;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    padding: 2px;
+}
+
+.table-edit-button svg {
+    stroke: #a0bded;
+    vertical-align: middle;
+    transition: 0.25s;
+}
+
+.table-edit-button:hover svg {
+    stroke: #ffb81c;
+    transition: 0.25s;
+}

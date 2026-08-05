@@ -869,14 +869,18 @@
     text-align: center;
 }
 
-.adminfileslink {
-    display: block;
+.adminlink:first-of-type {
     border-top: 2px solid white;
     margin-top: 10px;
-    padding-top: 10px;
 }
 
-.adminfileslink:hover {
+.adminlink {
+    display: block;
+    padding-top: 15px;
+    padding-left: 5px;
+}
+
+.adminlink:hover {
     text-decoration: underline;
 }
 
@@ -952,19 +956,23 @@
     display:block;
     width: calc(10000% / 35);
     container-type: inline-size;
+    height: fit-content;
 }
 
 #filesystem thead tr {
-    display: block;
+    display: flex;
     width: 100%;
+    height: fit-content;
 }
 
 #filesystem th {
     border-right: 2px solid #48556b;
     border-bottom: 2px solid #48556b;
     padding: 5px;
-    display: inline-block;
-    height: 20px;
+    display: inline-flex;
+    height: stretch;
+    align-items: center;
+    justify-content: center;
 }
 
 #filesystem col.title {
