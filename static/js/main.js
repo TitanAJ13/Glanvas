@@ -10,27 +10,6 @@ function setup() {
     markActiveLink();
 
     mediaChanged();
-
-    generateTitle();
-}
-
-function generateTitle() {
-    let full = document.location.pathname;
-    let parts = full.split('/');
-    let title = '';
-
-    if (parts.length == 2) {
-        title = 'Home';
-    }
-    else if (parts[2].length == 0) {
-        title = parts[1].charAt(0).toUpperCase() + parts[1].slice(1);
-    }
-    else {
-        title = document.getElementById('title').innerText;
-    }
-
-    document.title = `Glanvas | ${title}`;
-
 }
 
 function markActiveLink() {

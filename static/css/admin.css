@@ -869,21 +869,6 @@
     text-align: center;
 }
 
-.adminlink:first-of-type {
-    border-top: 2px solid white;
-    margin-top: 10px;
-}
-
-.adminlink {
-    display: block;
-    padding-top: 15px;
-    padding-left: 5px;
-}
-
-.adminlink:hover {
-    text-decoration: underline;
-}
-
 #files {
     height: calc(50% - 48px);
     border-bottom: 2px solid white;

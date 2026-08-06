@@ -863,21 +863,6 @@
     text-align: center;
 }
 
-.adminlink:first-of-type {
-    border-top: 2px solid white;
-    margin-top: 10px;
-}
-
-.adminlink {
-    display: block;
-    padding-top: 15px;
-    font-size: 16pt;
-}
-
-.adminlink:hover {
-    text-decoration: underline;
-}
-
 #filesystem {
     height: calc(100cqh - 92px);
 }

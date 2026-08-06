@@ -10,6 +10,7 @@ from session import MySession, generateSQLSession
 from dotenv import load_dotenv
 import os
 import re
+import json
 
 def error(message):
     return {
@@ -63,8 +64,10 @@ def home():
     for module in modules:
         module['blocks'] = sqlSession.getItemsJSON(module['id'])
     announcements = sqlSession.getAnnouncementsJSON()[0:3]
+    for announcement in announcements:
+        announcement['date_posted'] = announcement['date_posted'].strftime("%b %d, %Y %I:%M %p")
     calendarItems = sqlSession.getCalendarItemsJSON()
-    return render_template("home.html", links=links, modules=modules, announcements=announcements, calendarItems=calendarItems)
+    return render_template("home.html", links=links, modules=modules, announcements=announcements, calendarItems=calendarItems, logged=('username' in ses))
 
 
 
@@ -78,7 +81,7 @@ def modules():
         links = sqlSession.getLinksJSON()
         for module in moduleList:
             module['blocks'] = sqlSession.getItemsJSON(module['id'])
-        return render_template("modules.html", links=links, modules=moduleList)
+        return render_template("modules.html", links=links, modules=moduleList, logged=('username' in ses))
     
     json = request.json
     position = requiredVar(json, 'position')
@@ -343,9 +346,11 @@ def items():
 def announcements():
     if request.method == "GET":
         announcements = sqlSession.getAnnouncementsJSON()
+        for announcement in announcements:
+            announcement['date_posted'] = announcement['date_posted'].strftime("%b %d, %Y %I:%M %p")
         links = sqlSession.getLinksJSON()
         # calendarItems = sqlSession.getCalendarItemsJSON()
-        return render_template("announcements.html", links=links, announcements=announcements)
+        return render_template("announcements.html", links=links, announcements=announcements, logged=('username' in ses))
     
 
     json = request.json
@@ -405,7 +410,8 @@ def announcement(id):
     if (announcement is not None):
         announcement = announcement.toJSON()
         announcement['initial'] = announcement['author'][0].upper()
-        return render_template("announcement.html", announcement=announcement, links=sqlSession.getLinksJSON())
+        announcement['date_posted'] = announcement['date_posted'].strftime("%b %d, %Y %I:%M %p")
+        return render_template("announcement.html", announcement=announcement, links=sqlSession.getLinksJSON(), logged=('username' in ses))
     else:
         return redirect(url_for("announcements"))
 
@@ -487,13 +493,13 @@ def file(key):
     data = sqlSession.getFile(key)
     if (data is None):
         if (str(key).startswith('https://')):
-            return render_template("file.html", header="Unnamed File", url=key, links=sqlSession.getLinksJSON())
+            return render_template("file.html", header="Unnamed File", url=key, links=sqlSession.getLinksJSON(), logged=('username' in ses))
         else:
-            return render_template("file.html", header="File Not Found", url="about:blank", links=sqlSession.getLinksJSON())
+            return render_template("file.html", header="File Not Found", url="about:blank", links=sqlSession.getLinksJSON(), logged=('username' in ses))
 
     else:
         data = data.toJSON()
-        return render_template("file.html", header= data['display_name'], url=data['url'], links=sqlSession.getLinksJSON())
+        return render_template("file.html", header= data['display_name'], url=data['url'], links=sqlSession.getLinksJSON(), logged=('username' in ses))
     
 
 
@@ -570,24 +576,27 @@ def music(key):
     data = sqlSession.getMusic(key)
     if (data is None):
         if (str(key).startswith('https://')):
-            return render_template("music.html", header="Unnamed Sheetmusic", url=key, links=sqlSession.getLinksJSON())
+            return render_template("music.html", header="Unnamed Sheetmusic", url=key, links=sqlSession.getLinksJSON(), logged=('username' in ses))
         else:
-            return render_template("music.html", header="Music Not Found", url="about:blank", links=sqlSession.getLinksJSON())
+            return render_template("music.html", header="Music Not Found", url="about:blank", links=sqlSession.getLinksJSON(), logged=('username' in ses))
     else:
         data = data.toJSON()
-        return render_template("music.html", header=data['display_name'], url=data['url'], links=sqlSession.getLinksJSON())
+        return render_template("music.html", header=data['display_name'], url=data['url'], links=sqlSession.getLinksJSON(), logged=('username' in ses))
     
 @app.route("/login/", methods=["GET", "POST"])
 def login():
     if request.method == "GET":
         if "username" in ses:
-            return redirect(url_for("adminpage"))
+            if (request.args.get("next")):
+                return redirect(url_for(request.args.get('next'), **json.loads(request.args.get('nextargs'))))
+            else:
+                return redirect(url_for('adminpage'))
         if "lockout" in ses and datetime.datetime.now(tz=datetime.timezone.utc) - ses["lockout"] > datetime.timedelta(minutes=10):
             ses.clear()
         if "failcount" in ses:
-            return render_template("login.html", failed=True, failcount=ses["failcount"])
+            return render_template("login.html", failed=True, failcount=ses["failcount"], links=sqlSession.getLinksJSON())
         else:
-            return render_template("login.html", failed=False, failcount=0)
+            return render_template("login.html", failed=False, failcount=0, links=sqlSession.getLinksJSON())
     
     elif request.method == "POST":
         username = request.form["user"]
@@ -595,7 +604,10 @@ def login():
         if username == "tony" and password == "twoshoes":
             ses.clear()
             ses["username"] = username
-            return redirect(url_for("adminpage"))
+            if (request.args.get('next')):
+                return redirect(url_for(request.args.get('next'), **json.loads(request.args.get('nextargs'))))
+            else:
+                return redirect(url_for('adminpage'))
         else:
             if "failcount" in ses:
                 ses["failcount"] = ses["failcount"] + 1
@@ -607,8 +619,11 @@ def login():
 @app.route("/logout/")
 def logout():
     ses.clear()
-    return redirect(url_for("home"))
-
+    endpt = request.args.get('next')
+    if endpt in ['adminpage', 'adminfiles']:
+        return redirect(url_for("home"))
+    else:
+        return redirect(url_for(endpt, **json.loads(request.args.get('nextargs'))))
     
 @app.route("/admin/")
 def adminpage():
@@ -620,8 +635,10 @@ def adminpage():
         for module in modules:
             module['blocks'] = sqlSession.getItemsJSON(module['id'])
         announcements = sqlSession.getAnnouncementsJSON()[0:3]
+        for announcement in announcements:
+            announcement['date_posted'] = announcement['date_posted'].strftime("%b %d, %Y %I:%M %p")
         calendarItems = sqlSession.getCalendarItemsJSON()
-        return render_template("admin.html", links=links, modules=modules, announcements=announcements, calendarItems=calendarItems)
+        return render_template("admin.html", links=links, modules=modules, announcements=announcements, calendarItems=calendarItems, logged=('username' in ses), admin=True)
     
 @app.route("/admin/files/")
 def adminfiles():
@@ -631,7 +648,7 @@ def adminfiles():
         links = sqlSession.getLinksJSON()
         files = sqlSession.getFilesJSON()
         music = sqlSession.getMusicsJSON()
-        return render_template("adminfiles.html", links=links, files=files, musics=music)
+        return render_template("adminfiles.html", links=links, files=files, musics=music, logged=('username' in ses), admin=True)
     
 @app.route("/admin/link/<position>")
 def adminGetLink(position):
@@ -755,7 +772,7 @@ def adminGetInternal():
 @app.route("/calendar/")
 def calendar():
     links = sqlSession.getLinksJSON()
-    return render_template("calendar.html", links=links)
+    return render_template("calendar.html", links=links, logged=('username' in ses))
 
 @app.route("/savestate/")
 def savestate():

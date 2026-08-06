@@ -1,6 +1,14 @@
-{% extends "admin_index.html" %}
+{% extends "index.html" %}
 
-{% block path %}{% endblock %}
+{% block title %}Admin Home{% endblock %}
+
+{% block path %}
+    <li>
+        <a href="#">
+            <span>Admin</span>
+        </a>
+    </li>
+{% endblock %}
 
 {% block sidebar_links %}
     {% for link in links %}

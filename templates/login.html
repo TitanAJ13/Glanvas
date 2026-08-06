@@ -1,11 +1,11 @@
-<html lang="en">
+<!-- <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" media="screen and (min-width: 760px)">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile.css') }}" media="screen and (max-width: 759px)">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Glee 256.webp') }}">
-    <title>PMGC</title>
+    <title>Login | Glanvas</title>
 </head>
 <body>
     <ul id="menubar">
@@ -63,10 +63,10 @@
                 </div>
                 <p>Calendar</p>
             </a>
-            <!-- <div id="right-of-path"></div> -->
+            <div id="right-of-path"></div>
         </div>
         <div id="main" style="display: flex; align-items: center; margin:0;">
-            <form id="login-page" style="margin: auto; display: block; text-align: center; padding-bottom: 20px; width: 400px; border: 1px solid white; border-radius: 15px;" action="" method="post">
+            <form id="login-page" style="margin: auto; display: block; text-align: center; padding-bottom: 20px; width: 400px; border: 1px solid white; border-radius: 15px;" action="{{url_for('login', next=request.args.get('next'), nextargs=request.args.get('nextargs'))}}" method="post">
                 <h1> Admin Login </h1>
                 <label for="user">Username</label><br>
                 <input type="text" name="user" id="user" required {% if failcount >= 6 %} disabled {% endif %}><br><br>
@@ -88,4 +88,37 @@
         </div>
     </div>
 </body>
-</html>
+</html> -->
+
+{% extends "index.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block right_display %}
+display: none
+{% endblock %}
+
+{% block calendar_events %}
+{% endblock %}
+
+{% block main_content %}
+    <form id="login-page" action="{{url_for('login', next=request.args.get('next'), nextargs=request.args.get('nextargs'))}}" method="post">
+        <h1> Admin Login </h1>
+        <label for="user">Username</label><br>
+        <input type="text" name="user" id="user" required {% if failcount >= 6 %} disabled {% endif %}><br><br>
+        <label for="pass">Password</label><br>
+        <input type="password" name="pass" id="pass" required {% if failcount >= 6 %} disabled {% endif %}><br><br>
+        <input type="submit" value="submit" {% if failcount >= 6 %} disabled {% endif %}>
+        {% if failed == true %}
+            <p style="color: red; margin: 20px 40px;">Sorry, that username/password combination wasn't found. Please try again</p>
+        {% endif %}
+        {% if failcount >= 2 %}
+            <p style="color: red; margin: 20px 40px;">If this seems like an error, please contact the administrator</p>
+        {% endif %}
+        {% if failcount >= 3 and failcount < 6 %}
+            <p style="color: red; margin: 20px 40px;">Attempts Remaining: {{ 6 - failcount }}</p>
+        {% elif failcount >= 6 %}
+            <p style="color: red; margin: 20px 40px;">No Attempts Remaining. Please request your password from The Glot, or wait 10 minutes to try again.</p>
+        {% endif %}
+    </form>
+{% endblock %}

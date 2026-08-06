@@ -202,7 +202,7 @@ class MySession():
         self.session.delete(announcement)
         self.session.commit()
 
-    def saveState(self) -> str:
+    def saveState(self) -> dict:
         root = {}
         modules = self.getModulesJSON()
         announcements = self.getAnnouncementsJSONSerialized()
@@ -221,7 +221,7 @@ class MySession():
         root['files'] = files
         root['music'] = music
 
-        return json.dumps(root, indent=4)
+        return root
 
 def generateSQLSession(dbName) -> MySession:
     engine = create_engine("sqlite:///" + dbName)

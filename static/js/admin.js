@@ -943,7 +943,8 @@ function moduleDragAndDrop() {
 
                 let module_list = document.getElementById('modules');
 
-                let mobileOffset = (isMobile)? 72: 0;
+                let mobileOffset = (isMobile.matches)? 72: 0;
+                console.log(mobileOffset);
 
                 dragged_module.style.top = Math.min(Math.max(module_list.offsetTop + 50, e2.clientY - offset + mobileOffset - document.getElementById('main').getBoundingClientRect().top), module_list.lastElementChild.offsetTop);
 
