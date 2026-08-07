@@ -660,11 +660,15 @@ def logout():
 
 @app.route("/sync/", methods=['POST'])
 def calendarSync():
-    ics = request.get_data(as_text=True)
+    try:
+        ics = request.get_data(as_text=True)
 
-    file = open('basic.ics', 'w')
-    file.write(ics)
-    file.close()
+        file = open('basic.ics', 'w')
+        file.write(ics)
+        file.close()
+        return success()
+    except Exception as e: 
+        abort(500, e)
 
 @app.route("/admin/")
 def adminpage():
@@ -844,6 +848,7 @@ def page(key):
 #     except:
 #         return 'There was a problem deleting that task'
 
+# Remove the following when in PythonAnywhere
 if __name__ == "__main__":
     # app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT",8080))) #for google cloud
     app.run(debug=True) #for localhost
