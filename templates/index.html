@@ -8,6 +8,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" media="screen and (min-width: 760px)">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile.css') }}" media="screen and (max-width: 759px)">
+    <!-- <script src="https://unpkg.com/ical.js/dist/ical.es5.min.cjs"></script>
+    <script class="toDelete">
+        const calendarData = {{calendar | trim | tojson}};
+    </script> -->
     <script type="text/javascript" src="{{ url_for('static', filename='js/main.js') }}"></script>
     {% if admin %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}" media="screen and (min-width: 760px)">
@@ -238,9 +242,19 @@
                             </div>
                             <ul>
                                 {% block calendar_events %}
-                                <li>
-                                    <small>Nothing for the next week</small>
-                                </li>
+                                    {% if calendarItems | length == 0 %}
+                                    <li>
+                                        <small>Nothing for now!</small>
+                                    </li>
+                                    {% else %}
+                                        {% for event in calendarItems %}
+                                            <li>
+                                                <p>{{event.title}}</p>
+                                                <small>{{event.start}} — {{event.end}}</small>
+                                                <small>{{event.location}}</small>
+                                            </li>
+                                        {% endfor %}
+                                    {% endif %}
                                 {% endblock %}
                             </ul>
                         </div>
@@ -251,5 +265,10 @@
     </div>
     {% block extra_scripts %}
     {% endblock %}
+    <script class="toDelete">
+        document.querySelectorAll('script.toDelete').forEach((script) => {
+            script.parentElement.removeChild(script);
+        })
+    </script>
 </body>
 </html>

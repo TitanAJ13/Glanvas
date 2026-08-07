@@ -349,7 +349,7 @@ iframe {
 #right-side-wrapper {
     display:block;
     position: relative;
-    min-width: 240px;
+    width: 240px;
     box-sizing: border-box;
     padding: 24px;
     -webkit-transform: translate3d(0,0,0);
@@ -375,7 +375,7 @@ iframe {
 
 #events-list div {
     padding-bottom: 6px;
-    margin-bottom: 12px;
+    margin-bottom: 15px;
     border-bottom: 1px solid #424344;
     overflow: hidden;
 }
@@ -419,11 +419,22 @@ iframe {
 #events-list ul li {
     margin: 0;
     padding: 0;
+    display: block;
+    border-bottom: 1px solid white;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+}
+
+#events-list ul li p {
+    display: block;
+    font-size: 16pt;
+    margin: 0;
 }
 
 #events-list ul li small {
     display: block;
     font-size: 0.8125rem;
+    margin-top: 5px;
 }
 
 #announcements {

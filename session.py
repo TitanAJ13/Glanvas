@@ -202,6 +202,15 @@ class MySession():
         self.session.delete(announcement)
         self.session.commit()
 
+    def updateKeys(self, keytype, old_key, new_key):
+        items = self.session.query(Item).filter_by(type = keytype, url = old_key).all()
+        for item in items:
+            item.url = new_key
+
+        links = self.session.query(Link).filter_by(type = keytype, url = old_key).all()
+        for link in links:
+            link.url = new_key
+
     def saveState(self) -> dict:
         root = {}
         modules = self.getModulesJSON()

@@ -98,9 +98,6 @@
 display: none
 {% endblock %}
 
-{% block calendar_events %}
-{% endblock %}
-
 {% block main_content %}
     <form id="login-page" action="{{url_for('login', next=request.args.get('next'), nextargs=request.args.get('nextargs'))}}" method="post">
         <h1> Admin Login </h1>

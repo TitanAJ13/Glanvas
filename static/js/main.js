@@ -10,6 +10,8 @@ function setup() {
     markActiveLink();
 
     mediaChanged();
+
+    // getCalendarItems();
 }
 
 function markActiveLink() {
@@ -114,6 +116,80 @@ function setToggleButton() {
         hamburgerButton.setAttribute('title', 'Hide Navigation Menu');
     }
 }
+
+// async function getCalendarItems() {
+//     let backup = document.createElement('li');
+//     backup.innerHTML = '<p>Nothing left to see!</p>';
+//     try {
+//         if (!calendarData) {
+//             document.querySelector('#events-list > ul').appendChild(backup);
+//             return;
+//         }
+
+//         let jCal = ICAL.parse(calendarData)
+//         let comp = new ICAL.Component(jCal);
+//         let vevents = comp.getAllSubcomponents('vevent');
+
+//         let now = new Date();
+//         let after = new Date(now.getTime() + 432000000);
+//         let start = ICAL.Time.fromJSDate(now, true);
+//         let end = ICAL.Time.fromJSDate(after, true);
+
+//         let upcoming = [];
+
+//         for (const vevent of vevents) {
+//             let event = new ICAL.Event(vevent);
+
+//             if (event.isRecurring()) {
+//                 let next;
+//                 let iterator = event.iterator()
+
+
+//                 while (next = iterator.next()) {
+//                     if (next.compare(end) > 0) break;
+//                     if (next.compare(start) >= 0) {
+//                         upcoming.push({
+//                             title: event.summary,
+//                             start: event.startDate.toJSDate().toLocaleString('en-US', {month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: 'true'}),
+//                             end: event.endDate.toJSDate().toLocaleString('en-US', {month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: 'true'}),
+//                             location: event.location
+//                         });
+//                     }
+//                 }
+//             }
+//             else {
+//                 if (event.startDate.compare(start) >= 0 && event.startDate.compare(end) <= 0) {
+//                     upcoming.push({
+//                         title: event.summary,
+//                         start: event.startDate.toJSDate().toLocaleString('en-US', {month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: 'true'}),
+//                         end: event.endDate.toJSDate().toLocaleString('en-US', {month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: 'true'}),
+//                         location: event.location
+//                     });
+//                 }
+//             }
+
+//         }
+        
+//         upcoming.sort((a,b) => a.startDate - b.startDate);
+//         if (upcoming.length > 6) {
+//             upcoming = upcoming.slice(0, 6);
+//         }
+
+//         for (const event of upcoming) {
+//             let item = document.createElement('li');
+//             item.innerHTML = `
+//             <p>${event.title}</p>
+//             <small>From ${event.start}</small>
+//             <small>To ${event.end}</small>
+//             ${(event.location)? `<small>${event.location}</small>` : ''}`;
+
+//             document.querySelector('#events-list > ul').appendChild(item);
+//         }
+//     }
+//     catch (error) {
+//         console.log(error);
+//     }
+// }
 
 async function postData(url, data) {
     try {

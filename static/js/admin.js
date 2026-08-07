@@ -1369,6 +1369,12 @@ async function editFile(tablerow) {
                 tablerow.dataset.display = obj.changes.display_name;
                 alphabetizeTable(tablerow.parentElement, tablerow.parentElement.removeChild(tablerow));
                 tablerow.scrollIntoView({block: "center"});
+
+                document.querySelectorAll('#sidebar2 > ul > li > a').forEach((link) => {
+                    if (link.href == document.location.origin + response.extra.oldhref){
+                        link.href = response.extra.href;
+                    }
+                });
             }
             else {
                 alert(`Error: ${response.error}`)

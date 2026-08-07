@@ -14,9 +14,6 @@
     display: none;
 {% endblock %}
 
-{% block calendar_events %}
-{% endblock %}
-
 {% block main_content %}
 <div id="filesystem">
     <div id="files">
@@ -119,11 +116,6 @@
     document.getElementById('music').querySelectorAll('tbody tr').forEach((element) => {
         element.key = element.dataset.key;
         element.display = element.dataset.display;
-    })
-</script>
-<script class="toDelete">
-    document.querySelectorAll('script.toDelete').forEach((script) => {
-        script.parentElement.removeChild(script);
     })
 </script>
 {% endblock %}

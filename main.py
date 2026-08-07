@@ -11,6 +11,8 @@ from dotenv import load_dotenv
 import os
 import re
 import json
+from icalevents.icalevents import events
+import requests as req
 
 def error(message):
     return {
@@ -30,6 +32,34 @@ app.secret_key = os.getenv('SECRET_KEY')
 app.permanent_session_lifetime = datetime.timedelta(minutes=30)
 
 sqlSession = generateSQLSession('data.db')
+
+def getCalendarEvents():
+    start = datetime.datetime.now()
+    end = start + datetime.timedelta(days=5)
+
+    calEvents = []
+    try:
+        ev = events(file="basic.ics",
+                    start=start, end=end, sort=True)
+
+        count = 1
+        for event in ev:
+            if count > 7: break
+            obj = {
+                'title': event.summary,
+                'start': event.start.strftime("%b %d, %I:%M %p"),
+                'end': event.end.strftime("%b %d, %I:%M %p"),
+                'description': event.description,
+                'location': event.location,
+                'all_day': event.all_day
+            }
+            calEvents.append(obj)
+            count = count + 1
+
+        return calEvents
+    except Exception as e:
+        return calEvents
+
 
 def requiredVar(var: dict[str, Any], item: str):
     try:
@@ -66,7 +96,7 @@ def home():
     announcements = sqlSession.getAnnouncementsJSON()[0:3]
     for announcement in announcements:
         announcement['date_posted'] = announcement['date_posted'].strftime("%b %d, %Y %I:%M %p")
-    calendarItems = sqlSession.getCalendarItemsJSON()
+    calendarItems = getCalendarEvents()
     return render_template("home.html", links=links, modules=modules, announcements=announcements, calendarItems=calendarItems, logged=('username' in ses))
 
 
@@ -478,10 +508,11 @@ def files():
                 if (sqlSession.getFile(path) and path != key):
                     abort(400, f'key `{path}` is already in use')
                 file.key = path
+                sqlSession.updateKeys('file', key, path)
             if (url is not None):
                 file.url = handleDriveURL(url)
             sqlSession.session.commit()
-            return success({'href': formatLink('file', file.key)})
+            return success({'href': formatLink('file', file.key), 'oldhref': formatLink('file', key)})
         except Exception as e:
             if isinstance(e, HTTPException):
                 abort(e.code, e.description)
@@ -559,12 +590,13 @@ def musicdata():
                 if (sqlSession.getMusic(new_path) and new_path != path):
                     abort(400, f'key `{new_path}` is already in use')
                 musicObj.key = new_path
+                sqlSession.updateKeys('music', path, new_path)
             if (filename is not None):
                 musicObj.display_name = filename
             if (url is not None):
                 musicObj.url = url
             sqlSession.session.commit()
-            return success({'href': formatLink('music', musicObj.key)})
+            return success({'href': formatLink('music', musicObj.key), 'oldhref': formatLink('music', path)})
         except Exception as e:
             if isinstance(e, HTTPException):
                 abort(e.code, e.description)
@@ -624,7 +656,16 @@ def logout():
         return redirect(url_for("home"))
     else:
         return redirect(url_for(endpt, **json.loads(request.args.get('nextargs'))))
-    
+
+
+@app.route("/sync/", methods=['POST'])
+def calendarSync():
+    ics = request.get_data(as_text=True)
+
+    file = open('basic.ics', 'w')
+    file.write(ics)
+    file.close()
+
 @app.route("/admin/")
 def adminpage():
     if "username" not in ses:
