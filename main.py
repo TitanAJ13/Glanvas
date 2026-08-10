@@ -27,10 +27,12 @@ def success(obj: dict[str, Any] = None):
         'extra': obj
     }
 
+adminpages = ['adminpage', 'adminfiles', 'loadstate']
+
 def header_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        if (not request.remote_addr or request.remote_addr != os.getenv('CURRENT_IP')):
+        if (not request.referrer or request.referrer not in [url_for(page, _external=True) for page in adminpages]):
             auth = request.authorization
             if not auth:
                 abort(401)
@@ -633,8 +635,6 @@ def music(key):
     else:
         data = data.toJSON()
         return render_template("music.html", header=data['display_name'], url=data['url'], links=sqlSession.getLinksJSON(), logged=('username' in ses))
-
-adminpages = ['adminpage', 'adminfiles', 'loadstate']
     
 @app.route("/login/", methods=["GET", "POST"])
 def login():
