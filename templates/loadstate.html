@@ -1,0 +1,38 @@
+{% extends "index.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block right_display %}
+display: none
+{% endblock %}
+
+{% block main_content %}
+    <form id="load-json" method="post" enctype="multipart/form-data">
+        <h1> Upload State File </h1>
+        <label for="fileSelectorUgly" id="fileSelector">
+            <p class="arrow">⬆</p>
+            <p class="file" style="display: none;">📄</p>
+            <p class="text">Upload File</p>
+        </label>
+        <input type="file" name="file" id="fileSelectorUgly" accept=".json" required />
+        <input type="submit" value="Submit" id="fileSubmitter">
+    </form>
+{% endblock %}
+
+{% block extra_scripts %}
+<script class="toDelete">
+    let input = document.getElementById('fileSelectorUgly');
+    input.addEventListener('change', ()=>{
+        if (input.files.length > 0) {
+            document.querySelector('#fileSelector > p.text').innerText = input.files[0].name;
+            document.querySelector('#fileSelector > p.arrow').style.display = 'none';
+            document.querySelector('#fileSelector > p.file').removeAttribute('style');
+        }
+        else {
+            document.querySelector('#fileSelector > p.text').innerText = 'Upload File';
+            document.querySelector('#fileSelector > p.arrow').removeAttribute('style');
+            document.querySelector('#fileSelector > p.file').style.display = 'none';
+        }
+    })
+</script>
+{% endblock %}

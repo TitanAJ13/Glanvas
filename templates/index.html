@@ -144,6 +144,8 @@
                     {% if logged %}
                     <a class="adminlink" href="{{ url_for('adminpage') }}">Admin Home</a>
                     <a class="adminlink" href="{{ url_for('adminfiles') }}">Files</a>
+                    <a class="adminlink" href="{{ url_for('savestate') }}">Save State</a>
+                    <a class="adminlink" href="{{ url_for('loadstate') }}">Load State</a>
                     {% endif %}
                 </div>
             </div>
@@ -266,6 +268,9 @@
     {% block extra_scripts %}
     {% endblock %}
     <script class="toDelete">
+        {% for message in get_flashed_messages() %}
+        window.alert({{message | tojson}})
+        {% endfor %}
         document.querySelectorAll('script.toDelete').forEach((script) => {
             script.parentElement.removeChild(script);
         })

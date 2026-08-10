@@ -232,6 +232,52 @@ class MySession():
 
         return root
 
+    def loadState(self, jsonfile):
+        try:
+
+            jsonfile = json.load(jsonfile)
+
+            self.session.query(Module).delete()
+            self.session.query(Item).delete()
+            self.session.query(Link).delete()
+            self.session.query(Announcement).delete()
+            self.session.query(FileData).delete()
+            self.session.query(MusicData).delete()
+
+            if ('modules' in jsonfile):
+                for module in jsonfile['modules']:
+                    moduleObj = Module(id = module['id'], position = module['position'], display_name = module['display_name'], hidden = module['hidden'])
+                    self.session.add(moduleObj)
+            if ('items' in jsonfile):
+                for item in jsonfile['items']:
+                    itemObj = Item(id = item['id'], module_id = item['module_id'], position = item['position'], type= item['type'], display = item['display'], url = item['url'], hidden = item['hidden'])
+                    self.session.add(itemObj)
+            if ('links' in jsonfile):
+                for link in jsonfile['links']:
+                    linkObj = Link(id = link['id'], position = link['position'], display_name = link['display_name'], type = link['type'], url = link['url'])
+                    self.session.add(linkObj)
+            if ('announcements' in jsonfile):
+                for announcement in jsonfile['announcements']:
+                    announcementObj = Announcement(id = announcement['id'], author = announcement['author'], title = announcement['title'], date_posted = datetime.datetime.fromisoformat(announcement['date_posted']), content = announcement['content'])
+                    self.session.add(announcementObj)
+            if ('files' in jsonfile):
+                for file in jsonfile['files']:
+                    fileObj = FileData(key = file['key'], url = file['url'], display_name = file['display_name'])
+                    self.session.add(fileObj)
+            if ('music' in jsonfile):
+                for music in jsonfile['music']:
+                    musicObj = MusicData(key = music['key'], url = music['url'], display_name = music['display_name'])
+                    self.session.add(musicObj)
+            self.session.commit()
+            if 'saveDate' in jsonfile:
+                date = datetime.datetime.fromisoformat(jsonfile['saveDate']).strftime("%b %d, %Y %I:%M %p")
+                return {'status': 'success', 'extra':{'message': f"Successfully loaded state from {date}!"}}
+            
+            return {'status': 'success', 'extra':{'message': f"Successfully loaded state!"}}
+        except Exception as e:
+            self.session.rollback()
+            return {'status': 'error', 'error': f'{e}'}
+
 def generateSQLSession(dbName) -> MySession:
     engine = create_engine("sqlite:///" + dbName)
     Base.metadata.create_all(bind=engine)

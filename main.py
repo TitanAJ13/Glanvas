@@ -1,4 +1,4 @@
-from flask import Flask, render_template, abort, redirect, request, url_for
+from flask import Flask, render_template, abort, redirect, request, url_for, make_response, flash
 from flask import session as ses
 from werkzeug.exceptions import HTTPException
 # from sqlalchemy import create_engine, desc
@@ -13,6 +13,7 @@ import re
 import json
 from icalevents.icalevents import events
 import requests as req
+from functools import wraps
 
 def error(message):
     return {
@@ -25,6 +26,24 @@ def success(obj: dict[str, Any] = None):
         'status': 'success',
         'extra': obj
     }
+
+def header_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if (not request.remote_addr or request.remote_addr not in ['127.0.0.1', 'pmgc.pythonanywhere.com']):
+            auth = request.authorization
+            if not auth:
+                abort(401)
+
+            username = auth.parameters['username']
+            password = auth.parameters['password']
+            if not username or not password:
+                abort(401)
+
+            if username != 'tony' or password != 'twoshoes':
+                abort(401)
+        return f(*args, **kwargs)
+    return decorated
 
 load_dotenv()
 app = Flask(__name__)
@@ -614,12 +633,14 @@ def music(key):
     else:
         data = data.toJSON()
         return render_template("music.html", header=data['display_name'], url=data['url'], links=sqlSession.getLinksJSON(), logged=('username' in ses))
+
+adminpages = ['adminpage', 'adminfiles', 'loadstate']
     
 @app.route("/login/", methods=["GET", "POST"])
 def login():
     if request.method == "GET":
         if "username" in ses:
-            if (request.args.get("next")):
+            if (request.args.get("next") in adminpages):
                 return redirect(url_for(request.args.get('next'), **json.loads(request.args.get('nextargs'))))
             else:
                 return redirect(url_for('adminpage'))
@@ -636,7 +657,7 @@ def login():
         if username == "tony" and password == "twoshoes":
             ses.clear()
             ses["username"] = username
-            if (request.args.get('next')):
+            if (request.args.get('next') in adminpages):
                 return redirect(url_for(request.args.get('next'), **json.loads(request.args.get('nextargs'))))
             else:
                 return redirect(url_for('adminpage'))
@@ -652,13 +673,14 @@ def login():
 def logout():
     ses.clear()
     endpt = request.args.get('next')
-    if endpt in ['adminpage', 'adminfiles']:
+    if endpt in adminpages:
         return redirect(url_for("home"))
     else:
         return redirect(url_for(endpt, **json.loads(request.args.get('nextargs'))))
 
 
 @app.route("/sync/", methods=['POST'])
+@header_required
 def calendarSync():
     try:
         ics = request.get_data(as_text=True)
@@ -688,7 +710,7 @@ def adminpage():
 @app.route("/admin/files/")
 def adminfiles():
     if "username" not in ses:
-        return redirect( url_for("login"))
+        return redirect( url_for("login", next='adminfiles', nextargs='{}'))
     else:
         links = sqlSession.getLinksJSON()
         files = sqlSession.getFilesJSON()
@@ -696,6 +718,7 @@ def adminfiles():
         return render_template("adminfiles.html", links=links, files=files, musics=music, logged=('username' in ses), admin=True)
     
 @app.route("/admin/link/<position>")
+@header_required
 def adminGetLink(position):
     if "username" not in ses:
         abort(403)
@@ -708,6 +731,7 @@ def adminGetLink(position):
         abort(500, e)
     
 @app.route("/admin/item/<modulepos>/<position>")
+@header_required
 def adminGetItem(modulepos, position):
     if "username" not in ses:
         abort(403)
@@ -721,6 +745,7 @@ def adminGetItem(modulepos, position):
         abort(500, e)
     
 @app.route("/admin/announcement/<id>")
+@header_required
 def adminGetAnnouncement(id: str):
     if "username" not in ses:
         abort(403)
@@ -743,6 +768,7 @@ def adminGetAnnouncement(id: str):
             abort(500, e)
     
 @app.route("/admin/file/<key>")
+@header_required
 def adminGetFile(key: str):
     if "username" not in ses:
         abort(403)
@@ -760,6 +786,7 @@ def adminGetFile(key: str):
             abort(500, e)
     
 @app.route("/admin/music/<key>")
+@header_required
 def adminGetMusic(key: str):
     if "username" not in ses:
         abort(403)
@@ -777,6 +804,7 @@ def adminGetMusic(key: str):
             abort(500, e)
     
 @app.route("/admin/page/<key>")
+@header_required
 def adminGetPage(key: str):
     if "username" not in ses:
         abort(403)
@@ -796,6 +824,7 @@ def adminGetPage(key: str):
             abort(500, e)
     
 @app.route("/admin/internal/all")
+@header_required
 def adminGetInternal():
     if "username" not in ses:
         abort(403)
@@ -821,7 +850,35 @@ def calendar():
 
 @app.route("/savestate/")
 def savestate():
-    return sqlSession.saveState()
+    if 'username' not in ses:
+        return redirect( url_for("login"))
+
+    state = json.dumps(sqlSession.saveState(), indent=4)
+
+    response = make_response(state)
+    response.headers['Content-Type'] = 'application/json'
+    response.headers['Content-Disposition'] = 'attachment; filename=glanvas.json'
+    return response
+
+@app.route("/loadstate/", methods=['GET', 'POST'])
+def loadstate():
+    if 'username' not in ses:
+        return redirect( url_for("login", next='loadstate', nextargs='{}'))
+
+    if request.method == 'GET':
+        links = sqlSession.getLinksJSON()
+        return render_template("loadstate.html", links=links, admin=True, logged=('username' in ses))
+
+    elif request.method == 'POST':
+        file = request.files['file']
+        result = sqlSession.loadState(file)
+
+        if (result['status'] == 'success'):
+            flash(result['extra']['message'])
+            return redirect(url_for('adminpage'))
+
+        flash(result['error'], category='error')
+        return redirect(url_for('loadstate'))
 
 @app.route("/page/<key>")
 def page(key):
