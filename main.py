@@ -30,7 +30,7 @@ def success(obj: dict[str, Any] = None):
 def header_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        if (not request.remote_addr or request.remote_addr not in ['127.0.0.1', 'pmgc.pythonanywhere.com']):
+        if (not request.remote_addr or request.remote_addr != os.getenv('CURRENT_IP')):
             auth = request.authorization
             if not auth:
                 abort(401)
