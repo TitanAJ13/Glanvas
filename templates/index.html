@@ -252,8 +252,11 @@
                                         {% for event in calendarItems %}
                                             <li>
                                                 <p>{{event.title}}</p>
-                                                <small>{{event.start}} — {{event.end}}</small>
-                                                <small>{{event.location}}</small>
+                                                <small class="date">{{event.date1}}</small>
+                                                <small class="date">{{event.date2}}</small>
+                                                {% if event.location %}
+                                                    <small>{{event.location}}</small>
+                                                {% endif %}
                                             </li>
                                         {% endfor %}
                                     {% endif %}

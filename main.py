@@ -5,7 +5,7 @@ from werkzeug.exceptions import HTTPException
 # from sqlalchemy.orm import sessionmaker
 from models import Link, Module, Announcement, FileData, MusicData, Item
 import datetime
-from typing import Any
+from typing import Any, Tuple
 from session import MySession, generateSQLSession
 from dotenv import load_dotenv
 import os
@@ -54,6 +54,33 @@ app.permanent_session_lifetime = datetime.timedelta(minutes=30)
 
 sqlSession = generateSQLSession('data.db')
 
+def nicerFormat(starttime: datetime.datetime, endtime: datetime.datetime) -> Tuple[str, str]:
+    today = datetime.datetime.now().date()
+    startDelta = (starttime.date() - today).days
+    endDelta = (endtime.date() - today).days
+
+
+    startFormat = "%b %d"
+    if (startDelta == 0):
+        startFormat = "Today"
+    elif (startDelta == 1):
+        startFormat = "Tomorrow"
+    elif (1 < startDelta < 7 - today.weekday()):
+        startFormat = "%A"
+
+    if startDelta == endDelta:
+        return (starttime.strftime(startFormat + ", %I:%M%p —"), endtime.strftime("%I:%M%p"))
+
+    endFormat = "%b %d"
+    if (endDelta == 0):
+        endFormat = "Today"
+    elif (endDelta == 1):
+        endFormat = "Tomorrow"
+    elif (1 < endDelta < 7 - today.weekday()):
+        endFormat = "%A"
+
+    return (starttime.strftime(startFormat + ", %I:%M%p —"), endtime.strftime(endFormat + ", %I:%M%p"))
+
 def getCalendarEvents():
     start = datetime.datetime.now()
     end = start + datetime.timedelta(days=float(sqlSession.getConfig('calendarDelta')))
@@ -66,10 +93,11 @@ def getCalendarEvents():
         count = 1
         for event in ev:
             if count > int(sqlSession.getConfig('calendarNum')): break
+            date1, date2 = nicerFormat(event.start, event.end)
             obj = {
                 'title': event.summary,
-                'start': event.start.strftime("%b %d, %I:%M %p"),
-                'end': event.end.strftime("%b %d, %I:%M %p"),
+                'date1': date1,
+                'date2': date2,
                 'description': event.description,
                 'location': event.location,
                 'all_day': event.all_day

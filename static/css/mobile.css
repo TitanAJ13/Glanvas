@@ -364,7 +364,7 @@ iframe {
     box-sizing: border-box;
     min-width: 1px;
     max-width: 100%;
-    min-height: 100%;
+    min-height: calc(100% - 4.5rem);
     flex-wrap: wrap;
     justify-content: center;
 }
@@ -454,11 +454,27 @@ iframe {
 #events-list ul li {
     margin: 0;
     padding: 0;
+    display: block;
+    border-bottom: 1px solid white;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+}
+
+#events-list ul li p {
+    display: block;
+    font-size: 16pt;
+    margin: 0;
 }
 
 #events-list ul li small {
     display: block;
     font-size: 0.8125rem;
+    margin-top: 5px;
+}
+
+#events-list ul li small.date {
+    display: inline-block;
+    width: fit-content;
 }
 
 #announcements {
