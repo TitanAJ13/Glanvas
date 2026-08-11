@@ -56,14 +56,14 @@ sqlSession = generateSQLSession('data.db')
 
 def getCalendarEvents():
     start = datetime.datetime.now()
-    end = start + datetime.timedelta(days=int(sqlSession.getConfig('calendarDelta')))
+    end = start + datetime.timedelta(days=float(sqlSession.getConfig('calendarDelta')))
 
     calEvents = []
     try:
         ev = events(file="basic.ics",
                     start=start, end=end, sort=True)
 
-        count = 0
+        count = 1
         for event in ev:
             if count > int(sqlSession.getConfig('calendarNum')): break
             obj = {
