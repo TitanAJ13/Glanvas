@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine, desc
 from sqlalchemy.orm import sessionmaker, Session
-from models import Base, Link, Module, Announcement, CalendarItem, FileData, MusicData, Item
+from models import Base, Link, Module, Announcement, Config, FileData, MusicData, Item
 import datetime
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -9,6 +9,7 @@ import json
 class MySession():
     def __init__(self, session: Session):
         self.session = session
+        self.initConfig()
 
     def getLinksJSON(self) -> list[dict[str, Any]]:
         """Returns all `Link` objects in the database parsed as Python `dict` objects"""
@@ -70,15 +71,53 @@ class MySession():
             obj.append(temp)
         return obj
 
-    def getCalendarItemsJSON(self) -> list[dict[str, Any]]:
-        calendarItems = self.session.query(CalendarItem).order_by(CalendarItem.target_date).all()
-        obj = []
-        for calendarItem in calendarItems:
-            if (datetime.now() <= calendarItem.target_date and datetime.now() + datetime.timedelta(weeks=1) >= calendarItem.target_date):
-                obj.append(calendarItem.toJSON())
-            else:
-                break
+    def getConfigJSON(self) -> list[dict[str, Any]]:
+        configs = self.session.query(Config).all()
+        obj = {}
+        for config in configs:
+            js = config.toJSON()
+            obj[js['key']] = js['value']
         return obj
+
+    def initConfig(self):
+        if not self.session.query(Config).filter_by(key='authorization').first():
+            self.session.add(Config(key='authorization', value=''))
+
+        if not self.session.query(Config).filter_by(key='homeAnnouncements').first():
+            self.session.add(Config(key='homeAnnouncements', value='3'))
+
+        if not self.session.query(Config).filter_by(key='calendarNum').first():
+            self.session.add(Config(key='calendarNum', value='6'))
+
+        if not self.session.query(Config).filter_by(key='calendarDelta').first():
+            self.session.add(Config(key='calendarDelta', value='5'))
+
+        self.session.commit()
+
+    def getConfig(self, key):
+        result = self.session.query(Config).filter_by(key=key).first()
+        if not result:
+            raise KeyError(f'{key} is not a valid Configuration key')
+
+        return result.value
+
+    def editConfig(self, key: str, value: str):
+        result = self.session.query(Config).filter_by(key=key).first()
+        if not result:
+            raise KeyError(f'{key} is not a valid Configuration key')
+
+        result.value = value
+        self.session.commit()
+
+    def editConfigAll(self, newConfig: dict):
+        for key in newConfig.keys():
+            result = self.session.query(Config).filter_by(key=key).first()
+            if not result:
+                self.session.rollback()
+                raise KeyError(f'{key} is not a valid Configuration key')
+            result.value = newConfig[key]
+
+        self.session.commit()
 
     def getModule(self, position) -> Module | None:
         return self.session.query(Module).filter_by(position=position).first()

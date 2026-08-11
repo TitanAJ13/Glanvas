@@ -3,7 +3,7 @@ from flask import session as ses
 from werkzeug.exceptions import HTTPException
 # from sqlalchemy import create_engine, desc
 # from sqlalchemy.orm import sessionmaker
-from models import Base, Link, Module, Announcement, CalendarItem, FileData, MusicData, Item
+from models import Link, Module, Announcement, FileData, MusicData, Item
 import datetime
 from typing import Any
 from session import MySession, generateSQLSession
@@ -56,16 +56,16 @@ sqlSession = generateSQLSession('data.db')
 
 def getCalendarEvents():
     start = datetime.datetime.now()
-    end = start + datetime.timedelta(days=5)
+    end = start + datetime.timedelta(days=int(sqlSession.getConfig('calendarDelta')))
 
     calEvents = []
     try:
         ev = events(file="basic.ics",
                     start=start, end=end, sort=True)
 
-        count = 1
+        count = 0
         for event in ev:
-            if count > 7: break
+            if count > int(sqlSession.getConfig('calendarNum')): break
             obj = {
                 'title': event.summary,
                 'start': event.start.strftime("%b %d, %I:%M %p"),
@@ -114,9 +114,9 @@ def home():
     modules = sqlSession.getModulesJSON()
     for module in modules:
         module['blocks'] = sqlSession.getItemsJSON(module['id'])
-    announcements = sqlSession.getAnnouncementsJSON()[0:3]
+    announcements = sqlSession.getAnnouncementsJSON()[0:int(sqlSession.getConfig('homeAnnouncements'))]
     for announcement in announcements:
-        announcement['date_posted'] = announcement['date_posted'].strftime("%b %d, %Y %I:%M %p")
+        announcement['date_posted'] = announcement['date_posted'].strftime("%b %d, %Y\n%I:%M %p")
     calendarItems = getCalendarEvents()
     return render_template("home.html", links=links, modules=modules, announcements=announcements, calendarItems=calendarItems, logged=('username' in ses))
 
@@ -398,7 +398,7 @@ def announcements():
     if request.method == "GET":
         announcements = sqlSession.getAnnouncementsJSON()
         for announcement in announcements:
-            announcement['date_posted'] = announcement['date_posted'].strftime("%b %d, %Y %I:%M %p")
+            announcement['date_posted'] = announcement['date_posted'].strftime("%b %d, %Y\n%I:%M %p")
         links = sqlSession.getLinksJSON()
         # calendarItems = sqlSession.getCalendarItemsJSON()
         return render_template("announcements.html", links=links, announcements=announcements, logged=('username' in ses))
@@ -692,6 +692,17 @@ def calendarSync():
     except Exception as e: 
         abort(500, e)
 
+@app.route("/config/<key>", methods=['POST'])
+@header_required
+def configuration(key):
+    try:
+        value = request.get_data(as_text=True)
+
+        sqlSession.editConfig(key, value)
+        return success()
+    except Exception as e:
+        abort(500, e)
+
 @app.route("/admin/")
 def adminpage():
     if "username" not in ses:
@@ -701,10 +712,10 @@ def adminpage():
         modules = sqlSession.getModulesJSON()
         for module in modules:
             module['blocks'] = sqlSession.getItemsJSON(module['id'])
-        announcements = sqlSession.getAnnouncementsJSON()[0:3]
+        announcements = sqlSession.getAnnouncementsJSON()[0:int(sqlSession.getConfig('homeAnnouncements'))]
         for announcement in announcements:
-            announcement['date_posted'] = announcement['date_posted'].strftime("%b %d, %Y %I:%M %p")
-        calendarItems = sqlSession.getCalendarItemsJSON()
+            announcement['date_posted'] = announcement['date_posted'].strftime("%b %d, %Y\n%I:%M %p")
+        calendarItems = getCalendarEvents()
         return render_template("admin.html", links=links, modules=modules, announcements=announcements, calendarItems=calendarItems, logged=('username' in ses), admin=True)
     
 @app.route("/admin/files/")

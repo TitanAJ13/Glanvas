@@ -134,16 +134,14 @@ class MusicData(Base):
             "display_name": self.display_name
         }
     
-class CalendarItem(Base):
-    __tablename__ = "CalendarItems"
+class Config(Base):
+    __tablename__ = "Config"
 
-    id = Column("id", Integer, primary_key=True, autoincrement=True)
-    target_date = Column("target_date", DateTime, nullable=True)
-    title = Column("title", String, nullable=False)
+    key = Column("key", String, primary_key=True, nullable=False)
+    value = Column("value", String, nullable=False)
 
     def toJSON(self):
         return {
-            "id": self.id,
-            "target_date": self.target_date,
-            "title": self.title
+            'key': self.key,
+            'value': self.value
         }
