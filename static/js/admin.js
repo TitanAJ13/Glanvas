@@ -152,6 +152,7 @@ function getLinkListTarget(element) {
 async function linkMenu(title, display_name, type, url, hasDelete) {
     let overlay = document.createElement("div");
     overlay.id = 'overlay';
+    overlay.className = 'overlay';
     overlay.innerHTML = `
     <div class="dialog">
         <h3>${title}</h3>
@@ -178,6 +179,7 @@ async function linkMenu(title, display_name, type, url, hasDelete) {
                     <div class="scope">
                         <select class="big-select" id="linkURL1" name="url1" ${(type != 'external')? 'required': 'style="display: none;" disabled'}>
                         </select>
+                        <button type="button" class="create-new" style="display:none;" disabled>New...</button>
                     </div>
                     <input type="url" id="linkURL2" name="url2" placeholder="${url}" value="${url}" ${(type != 'external')? 'style="display: none;" disabled': 'required'}>
                 </div>
@@ -193,6 +195,7 @@ async function linkMenu(title, display_name, type, url, hasDelete) {
 
     document.body.appendChild(overlay);
 
+    let createButton = overlay.querySelector('.create-new');
     overlay.querySelectorAll('#linkType > option').forEach((element) => {
         element.addEventListener('pointerup', async (event) => {
             let urlSelect = overlay.querySelector('#linkURL1');
@@ -211,11 +214,22 @@ async function linkMenu(title, display_name, type, url, hasDelete) {
                 url2.style.display = 'none';
                 label2.style.display = 'none';
 
+                if (element.value == 'file' || element.value == 'music') {
+                    createButton.removeAttribute('style');
+                    createButton.removeAttribute('disabled');
+                }
+                else {
+                    createButton.style.display = 'none';
+                    createButton.setAttribute('disabled','');
+                }
+
                 urlSelect.innerHTML = '<option value="" disabled selected>Loading...</option>';
                 try {
-                    let response = await getOptions(element.value);
+                    let response = getOptions(element.value);
+                    if (event instanceof CustomEvent)
+                        event.detail.promises.push(response);
                     let newoptions = '';
-                    response.options.forEach((obj) => {
+                    (await response).options.forEach((obj) => {
                         newoptions = newoptions + `\n<option value="${obj.id ?? obj.key}">${obj.title ?? obj.display_name}</option>`
                     })
     
@@ -235,6 +249,9 @@ async function linkMenu(title, display_name, type, url, hasDelete) {
                 url2.removeAttribute('disabled');
                 url2.removeAttribute('style');
                 label2.removeAttribute('style');
+                
+                createButton.style.display = 'none';
+                createButton.setAttribute('disabled','');
             }
         })
     })
@@ -246,7 +263,25 @@ async function linkMenu(title, display_name, type, url, hasDelete) {
         document.body.removeChild(overlay);
     })
 
+    createButton.addEventListener('click', async (event) => {
+        if (form.querySelector('#linkType').value == 'file'){
+            // Then figure out window prevent stuff afterward?
+            windowPrevent(false);
+            await addFile(false);
+        }
+        else if (form.querySelector('#linkType').value == 'music'){
+            // Then figure out window prevent stuff afterward?
+            windowPrevent(false);
+            await addMusic(false);
+        }
+    })
+
     if (type != 'external') {
+        if (type == 'file' || type == 'music') {
+            createButton.removeAttribute('style');
+            createButton.removeAttribute('disabled');
+        }
+
         form.querySelector('#linkURL1').innerHTML = '<option value="" disabled selected>Loading...</option>';
         try{
             let response = await getOptions(type);
@@ -301,7 +336,7 @@ async function editLink(item) {
             let response = await patchData('/links/', obj);
             if (response && response.status == 'success') {
                 windowPrevent(false);
-                document.body.removeChild(overlay);
+                document.body.removeChild(form.parentElement.parentElement.parentElement);
                 // location.reload();
 
                 item.querySelector('a').innerText = obj.changes.title;
@@ -326,7 +361,7 @@ async function editLink(item) {
             let response = await deleteData('/links/', obj);
             if (response && response.status == 'success'){
                 windowPrevent(false);
-                document.body.removeChild(overlay);
+                document.body.removeChild(form.parentElement.parentElement.parentElement);
                 // location.reload();
                 item.parentNode.removeChild(item);
             }
@@ -361,7 +396,7 @@ async function addLink() {
             let response = await postData('/links/', obj);
             if (response && response.status == 'success') {
                 windowPrevent(false);
-                document.body.removeChild(overlay);
+                document.body.removeChild(form.parentElement.parentElement.parentElement);
                 // location.reload();
                 let newLink = document.createElement('li');
                 newLink.classList.add('draggable-link');
@@ -607,6 +642,7 @@ async function toggleItemVisibility(item) {
 async function itemMenu(title, display_name, type, url, hasDelete) {
     let overlay = document.createElement("div");
     overlay.id = 'overlay';
+    overlay.className = 'overlay';
     overlay.innerHTML = `
     <div class="dialog">
         <h3>${title}</h3>
@@ -633,6 +669,7 @@ async function itemMenu(title, display_name, type, url, hasDelete) {
                     <div class="scope">
                         <select class="big-select" id="itemURL1" name="url1" ${(type != 'header' && type != 'link')? 'required': 'style="display: none;" disabled'}>
                         </select>
+                        <button type="button" class="create-new" style="display:none;" disabled>New...</button>
                     </div>
                     <input type="url" id="itemURL2" name="url2" placeholder="${url}" value="${url}" ${(type != 'link')? 'style="display: none;" disabled': 'required'}>
                 </div>
@@ -648,6 +685,7 @@ async function itemMenu(title, display_name, type, url, hasDelete) {
 
     document.body.appendChild(overlay);
 
+    let createButton = overlay.querySelector('.create-new');
     overlay.querySelectorAll('#itemType > option').forEach((element) => {
         element.addEventListener('pointerup', async (event) => {
             let urlSelect = overlay.querySelector('#itemURL1');
@@ -666,11 +704,22 @@ async function itemMenu(title, display_name, type, url, hasDelete) {
                 url2.style.display = 'none';
                 label2.style.display = 'none';
 
+                if (element.value == 'file' || element.value == 'music') {
+                    createButton.removeAttribute('style');
+                    createButton.removeAttribute('disabled');
+                }
+                else {
+                    createButton.style.display = 'none';
+                    createButton.setAttribute('disabled','');
+                }
+
                 urlSelect.innerHTML = '<option value="" disabled selected>Loading...</option>';
                 try {
-                    let response = await getOptions(element.value);
+                    let response = getOptions(element.value);
+                    if (event instanceof CustomEvent)
+                        event.detail.promises.push(response);
                     let newoptions = '';
-                    response.options.forEach((obj) => {
+                    (await response).options.forEach((obj) => {
                         newoptions = newoptions + `\n<option value="${obj.id ?? obj.key}">${obj.title ?? obj.display_name}</option>`
                     })
     
@@ -698,6 +747,9 @@ async function itemMenu(title, display_name, type, url, hasDelete) {
                     url2.style.display = 'none';
                     label2.style.display = 'none';
                 }
+                
+                createButton.style.display = 'none';
+                createButton.setAttribute('disabled','');
             }
         })
     })
@@ -708,8 +760,25 @@ async function itemMenu(title, display_name, type, url, hasDelete) {
         windowPrevent(false);
         document.body.removeChild(overlay);
     })
+    
+    createButton.addEventListener('click', async (event) => {
+        if (form.querySelector('#itemType').value == 'file'){
+            // Then figure out window prevent stuff afterward?
+            windowPrevent(false);
+            await addFile(false);
+        }
+        else if (form.querySelector('#itemType').value == 'music'){
+            // Then figure out window prevent stuff afterward?
+            windowPrevent(false);
+            await addMusic(false);
+        }
+    })
 
     if (type != 'header' && type != 'link') {
+        if (type == 'file' || type == 'music') {
+            createButton.removeAttribute('style');
+            createButton.removeAttribute('disabled');
+        }
         form.querySelector('#itemURL1').innerHTML = '<option value="" disabled selected>Loading...</option>';
         try {
             let response = await getOptions(type);
@@ -771,7 +840,7 @@ async function editItem(listitem) {
             let response = await patchData('/items/', obj);
             if (response && response.status == 'success') {
                 windowPrevent(false);
-                document.body.removeChild(overlay);
+                document.body.removeChild(form.parentElement.parentElement.parentElement);
                 // location.reload();
 
                 listitem.classList.remove('module-header', 'module-link', 'module-page', 'module-announcement', 'module-music', 'module-file');
@@ -802,7 +871,7 @@ async function editItem(listitem) {
             let response = await deleteData('/items/', obj);
             if (response && response.status == 'success'){
                 windowPrevent(false);
-                document.body.removeChild(overlay);
+                document.body.removeChild(form.parentElement.parentElement.parentElement);
                 // location.reload();
                 listitem.parentNode.removeChild(listitem.previousElementSibling);
                 listitem.parentNode.removeChild(listitem);
@@ -850,7 +919,7 @@ async function addItem(item) {
             let response = await postData('/items/', obj);
             if (response && response.status == 'success') {
                 windowPrevent(false);
-                document.body.removeChild(overlay);
+                document.body.removeChild(form.parentElement.parentElement.parentElement);
                 // location.reload();
                 let newItem = document.createElement('li');
                 newItem.classList.add('draggable-item',`module-${obj.type}`);
@@ -1300,7 +1369,8 @@ async function fileMenu(title, type, display_name, key, url, hasDelete) {
     if (type == 'music')
         urlLabel = "MuseScore";
     let overlay = document.createElement("div");
-    overlay.id = 'overlay';
+    overlay.id = 'overlay2';
+    overlay.className = 'overlay';
     overlay.innerHTML = `
     <div class="dialog">
         <h3>${title}</h3>
@@ -1376,7 +1446,7 @@ async function editFile(tablerow) {
             let response = await patchData('/files/', obj);
             if (response && response.status == 'success') {
                 windowPrevent(false);
-                document.body.removeChild(overlay);
+                document.body.removeChild(form.parentElement.parentElement.parentElement);
                 // location.reload();
 
                 let link = tablerow.querySelector('td.title a');
@@ -1419,7 +1489,7 @@ async function editFile(tablerow) {
             let response = await deleteData('/files/', obj);
             if (response && response.status == 'success'){
                 windowPrevent(false);
-                document.body.removeChild(overlay);
+                document.body.removeChild(form.parentElement.parentElement.parentElement);
                 // location.reload();
                 tablerow.parentNode.removeChild(tablerow);
             }
@@ -1434,7 +1504,7 @@ async function editFile(tablerow) {
     })
 }
 
-async function addFile() {
+async function addFile(useTable = true) {
 
     if (window.prevent) return;
 
@@ -1453,36 +1523,46 @@ async function addFile() {
             let response = await postData('/files/', obj);
             if (response && response.status == 'success') {
                 windowPrevent(false);
-                document.body.removeChild(overlay);
+                document.body.removeChild(form.parentElement.parentElement.parentElement);
                 // location.reload();
-                let newFile = document.createElement('tr');
-                newFile.key = obj.key;
-                newFile.dataset.key = obj.key;
-                newFile.display = obj.display_name;
-                newFile.dataset.display = obj.display_name;
-                newFile.innerHTML = `
-                <td class="title">
-                    <a href="${response.extra.href}" target="_blank"> ${obj.display_name}</a>
-                </td>
-                <td class="key" title="${obj.key}">${obj.key}</td>
-                <td class="url" title="${obj.url}">${obj.url}</td>
-                <td class="button">
-                    <button class="table-edit-button" type="button" onclick="editFile(this.parentNode.parentNode)">
-                        <svg xmlns="http://www.w3.org/2000/svg" x="0" y="0" viewBox="0 0 400 400">
-                            <g>
-                                <path id="svg_6" d="m167.78745,30.3895c0,0 -68.70836,-0.74997 -72,-0.66667c-12.24984,0.04169 -30.66667,6.66667 -49.33334,23.33334c-18.66666,16.66666 -27.08334,39.4587 -27.33333,49.33333c-0.37499,17.87432 -1.33333,205.33333 -1.33333,205.33333c-0.62498,11.62456 8,34 26,50.66667c18,16.66667 46,22.66667 54.66666,22.66667c96,0 172.79159,-0.54175 192,-1.33334c19.20841,-0.79159 46.66666,-16.99999 58,-28.66666c11.33334,-11.66667 19.74985,-27.83362 19.87485,-36.04181c0.20834,-15.54152 0.79182,-83.95819 0.79182,-83.95819" opacity="NaN" stroke-width="31" fill="none"/>
-                                <g id="svg_14">
-                                    <path id="svg_8" d="m124.12078,272.3895c0,0 64.99519,-7.84425 64.99519,-7.84425c20.17092,-1.12061 170.33221,-171.45282 170.33221,-171.45282c0,0 43.70366,-34.73881 10.08546,-68.35701c-29.13577,-27.45486 -66.11579,16.2488 -66.11579,16.2488c0,0 -161.36736,159.12615 -161.92766,159.12615c-16.8091,12.32667 -17.3694,72.27913 -17.3694,72.27913z" opacity="NaN" stroke-width="30" fill="none"/>
-                                    <path id="svg_9" d="m143.1711,193.94704c0,0 56.03033,61.63337 56.03033,61.63337" opacity="NaN" stroke-width="20" fill="none"/>
-                                    <path id="svg_10" d="m309.02088,32.01937c0,0 56.03034,61.63336 56.03034,61.63336" opacity="NaN" stroke-width="20" fill="none"/>
+                if (useTable){
+                    let newFile = document.createElement('tr');
+                    newFile.key = obj.key;
+                    newFile.dataset.key = obj.key;
+                    newFile.display = obj.display_name;
+                    newFile.dataset.display = obj.display_name;
+                    newFile.innerHTML = `
+                    <td class="title">
+                        <a href="${response.extra.href}" target="_blank"> ${obj.display_name}</a>
+                    </td>
+                    <td class="key" title="${obj.key}">${obj.key}</td>
+                    <td class="url" title="${obj.url}">${obj.url}</td>
+                    <td class="button">
+                        <button class="table-edit-button" type="button" onclick="editFile(this.parentNode.parentNode)">
+                            <svg xmlns="http://www.w3.org/2000/svg" x="0" y="0" viewBox="0 0 400 400">
+                                <g>
+                                    <path id="svg_6" d="m167.78745,30.3895c0,0 -68.70836,-0.74997 -72,-0.66667c-12.24984,0.04169 -30.66667,6.66667 -49.33334,23.33334c-18.66666,16.66666 -27.08334,39.4587 -27.33333,49.33333c-0.37499,17.87432 -1.33333,205.33333 -1.33333,205.33333c-0.62498,11.62456 8,34 26,50.66667c18,16.66667 46,22.66667 54.66666,22.66667c96,0 172.79159,-0.54175 192,-1.33334c19.20841,-0.79159 46.66666,-16.99999 58,-28.66666c11.33334,-11.66667 19.74985,-27.83362 19.87485,-36.04181c0.20834,-15.54152 0.79182,-83.95819 0.79182,-83.95819" opacity="NaN" stroke-width="31" fill="none"/>
+                                    <g id="svg_14">
+                                        <path id="svg_8" d="m124.12078,272.3895c0,0 64.99519,-7.84425 64.99519,-7.84425c20.17092,-1.12061 170.33221,-171.45282 170.33221,-171.45282c0,0 43.70366,-34.73881 10.08546,-68.35701c-29.13577,-27.45486 -66.11579,16.2488 -66.11579,16.2488c0,0 -161.36736,159.12615 -161.92766,159.12615c-16.8091,12.32667 -17.3694,72.27913 -17.3694,72.27913z" opacity="NaN" stroke-width="30" fill="none"/>
+                                        <path id="svg_9" d="m143.1711,193.94704c0,0 56.03033,61.63337 56.03033,61.63337" opacity="NaN" stroke-width="20" fill="none"/>
+                                        <path id="svg_10" d="m309.02088,32.01937c0,0 56.03034,61.63336 56.03034,61.63336" opacity="NaN" stroke-width="20" fill="none"/>
+                                    </g>
                                 </g>
-                            </g>
-                        </svg>
-                    </button>
-                </td>`;
-
-                alphabetizeTable(document.getElementById('files').querySelector('tbody'), newFile);
-                newFile.scrollIntoView({block: "center"});
+                            </svg>
+                        </button>
+                    </td>`;
+    
+                    alphabetizeTable(document.getElementById('files').querySelector('tbody'), newFile);
+                    newFile.scrollIntoView({block: "center"});
+                }
+                else {
+                    let promises = [];
+                    let ev = new CustomEvent('pointerup', {detail: {promises: promises}});
+                    document.querySelector('#overlay div.scope > select:not(.big-select) > option[value="file"]').dispatchEvent(ev);
+                    await Promise.all(promises);
+                    document.querySelector('#overlay div.scope > select.big-select').value = obj.key;
+                    windowPrevent(true);
+                }
             }
             else {
                 alert(`Error: ${response.error}`)
@@ -1535,7 +1615,7 @@ async function editMusic(tablerow) {
             let response = await patchData('/musicdata/', obj);
             if (response && response.status == 'success') {
                 windowPrevent(false);
-                document.body.removeChild(overlay);
+                document.body.removeChild(form.parentElement.parentElement.parentElement);
                 // location.reload();
 
                 let link = tablerow.querySelector('td.title a');
@@ -1572,7 +1652,7 @@ async function editMusic(tablerow) {
             let response = await deleteData('/musicdata/', obj);
             if (response && response.status == 'success'){
                 windowPrevent(false);
-                document.body.removeChild(overlay);
+                document.body.removeChild(form.parentElement.parentElement.parentElement);
                 // location.reload();
                 tablerow.parentNode.removeChild(tablerow);
             }
@@ -1587,7 +1667,7 @@ async function editMusic(tablerow) {
     })
 }
 
-async function addMusic() {
+async function addMusic(useTable = true) {
 
     if (window.prevent) return;
 
@@ -1606,36 +1686,46 @@ async function addMusic() {
             let response = await postData('/musicdata/', obj);
             if (response && response.status == 'success') {
                 windowPrevent(false);
-                document.body.removeChild(overlay);
+                document.body.removeChild(form.parentElement.parentElement.parentElement);
                 // location.reload();
-                let newFile = document.createElement('tr');
-                newFile.key = obj.key;
-                newFile.dataset.key = obj.key;
-                newFile.display = obj.display_name;
-                newFile.dataset.display = obj.display_name;
-                newFile.innerHTML = `
-                <td class="title">
-                    <a href="${response.extra.href}" target="_blank"> ${obj.display_name}</a>
-                </td>
-                <td class="key" title="${obj.key}">${obj.key}</td>
-                <td class="url" title="${obj.url}">${obj.url}</td>
-                <td class="button">
-                    <button class="table-edit-button" type="button" onclick="editMusic(this.parentNode.parentNode)">
-                        <svg xmlns="http://www.w3.org/2000/svg" x="0" y="0" viewBox="0 0 400 400">
-                            <g>
-                                <path id="svg_6" d="m167.78745,30.3895c0,0 -68.70836,-0.74997 -72,-0.66667c-12.24984,0.04169 -30.66667,6.66667 -49.33334,23.33334c-18.66666,16.66666 -27.08334,39.4587 -27.33333,49.33333c-0.37499,17.87432 -1.33333,205.33333 -1.33333,205.33333c-0.62498,11.62456 8,34 26,50.66667c18,16.66667 46,22.66667 54.66666,22.66667c96,0 172.79159,-0.54175 192,-1.33334c19.20841,-0.79159 46.66666,-16.99999 58,-28.66666c11.33334,-11.66667 19.74985,-27.83362 19.87485,-36.04181c0.20834,-15.54152 0.79182,-83.95819 0.79182,-83.95819" opacity="NaN" stroke-width="31" fill="none"/>
-                                <g id="svg_14">
-                                    <path id="svg_8" d="m124.12078,272.3895c0,0 64.99519,-7.84425 64.99519,-7.84425c20.17092,-1.12061 170.33221,-171.45282 170.33221,-171.45282c0,0 43.70366,-34.73881 10.08546,-68.35701c-29.13577,-27.45486 -66.11579,16.2488 -66.11579,16.2488c0,0 -161.36736,159.12615 -161.92766,159.12615c-16.8091,12.32667 -17.3694,72.27913 -17.3694,72.27913z" opacity="NaN" stroke-width="30" fill="none"/>
-                                    <path id="svg_9" d="m143.1711,193.94704c0,0 56.03033,61.63337 56.03033,61.63337" opacity="NaN" stroke-width="20" fill="none"/>
-                                    <path id="svg_10" d="m309.02088,32.01937c0,0 56.03034,61.63336 56.03034,61.63336" opacity="NaN" stroke-width="20" fill="none"/>
+                if (useTable){
+                    let newFile = document.createElement('tr');
+                    newFile.key = obj.key;
+                    newFile.dataset.key = obj.key;
+                    newFile.display = obj.display_name;
+                    newFile.dataset.display = obj.display_name;
+                    newFile.innerHTML = `
+                    <td class="title">
+                        <a href="${response.extra.href}" target="_blank"> ${obj.display_name}</a>
+                    </td>
+                    <td class="key" title="${obj.key}">${obj.key}</td>
+                    <td class="url" title="${obj.url}">${obj.url}</td>
+                    <td class="button">
+                        <button class="table-edit-button" type="button" onclick="editMusic(this.parentNode.parentNode)">
+                            <svg xmlns="http://www.w3.org/2000/svg" x="0" y="0" viewBox="0 0 400 400">
+                                <g>
+                                    <path id="svg_6" d="m167.78745,30.3895c0,0 -68.70836,-0.74997 -72,-0.66667c-12.24984,0.04169 -30.66667,6.66667 -49.33334,23.33334c-18.66666,16.66666 -27.08334,39.4587 -27.33333,49.33333c-0.37499,17.87432 -1.33333,205.33333 -1.33333,205.33333c-0.62498,11.62456 8,34 26,50.66667c18,16.66667 46,22.66667 54.66666,22.66667c96,0 172.79159,-0.54175 192,-1.33334c19.20841,-0.79159 46.66666,-16.99999 58,-28.66666c11.33334,-11.66667 19.74985,-27.83362 19.87485,-36.04181c0.20834,-15.54152 0.79182,-83.95819 0.79182,-83.95819" opacity="NaN" stroke-width="31" fill="none"/>
+                                    <g id="svg_14">
+                                        <path id="svg_8" d="m124.12078,272.3895c0,0 64.99519,-7.84425 64.99519,-7.84425c20.17092,-1.12061 170.33221,-171.45282 170.33221,-171.45282c0,0 43.70366,-34.73881 10.08546,-68.35701c-29.13577,-27.45486 -66.11579,16.2488 -66.11579,16.2488c0,0 -161.36736,159.12615 -161.92766,159.12615c-16.8091,12.32667 -17.3694,72.27913 -17.3694,72.27913z" opacity="NaN" stroke-width="30" fill="none"/>
+                                        <path id="svg_9" d="m143.1711,193.94704c0,0 56.03033,61.63337 56.03033,61.63337" opacity="NaN" stroke-width="20" fill="none"/>
+                                        <path id="svg_10" d="m309.02088,32.01937c0,0 56.03034,61.63336 56.03034,61.63336" opacity="NaN" stroke-width="20" fill="none"/>
+                                    </g>
                                 </g>
-                            </g>
-                        </svg>
-                    </button>
-                </td>`;
-
-                alphabetizeTable(document.getElementById('music').querySelector('tbody'), newFile);
-                newFile.scrollIntoView({block: "center"});
+                            </svg>
+                        </button>
+                    </td>`;
+    
+                    alphabetizeTable(document.getElementById('music').querySelector('tbody'), newFile);
+                    newFile.scrollIntoView({block: "center"});
+                }
+                else {
+                    let promises = [];
+                    let ev = new CustomEvent('pointerup', {detail: {promises: promises}});
+                    document.querySelector('#overlay div.scope > select:not(.big-select) > option[value="music"]').dispatchEvent(ev);
+                    await Promise.all(promises);
+                    document.querySelector('#overlay div.scope > select.big-select').value = obj.key;
+                    windowPrevent(true);
+                }
             }
             else {
                 alert(`Error: ${response.error}`)

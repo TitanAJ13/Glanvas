@@ -635,7 +635,7 @@
     display: none;
 }
 
-#overlay {
+.overlay {
     position: fixed;
     top: 0;
     height: 100%;
@@ -662,7 +662,7 @@
     overflow: clip;
 }
 
-#overlay h3 {
+.overlay h3 {
     background-color: #1536a1;
     margin: 0;
     padding: 10px;
@@ -672,7 +672,7 @@
     border-top-right-radius: 15px;
 }
 
-#overlay .menu {
+.overlay .menu {
     width: calc(100% - 4px);
     height: calc(100% - 49px);
     border: 2px solid #ffb81c;
@@ -681,16 +681,16 @@
     border-bottom-right-radius: 15px;
 }
 
-#overlay form {
+.overlay form {
     padding: 30px;
     margin-bottom: 0;
 }
 
-#overlay form label {
+.overlay form label {
     font-size: large;
 }
 
-#overlay form input[type="text"], #overlay form input[type="url"] {
+.overlay form input[type="text"], .overlay form input[type="url"] {
     appearance: none;
     display: inline-block;
     width: 100%;
@@ -705,7 +705,7 @@
     font: inherit;
 }
 
-#overlay form select {
+.overlay form select {
     appearance: base-select;
     margin-top: 10px;
     width: 40%;
@@ -721,7 +721,7 @@
     anchor-name: --select-anchor;
 }
 
-#overlay form select.big-select {
+.overlay form select.big-select {
     width: stretch;
     timeline-scope: --scroll;
     animation: --scroll forwards;
@@ -729,16 +729,16 @@
     container-name: --scroll;
 }
 
-#overlay form select:open {
+.overlay form select:open {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
 }
 
-#overlay form select::picker-icon {
+.overlay form select::picker-icon {
     transition: rotate 0.25s, translate 0.25s;
 }
 
-#overlay form select:open::picker-icon {
+.overlay form select:open::picker-icon {
     transition: rotate 0.25s, translate 0.25s;
     rotate: 90deg;
     translate: -2px -1px;
@@ -746,9 +746,27 @@
 
 .scope {
     anchor-scope: --select-anchor;
+    display: flex;
 }
 
-#overlay form ::picker(select) {
+.create-new {
+    margin-top: 10px;
+    height: 30px;
+    margin-left: 10px;
+    border: 1px solid #767676;
+    background-color: #424344;
+    color: white;
+    font: inherit;
+    border-radius: 15px;
+    width: 80px;
+    cursor: pointer;
+}
+
+.create-new:hover {
+    background-color: #222424;
+}
+
+.overlay form ::picker(select) {
     appearance: base-select;
     background-color: transparent;
     container-type: anchored;
@@ -764,7 +782,7 @@
     scroll-timeline: --scroll y;
 }
 
-#overlay form select option {
+.overlay form select option {
     display: flex;
     justify-content: flex-start;
     gap: 10px;
@@ -775,11 +793,11 @@
     border-top: 0.5px solid #767676;
 }
 
-#overlay form select option:first-of-type {
+.overlay form select option:first-of-type {
     border-top: 1px solid white;
 }
 
-#overlay form select option:last-of-type {
+.overlay form select option:last-of-type {
     border-radius: 0 0 14px 14px;
 }
 
@@ -787,30 +805,30 @@
     0%,to{--scroll: 1;}
 }
 @container --scroll style(--scroll: 1) {
-    #overlay form ::picker(select) {
+    .overlay form ::picker(select) {
         border-bottom-right-radius: 0;
     }
 
-    #overlay form select option:last-of-type {
+    .overlay form select option:last-of-type {
         border-bottom-right-radius: 0;
     }
 }
 
-#overlay form select option::checkmark {
+.overlay form select option::checkmark {
     order: 1;
     margin-left: auto;
     padding-right: 11px;
 }
 
-#overlay form select option:hover {
+.overlay form select option:hover {
     background-color: #363636;
 }
 
-#overlay form select option[disabled] {
+.overlay form select option[disabled] {
     background-color: #121212;
 }
 
-#overlay form input[type="submit"].menuSubmit {
+.overlay form input[type="submit"].menuSubmit {
     height: 30px;
     width: 80px;
     border-radius: 15px;
@@ -824,11 +842,11 @@
     cursor: pointer;
 }
 
-#overlay form input[type="submit"].menuSubmit:hover {
+.overlay form input[type="submit"].menuSubmit:hover {
     background-color: #004b00;
 }
 
-#overlay form button.menuCancel {
+.overlay form button.menuCancel {
     height: 30px;
     width: 80px;
     border-radius: 15px;
@@ -842,7 +860,7 @@
     float: left;
 }
 
-#overlay form button.menuDelete {
+.overlay form button.menuDelete {
     height: 30px;
     width: 80px;
     border-radius: 15px;
@@ -855,15 +873,15 @@
     cursor: pointer;
 }
 
-#overlay form button.menuCancel:hover {
+.overlay form button.menuCancel:hover {
     background-color: #222424;
 }
 
-#overlay form button.menuDelete:hover {
+.overlay form button.menuDelete:hover {
     background-color: #941010;
 }
 
-#overlay form div.buttonHolder {
+.overlay form div.buttonHolder {
     text-align: center;
 }
 
