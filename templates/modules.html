@@ -34,7 +34,7 @@
                                 {% elif item.type == "music" %}
                                     <a href="{{ url_for('music', key=item.url) }}">{{ item.display }}</a>
                                 {% elif item.type == "page" %}
-                                    <a href="{{ url_for('page', id= item.url) }}">{{ item.display }}</a>
+                                    <a href="{{ url_for('page', key= item.url) }}">{{ item.display }}</a>
                                 {% elif item.type == "announcement" %}
                                     <a href="{{ url_for('announcement', id= item.url) }}">{{ item.display }}</a>
                                 {% endif %}

@@ -794,6 +794,10 @@
     background-color: #363636;
 }
 
+#overlay form select option[disabled] {
+    background-color: #121212;
+}
+
 /* @container anchored(fallback: flip-block) {
     
     #overlay form select:open {

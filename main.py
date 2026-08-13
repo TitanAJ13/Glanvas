@@ -14,6 +14,7 @@ import json
 from icalevents.icalevents import events
 import requests as req
 from functools import wraps
+from bs4 import BeautifulSoup
 
 def error(message):
     return {
@@ -844,23 +845,40 @@ def adminGetMusic(key: str):
     
 @app.route("/admin/page/<key>")
 @header_required
-def adminGetPage(key: str):
-    if "username" not in ses:
-        abort(403)
-    
-    if (key != 'all'):
-        try:
-            # music = sqlSession.getMusic(key)
-            # return music.toJSON()
-            return {}
-        except Exception as e:
-            abort(500, e)
-    else:
-        try:
-            # return sqlSession.getMusicsJSON()
-            return []
-        except Exception as e:
-            abort(500, e)
+def adminGetPages(key):
+    if (key != 'all'): return {}
+    try:
+        response = req.request(method='GET', url=f'https://sites.google.com/view/glanvaspages/do-not-change-this')
+
+        response.raise_for_status()
+
+        htmlContent = response.text
+
+        results = []
+        # for match in re.finditer(r'<a.*?>.*?</a>', re.split(r'<nav.*?>', htmlContent, maxsplit=1)[1].split('</nav>')[0]):
+        #     href = match.group().split('glanvaspages/')[1].split('"')[0]
+        #     if (href == 'do-not-change-this'): continue
+        #     obj = {
+        #         'key': href,
+        #         'display_name': match.group().split(">")[1].split("</")[0]
+        #     }
+        #     results.append(obj)
+
+
+        soup = BeautifulSoup(htmlContent, 'html.parser')
+        links = soup.select("nav")[0].select("ul > li > div > div > a")
+        for link in links:
+            href = 'glanvaspages/'.join(link['href'].split('glanvaspages/')[1:])
+            if (href == 'do-not-change-this'): continue
+            obj = {
+                'key': href,
+                'display_name': link.text
+            }
+            results.append(obj)
+
+        return results
+    except Exception as e:
+        abort(500, e)
     
 @app.route("/admin/internal/all")
 @header_required
@@ -919,9 +937,22 @@ def loadstate():
         flash(result['error'], category='error')
         return redirect(url_for('loadstate'))
 
-@app.route("/page/<key>")
+@app.route("/page/<path:key>")
 def page(key):
-    pass
+    try:
+        response = req.request(method='GET', url=f'https://sites.google.com/view/glanvaspages/{key}')
+
+        response.raise_for_status()
+
+        htmlContent = response.text
+        title = '</'.join('>'.join(re.search(r'<title>.+?</title>', htmlContent).group().split('>')[1:]).split('</')[:-1])
+        htmlContent = htmlContent.replace(f'https://sites.google.com/view/glanvaspages/{key}', '').replace('<header id="atIdViewHeader">', '<header id="atIdViewHeader" style="display:none!important;">').replace('data-is-preview="false"', 'data-s-preview="false" style="display:none;"')
+        # htmlContent = htmlContent.replace('<body', '<div').replace('</body', '</div').replace('<style type="text/css">', '<style type="text/css">@scope{').replace('</style>', '}</style>')
+
+        return render_template("page.html", header= title, content=htmlContent, links=sqlSession.getLinksJSON(), logged=('username' in ses))
+    except Exception as e:
+        flash(f'{e}')
+        return render_template("page.html", header="Page Not Found", content=None, links=sqlSession.getLinksJSON(), logged=('username' in ses))
 
 # @app.route("/kitchen/")
 # def kitchen_page():

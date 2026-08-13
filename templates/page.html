@@ -1,0 +1,21 @@
+{% extends "index.html" %}
+
+{% block title %}{{header}}{% endblock %}
+
+{% block path %}
+    <li>
+        <a href="#">
+            <span>Pages</span>
+        </a>
+    </li>
+{% endblock %}
+
+{% block right_display %}
+    display: none
+{% endblock %}
+
+{% block main_content %}
+    {% if content %}
+    <iframe id="page-iframe" srcdoc="{{ content }}" allow="autoplay; fullscreen"></iframe>
+    {% endif %}
+{% endblock %}

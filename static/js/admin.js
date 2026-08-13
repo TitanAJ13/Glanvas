@@ -211,13 +211,19 @@ async function linkMenu(title, display_name, type, url, hasDelete) {
                 url2.style.display = 'none';
                 label2.style.display = 'none';
 
-                let response = await getOptions(element.value);
-                let newoptions = '';
-                response.options.forEach((obj) => {
-                    newoptions = newoptions + `\n<option value="${obj.id ?? obj.key}">${obj.title ?? obj.display_name}</option>`
-                })
-
-                urlSelect.innerHTML = newoptions;
+                urlSelect.innerHTML = '<option value="" disabled selected>Loading...</option>';
+                try {
+                    let response = await getOptions(element.value);
+                    let newoptions = '';
+                    response.options.forEach((obj) => {
+                        newoptions = newoptions + `\n<option value="${obj.id ?? obj.key}">${obj.title ?? obj.display_name}</option>`
+                    })
+    
+                    urlSelect.innerHTML = newoptions;
+                }
+                catch (error) {
+                    urlSelect.innerHTML = '<option value="" disabled selected>Failed to Load.</option>';
+                }
             }
             else {
                 urlSelect.removeAttribute('required');
@@ -241,13 +247,19 @@ async function linkMenu(title, display_name, type, url, hasDelete) {
     })
 
     if (type != 'external') {
-        let response = await getOptions(type);
-        let newoptions = '';
-        response.options.forEach((obj) => {
-            newoptions = newoptions + `\n<option value="${obj.id ?? obj.key}" ${(url == (obj.id ?? obj.key))? 'selected=""': ''}>${obj.title ?? obj.display_name}</option>`
-        })
-    
-        form.querySelector('#linkURL1').innerHTML = newoptions;
+        form.querySelector('#linkURL1').innerHTML = '<option value="" disabled selected>Loading...</option>';
+        try{
+            let response = await getOptions(type);
+            let newoptions = '';
+            response.options.forEach((obj) => {
+                newoptions = newoptions + `\n<option value="${obj.id ?? obj.key}" ${(url == (obj.id ?? obj.key))? 'selected=""': ''}>${obj.title ?? obj.display_name}</option>`
+            })
+            
+            form.querySelector('#linkURL1').innerHTML = newoptions;
+        }
+        catch (error) {
+            form.querySelector('#linkURL1').innerHTML = '<option value="" disabled selected>Failed to Load.</option>';
+        }
     }
 
     windowPrevent(true);
@@ -654,13 +666,19 @@ async function itemMenu(title, display_name, type, url, hasDelete) {
                 url2.style.display = 'none';
                 label2.style.display = 'none';
 
-                let response = await getOptions(element.value);
-                let newoptions = '';
-                response.options.forEach((obj) => {
-                    newoptions = newoptions + `\n<option value="${obj.id ?? obj.key}">${obj.title ?? obj.display_name}</option>`
-                })
-
-                urlSelect.innerHTML = newoptions;
+                urlSelect.innerHTML = '<option value="" disabled selected>Loading...</option>';
+                try {
+                    let response = await getOptions(element.value);
+                    let newoptions = '';
+                    response.options.forEach((obj) => {
+                        newoptions = newoptions + `\n<option value="${obj.id ?? obj.key}">${obj.title ?? obj.display_name}</option>`
+                    })
+    
+                    urlSelect.innerHTML = newoptions;
+                }
+                catch (error) {
+                    urlSelect.innerHTML = '<option value="" disabled selected>Failed to Load.</option>';
+                }
             }
             else {
                 urlSelect.removeAttribute('required');
@@ -692,13 +710,19 @@ async function itemMenu(title, display_name, type, url, hasDelete) {
     })
 
     if (type != 'header' && type != 'link') {
-        let response = await getOptions(type);
-        let newoptions = '';
-        response.options.forEach((obj) => {
-            newoptions = newoptions + `\n<option value="${obj.id ?? obj.key}" ${(url == (obj.id ?? obj.key))? 'selected=""': ''}>${obj.title ?? obj.display_name}</option>`
-        })
-    
-        form.querySelector('#itemURL1').innerHTML = newoptions;
+        form.querySelector('#itemURL1').innerHTML = '<option value="" disabled selected>Loading...</option>';
+        try {
+            let response = await getOptions(type);
+            let newoptions = '';
+            response.options.forEach((obj) => {
+                newoptions = newoptions + `\n<option value="${obj.id ?? obj.key}" ${(url == (obj.id ?? obj.key))? 'selected=""': ''}>${obj.title ?? obj.display_name}</option>`
+            })
+        
+            form.querySelector('#itemURL1').innerHTML = newoptions;
+        }
+        catch (error) {
+            form.querySelector('#itemURL1').innerHTML = '<option value="" disabled selected>Failed to Load.</option>';
+        }
     }
 
     windowPrevent(true);

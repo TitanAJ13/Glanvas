@@ -806,6 +806,10 @@
     background-color: #363636;
 }
 
+#overlay form select option[disabled] {
+    background-color: #121212;
+}
+
 #overlay form input[type="submit"].menuSubmit {
     height: 30px;
     width: 80px;

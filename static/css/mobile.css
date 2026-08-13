@@ -994,3 +994,10 @@ iframe {
     left: 50%;
     transform: translate(-50%, -50%);
 }
+
+#page-iframe {
+    position:absolute;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
