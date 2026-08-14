@@ -48,6 +48,11 @@ function addEventListeners() {
     hamburgerButton.addEventListener("click", sidebar_toggle);
     // document.querySelector("#sidebar2 > ul > li:nth-child(4) > a").addEventListener("click", testPost)
     isMobile.addEventListener("change", mediaChanged);
+    sidebar.addEventListener("click", (event) => {
+        if (isMobile.matches && event.target.id == 'sidebar1' && event.button == 0) {
+            sidebar_toggle();
+        }
+    })
 }
 
 function sidebar_toggle() {

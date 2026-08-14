@@ -646,6 +646,14 @@
     align-items: center;
 }
 
+html:has(#overlay) #overlay2 {
+    background-color: #00000088;
+}
+
+html:has(#overlay2) #overlay {
+    background-color: #00000088;
+}
+
 .dialog {
     width: 500px;
     height: fit-content;

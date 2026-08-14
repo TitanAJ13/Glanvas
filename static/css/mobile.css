@@ -45,6 +45,10 @@ html {
     color: white;
 }
 
+html:has(div.overlay), html:has(#sidebar1[style*="display: block;"]) {
+    overflow: hidden;
+}
+
 body {
     margin: 0;
     background-color: #121212;
@@ -301,10 +305,10 @@ iframe {
     box-sizing: border-box;
     position: fixed;
     top: 72px;
+    bottom: 0px;
     width: 100%;
-    background-color: #0e2267;
     z-index: 2;
-    border-bottom: 2px solid #424344;
+    background-color: #000000CC;
 }
 
 #sidebar2 {
@@ -315,6 +319,8 @@ iframe {
     overflow-y: auto;
     overscroll-behavior-y: contain;
     text-align: center;
+    background-color: #0e2267;
+    border-bottom: 2px solid #424344;
 }
 
 #sidebar2 ul {

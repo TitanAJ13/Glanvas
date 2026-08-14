@@ -45,6 +45,10 @@ html {
     color: white;
 }
 
+html:has(div.overlay) {
+    overflow: hidden;
+}
+
 body {
     margin: 0;
     background-color: #121212;

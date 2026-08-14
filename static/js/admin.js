@@ -262,17 +262,26 @@ async function linkMenu(title, display_name, type, url, hasDelete) {
         windowPrevent(false);
         document.body.removeChild(overlay);
     })
+        
+    overlay.addEventListener('click', (event) => {
+        if (event.target.id == 'overlay' && event.button == 0) {
+            windowPrevent(false);
+            document.body.removeChild(overlay);
+        }
+    })
 
     createButton.addEventListener('click', async (event) => {
-        if (form.querySelector('#linkType').value == 'file'){
-            // Then figure out window prevent stuff afterward?
-            windowPrevent(false);
-            await addFile(false);
-        }
-        else if (form.querySelector('#linkType').value == 'music'){
-            // Then figure out window prevent stuff afterward?
-            windowPrevent(false);
-            await addMusic(false);
+        if (event.button == 0 && !document.getElementById('overlay2')) {
+            if (form.querySelector('#linkType').value == 'file'){
+                // Then figure out window prevent stuff afterward?
+                windowPrevent(false);
+                await addFile(false);
+            }
+            else if (form.querySelector('#linkType').value == 'music'){
+                // Then figure out window prevent stuff afterward?
+                windowPrevent(false);
+                await addMusic(false);
+            }
         }
     })
 
@@ -760,17 +769,26 @@ async function itemMenu(title, display_name, type, url, hasDelete) {
         windowPrevent(false);
         document.body.removeChild(overlay);
     })
+
+    overlay.addEventListener('click', (event) => {
+        if (event.target.id == 'overlay' && event.button == 0) {
+            windowPrevent(false);
+            document.body.removeChild(overlay);
+        }
+    })
     
     createButton.addEventListener('click', async (event) => {
-        if (form.querySelector('#itemType').value == 'file'){
-            // Then figure out window prevent stuff afterward?
-            windowPrevent(false);
-            await addFile(false);
-        }
-        else if (form.querySelector('#itemType').value == 'music'){
-            // Then figure out window prevent stuff afterward?
-            windowPrevent(false);
-            await addMusic(false);
+        if (event.button == 0 && !document.getElementById('overlay2')) {
+            if (form.querySelector('#itemType').value == 'file'){
+                // Then figure out window prevent stuff afterward?
+                windowPrevent(false);
+                await addFile(false);
+            }
+            else if (form.querySelector('#itemType').value == 'music'){
+                // Then figure out window prevent stuff afterward?
+                windowPrevent(false);
+                await addMusic(false);
+            }
         }
     })
 
@@ -1364,7 +1382,7 @@ function addModule(item) {
     windowPrevent(true);
 }
 
-async function fileMenu(title, type, display_name, key, url, hasDelete) {
+async function fileMenu(title, type, display_name, key, url, hasDelete, primary=true) {
     let urlLabel = "Drive";
     if (type == 'music')
         urlLabel = "MuseScore";
@@ -1399,8 +1417,15 @@ async function fileMenu(title, type, display_name, key, url, hasDelete) {
     let form = overlay.querySelector('#fileForm');
         
     form.querySelector('.menuCancel').addEventListener('click', (event) => {
-        windowPrevent(false);
+        if (primary) windowPrevent(false);
         document.body.removeChild(overlay);
+    })
+
+    overlay.addEventListener('click', (event) => {
+        if (event.target.id == 'overlay2' && event.button == 0) {
+            if (primary) windowPrevent(false);
+            document.body.removeChild(overlay);
+        }
     })
 
     windowPrevent(true);
@@ -1508,7 +1533,7 @@ async function addFile(useTable = true) {
 
     if (window.prevent) return;
 
-    let form = await fileMenu('Add New File', 'file', 'New File', '', '', false);
+    let form = await fileMenu('Add New File', 'file', 'New File', '', '', false, false);
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
 
@@ -1561,7 +1586,6 @@ async function addFile(useTable = true) {
                     document.querySelector('#overlay div.scope > select:not(.big-select) > option[value="file"]').dispatchEvent(ev);
                     await Promise.all(promises);
                     document.querySelector('#overlay div.scope > select.big-select').value = obj.key;
-                    windowPrevent(true);
                 }
             }
             else {
