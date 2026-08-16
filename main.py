@@ -3,7 +3,7 @@ from flask import session as ses
 from alt import db
 from flask_session import Session as Ses
 from werkzeug.exceptions import HTTPException
-# from sqlalchemy import create_engine, desc
+from sqlalchemy import select
 # from sqlalchemy.orm import sessionmaker
 import datetime
 from typing import Any, Tuple
@@ -16,6 +16,8 @@ from icalevents.icalevents import events
 import requests as req
 from functools import wraps
 from bs4 import BeautifulSoup
+import subprocess
+import msgspec
 
 def error(message):
     return {
@@ -684,11 +686,26 @@ def login():
         password = request.form["pass"]
         if username == "tony" and password == "twoshoes":
             ses.clear()
-            ses["username"] = username
-            if (request.args.get('next') in adminpages):
-                return redirect(url_for(request.args.get('next'), **json.loads(request.args.get('nextargs'))))
+            allowed = True
+            with app.app_context():
+                SessionModel = app.session_interface.sql_session_model
+                sessions = db.session.query(SessionModel).all()
+                for session in sessions:
+                    obj = msgspec.msgpack.decode(session.data)
+                    if ('username' in obj):
+                        allowed = False
+                        break
+            if (allowed):
+                ses["username"] = username
+                if (request.args.get('next') in adminpages):
+                    return redirect(url_for(request.args.get('next'), **json.loads(request.args.get('nextargs'))))
+                else:
+                    return redirect(url_for('adminpage'))
             else:
-                return redirect(url_for('adminpage'))
+                flash('Sorry, someone else is already logged in. Please ask them to log out first')
+                if (request.args.get("next") in adminpages):
+                    return redirect(url_for('login', next=request.args.get('next'), nextargs=request.args.get('nextargs')))
+                return redirect(url_for('login'))
         else:
             if "failcount" in ses:
                 ses["failcount"] = ses["failcount"] + 1
@@ -956,6 +973,15 @@ def page(key):
         flash(f'{e}')
         return render_template("page.html", header="Page Not Found", content=None, links=sqlSession.getLinksJSON(), logged=('username' in ses))
 
+@app.route('/sesclear/')
+@header_required
+def clear_sessions():
+    try:
+        subprocess.run(['flask', '--app', 'main.py', 'session_cleanup'])
+        return success()
+    except Exception as e:
+        abort(500, e)
+        
 # @app.route("/kitchen/")
 # def kitchen_page():
 #     orders = session.query(Order).order_by(Order.date_created).all()
