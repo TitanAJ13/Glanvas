@@ -262,11 +262,16 @@ async function linkMenu(title, display_name, type, url, hasDelete) {
         windowPrevent(false);
         document.body.removeChild(overlay);
     })
-        
-    overlay.addEventListener('click', (event) => {
+    
+    overlay.addEventListener('pointerdown', (event) => {
         if (event.target.id == 'overlay' && event.button == 0) {
-            windowPrevent(false);
-            document.body.removeChild(overlay);
+            overlay.onpointerup = (event2) => {
+                if (event2.target.id == 'overlay' && event2.button == 0) {
+                    windowPrevent(false);
+                    document.body.removeChild(overlay);
+                }
+                overlay.onpointerup = null;
+            }
         }
     })
 
@@ -770,10 +775,15 @@ async function itemMenu(title, display_name, type, url, hasDelete) {
         document.body.removeChild(overlay);
     })
 
-    overlay.addEventListener('click', (event) => {
+    overlay.addEventListener('pointerdown', (event) => {
         if (event.target.id == 'overlay' && event.button == 0) {
-            windowPrevent(false);
-            document.body.removeChild(overlay);
+            overlay.onpointerup = (event2) => {
+                if (event2.target.id == 'overlay' && event2.button == 0) {
+                    windowPrevent(false);
+                    document.body.removeChild(overlay);
+                }
+                overlay.onpointerup = null;
+            }
         }
     })
     
@@ -1419,10 +1429,15 @@ async function fileMenu(title, type, display_name, key, url, hasDelete, primary=
         document.body.removeChild(overlay);
     })
 
-    overlay.addEventListener('click', (event) => {
+    overlay.addEventListener('pointerdown', (event) => {
         if (event.target.id == 'overlay2' && event.button == 0) {
-            if (primary) windowPrevent(false);
-            document.body.removeChild(overlay);
+            overlay.onpointerup = (event2) => {
+                if (event2.target.id == 'overlay2' && event2.button == 0) {
+                    if (primary) windowPrevent(false);
+                    document.body.removeChild(overlay);
+                }
+                overlay.onpointerup = null;
+            }
         }
     })
 
@@ -1531,7 +1546,7 @@ async function addFile(useTable = true) {
 
     if (window.prevent) return;
 
-    let form = await fileMenu('Add New File', 'file', 'New File', '', '', false, false);
+    let form = await fileMenu('Add New File', 'file', 'New File', '', '', false, useTable);
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
 
