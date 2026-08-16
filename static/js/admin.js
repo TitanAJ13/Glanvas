@@ -337,7 +337,7 @@ async function editLink(item) {
             changes: {
                 title: data.get('title').trim(),
                 type: data.get('type').trim(),
-                url: data.get('url1').trim() ?? data.get('url2').trim()
+                url: (data.get('url1') ?? data.get('url2')).trim()
             }
         };
 
@@ -398,7 +398,7 @@ async function addLink() {
             position: null,
             display_name: data.get('title').trim(),
             type: data.get('type').trim(),
-            url: data.get('url1').trim() ?? data.get('url2').trim()
+            url: (data.get('url1') ?? data.get('url2')).trim()
         };
 
         try {
@@ -850,7 +850,7 @@ async function editItem(listitem) {
             changes: {
                 display_name: data.get('title').trim(),
                 type: data.get('type').trim(),
-                url: data.get('url1').trim() ?? data.get('url2').trim()
+                url: (data.get('url1') ?? data.get('url2')).trim()
             }
         };
 
@@ -929,7 +929,7 @@ async function addItem(item) {
             position: position,
             display: data.get('title').trim(),
             type: data.get('type').trim(),
-            url: data.get('url1').trim() ?? data.get('url2').trim(),
+            url: (data.get('url1') ?? data.get('url2')).trim(),
             hidden: false
         };
 
@@ -1005,7 +1005,6 @@ function moduleDragAndDrop() {
             let position1 = [...document.querySelectorAll('.draggable-module')].indexOf(dragged_module) + 1;
             
             let offset = e.clientY - dragged_module.getBoundingClientRect().top;
-            console.log(offset);
             
             let opened = [];
 
@@ -1055,7 +1054,6 @@ function moduleDragAndDrop() {
                 let module_list = document.getElementById('modules');
 
                 let mobileOffset = (isMobile.matches)? 72: 0;
-                console.log(mobileOffset);
 
                 dragged_module.style.top = Math.min(Math.max(module_list.offsetTop + 50, e2.clientY - offset + mobileOffset - document.getElementById('main').getBoundingClientRect().top), module_list.lastElementChild.offsetTop);
 

@@ -195,8 +195,7 @@ def modules():
         checkBounds(position, 'position', 1, length)
 
         try:
-            moduleObj = sqlSession.getModule(position)
-            sqlSession.deleteModule(moduleObj)
+            sqlSession.deleteModule(position)
             return success()
         except Exception as e:
             abort(500, e)
@@ -214,13 +213,14 @@ def modules():
             abort(400, '`changes` must include at least one of `display_name` or `hidden` attributes')
         
         try:
-            moduleObj = sqlSession.getModule(position)
-            if (visibility is not None):
-                moduleObj.hidden = visibility
-            if (newTitle is not None):
-                moduleObj.display_name = newTitle
-            sqlSession.session.commit()
-            return success()
+            with app.app_context():
+                moduleObj = sqlSession.getModule(position)
+                if (visibility is not None):
+                    moduleObj.hidden = visibility
+                if (newTitle is not None):
+                    moduleObj.display_name = newTitle
+                sqlSession.session.commit()
+                return success()
         except Exception as e:
             abort(500, e)
 
@@ -272,7 +272,7 @@ def links():
 
         try:
             linkObj = sqlSession.addLink(position, title, url, type)
-            return success({'id': linkObj.id, 'href': formatLink(type, url)})
+            return success({'id': linkObj['id'], 'href': formatLink(type, url)})
         except Exception as e:
             abort(500, e)
 
@@ -282,8 +282,7 @@ def links():
         checkBounds(position, 'position', 1, length)
 
         try:
-            linkObj = sqlSession.getLink(position)
-            sqlSession.deleteLink(linkObj)
+            sqlSession.deleteLink(position)
             return success()
         except Exception as e:
             abort(500, e)
@@ -302,15 +301,16 @@ def links():
             abort(400, '`changes` must include at least one of `type`, `title`, or `url` attributes')
         
         try:
-            linkObj = sqlSession.getLink(position)
-            if (title is not None):
-                linkObj.display_name = title
-            if (type is not None):
-                linkObj.type = type
-            if (url is not None):
-                linkObj.url = url
-            sqlSession.session.commit()
-            return success({'href': formatLink(linkObj.type, linkObj.url)})
+            with app.app_context():
+                linkObj = sqlSession.getLink(position)
+                if (title is not None):
+                    linkObj.display_name = title
+                if (type is not None):
+                    linkObj.type = type
+                if (url is not None):
+                    linkObj.url = url
+                sqlSession.session.commit()
+                return success({'href': formatLink(linkObj.type, linkObj.url)})
         except Exception as e:
             abort(500, e)
 
@@ -344,8 +344,8 @@ def items():
     
     checkBounds(modulePos, 'moduleposition', 1, mLength)
 
-    moduleObj = sqlSession.getModule(modulePos)
-    items = sqlSession.getItemsJSON(moduleObj.id)
+    moduleID = sqlSession.getModuleID(modulePos)
+    items = sqlSession.getItemsJSON(moduleID)
     iLength = len(items)
 
     position = requiredVar(json, 'position')
@@ -361,9 +361,9 @@ def items():
         visibility = requiredVar(json, 'hidden')
 
         try:
-            itemObj = sqlSession.addItem(position = position, display = title, url = url, type=type, module_id=moduleObj.id, hidden=visibility)
-            if (itemObj.type != 'header'):
-                return success({'href': formatLink(itemObj.type, itemObj.url)})
+            itemObj = sqlSession.addItem(position = position, display = title, url = url, type=type, module_id=moduleID, hidden=visibility)
+            if (itemObj['type'] != 'header'):
+                return success({'href': formatLink(itemObj['type'], itemObj['url'])})
             return success()
         except Exception as e:
             abort(500, e)
@@ -374,8 +374,7 @@ def items():
         checkBounds(position, 'position', 1, iLength)
 
         try:
-            itemObj = sqlSession.getItem(modulePos, position)
-            sqlSession.deleteItem(itemObj)
+            sqlSession.deleteItem(modulePos, position)
             return success()
         except Exception as e:
             abort(500, e)
@@ -392,19 +391,20 @@ def items():
         visibility = optionalVar(changes, 'hidden')
 
         try:
-            itemObj = sqlSession.getItem(modulePos, position)
-            if (title is not None):
-                itemObj.display = title
-            if (type is not None):
-                itemObj.type = type
-            if (url is not None):
-                itemObj.url = url
-            if (visibility is not None):
-                itemObj.hidden = visibility
-            sqlSession.session.commit()
-            if (itemObj.type != 'header'):
-                return success({'href': formatLink(itemObj.type, itemObj.url)})
-            return success()
+            with app.app_context():
+                itemObj = sqlSession.getItem(modulePos, position)
+                if (title is not None):
+                    itemObj.display = title
+                if (type is not None):
+                    itemObj.type = type
+                if (url is not None):
+                    itemObj.url = url
+                if (visibility is not None):
+                    itemObj.hidden = visibility
+                sqlSession.session.commit()
+                if (itemObj.type != 'header'):
+                    return success({'href': formatLink(itemObj.type, itemObj.url)})
+                return success()
         except Exception as e:
             abort(500, e)
 
@@ -457,8 +457,7 @@ def announcements():
 
     elif request.method == "DELETE":
         try:
-            announcementObj = sqlSession.getAnnouncement(id)
-            sqlSession.deleteAnnouncement(announcementObj)
+            sqlSession.deleteAnnouncement(id)
             return success()
         except Exception as e:
             abort(500, e)
@@ -472,31 +471,33 @@ def announcements():
             abort(400, '`changes` must include at least one of `title` or `content` attributes')
 
         try:
-            announcement = sqlSession.getAnnouncement(id)
-            if (announcement is None):
-                abort(400, f"This Announcement has not been posted yet")
+            with app.app_context():
+                announcement = sqlSession.getAnnouncement(id)
+                if (announcement is None):
+                    abort(400, f"This Announcement has not been posted yet")
 
-            if (newTitle is not None):
-                announcement.title = newTitle
-            if (newContent is not None):
-                announcement.content = newContent
-            
-            sqlSession.session.commit()
-            return success()
+                if (newTitle is not None):
+                    announcement.title = newTitle
+                if (newContent is not None):
+                    announcement.content = newContent
+                
+                sqlSession.session.commit()
+                return success()
         except Exception as e:
             abort(500, e)
 
 
 @app.route("/announcement/<id>")
 def announcement(id):
-    announcement = sqlSession.getAnnouncement(id)
-    if (announcement is not None):
-        announcement = announcement.toJSON()
-        announcement['initial'] = announcement['author'][0].upper()
-        announcement['date_posted'] = announcement['date_posted'].strftime("%b %d, %Y %I:%M %p")
-        return render_template("announcement.html", announcement=announcement, links=sqlSession.getLinksJSON(), logged=('username' in ses))
-    else:
-        return redirect(url_for("announcements"))
+    with app.app_context():
+        announcement = sqlSession.getAnnouncement(id)
+        if (announcement is not None):
+            announcement = announcement.toJSON()
+            announcement['initial'] = announcement['author'][0].upper()
+            announcement['date_posted'] = announcement['date_posted'].strftime("%b %d, %Y %I:%M %p")
+            return render_template("announcement.html", announcement=announcement, links=sqlSession.getLinksJSON(), logged=('username' in ses))
+        else:
+            return redirect(url_for("announcements"))
 
 def handleDriveURL(url: str) -> str:
     if re.fullmatch(r'https://.+\.google\.com/.+/d/.+/(edit|view|preview)(\?.*)?', url) is None: return url
@@ -523,7 +524,7 @@ def files():
 
         try:
             fileObj = sqlSession.addFile(key = key, url = url, display_name = title)
-            return success({'href': formatLink('file', fileObj.key)})
+            return success({'href': formatLink('file', fileObj['key'])})
         except Exception as e:
             abort(500, e)
 
@@ -533,9 +534,9 @@ def files():
         try:
             fileObj = sqlSession.getFile(key)
             if (fileObj is None):
-                abort(400, f"`{path}` is not a registered path")
+                abort(400, f"`{key}` is not a registered path")
 
-            sqlSession.deleteFile(fileObj)
+            sqlSession.deleteFile(key)
             return success()
         except Exception as e:
             abort(500, e)
@@ -550,21 +551,22 @@ def files():
         url = optionalVar(changes, 'url')
 
         try:
-            file = sqlSession.getFile(key)
-            if (file is None):
-                abort(400, f"`{path}` is not a registered path")
+            with app.app_context():
+                file = sqlSession.getFile(key)
+                if (file is None):
+                    abort(400, f"`{path}` is not a registered path")
 
-            if (filename is not None):
-                file.display_name = filename
-            if (path is not None):
-                if (sqlSession.getFile(path) and path != key):
-                    abort(400, f'key `{path}` is already in use')
-                file.key = path
-                sqlSession.updateKeys('file', key, path)
-            if (url is not None):
-                file.url = handleDriveURL(url)
-            sqlSession.session.commit()
-            return success({'href': formatLink('file', file.key), 'oldhref': formatLink('file', key)})
+                if (filename is not None):
+                    file.display_name = filename
+                if (path is not None):
+                    if (sqlSession.getFile(path) and path != key):
+                        abort(400, f'key `{path}` is already in use')
+                    file.key = path
+                    sqlSession.updateKeys('file', key, path)
+                if (url is not None):
+                    file.url = handleDriveURL(url)
+                sqlSession.session.commit()
+                return success({'href': formatLink('file', file.key), 'oldhref': formatLink('file', key)})
         except Exception as e:
             if isinstance(e, HTTPException):
                 abort(e.code, e.description)
@@ -581,8 +583,9 @@ def file(key):
             return render_template("file.html", header="File Not Found", url="about:blank", links=sqlSession.getLinksJSON(), logged=('username' in ses))
 
     else:
-        data = data.toJSON()
-        return render_template("file.html", header= data['display_name'], url=data['url'], links=sqlSession.getLinksJSON(), logged=('username' in ses))
+        with app.app_context():
+            data = data.toJSON()
+            return render_template("file.html", header= data['display_name'], url=data['url'], links=sqlSession.getLinksJSON(), logged=('username' in ses))
     
 
 
@@ -603,7 +606,7 @@ def musicdata():
 
         try:
             musicObj = sqlSession.addMusic(key = path, url = url, display_name = filename)
-            return success({'href': formatLink('music', musicObj.key)})
+            return success({'href': formatLink('music', musicObj['key'])})
         except Exception as e:
             abort(500, e)
 
@@ -615,7 +618,7 @@ def musicdata():
             if (musicObj is None):
                 abort(400, f"`{path}` is not a registered path")
 
-            sqlSession.deleteMusic(musicObj)
+            sqlSession.deleteMusic(path)
             return success()
         except Exception as e:
             abort(500, e)
@@ -633,21 +636,22 @@ def musicdata():
             abort(400, 'At least one of `new_path`, `filename`, or `url` must be defined')
 
         try:
-            musicObj = sqlSession.getMusic(path)
-            if (musicObj is None):
-                abort(400, f"`{path}` is not a registered path")
+            with app.app_context():
+                musicObj = sqlSession.getMusic(path)
+                if (musicObj is None):
+                    abort(400, f"`{path}` is not a registered path")
 
-            if (new_path is not None):
-                if (sqlSession.getMusic(new_path) and new_path != path):
-                    abort(400, f'key `{new_path}` is already in use')
-                musicObj.key = new_path
-                sqlSession.updateKeys('music', path, new_path)
-            if (filename is not None):
-                musicObj.display_name = filename
-            if (url is not None):
-                musicObj.url = url
-            sqlSession.session.commit()
-            return success({'href': formatLink('music', musicObj.key), 'oldhref': formatLink('music', path)})
+                if (new_path is not None):
+                    if (sqlSession.getMusic(new_path) and new_path != path):
+                        abort(400, f'key `{new_path}` is already in use')
+                    musicObj.key = new_path
+                    sqlSession.updateKeys('music', path, new_path)
+                if (filename is not None):
+                    musicObj.display_name = filename
+                if (url is not None):
+                    musicObj.url = url
+                sqlSession.session.commit()
+                return success({'href': formatLink('music', musicObj.key), 'oldhref': formatLink('music', path)})
         except Exception as e:
             if isinstance(e, HTTPException):
                 abort(e.code, e.description)
@@ -663,8 +667,9 @@ def music(key):
         else:
             return render_template("music.html", header="Music Not Found", url="about:blank", links=sqlSession.getLinksJSON(), logged=('username' in ses))
     else:
-        data = data.toJSON()
-        return render_template("music.html", header=data['display_name'], url=data['url'], links=sqlSession.getLinksJSON(), logged=('username' in ses))
+        with app.app_context():
+            data = data.toJSON()
+            return render_template("music.html", header=data['display_name'], url=data['url'], links=sqlSession.getLinksJSON(), logged=('username' in ses))
     
 @app.route("/login/", methods=["GET", "POST"])
 def login():
@@ -692,7 +697,7 @@ def login():
                 sessions = db.session.query(SessionModel).all()
                 for session in sessions:
                     obj = msgspec.msgpack.decode(session.data)
-                    if ('username' in obj):
+                    if ('username' in obj and session.expiry.replace(tzinfo=datetime.UTC) > datetime.datetime.now(datetime.UTC)):
                         allowed = False
                         break
             if (allowed):
@@ -784,8 +789,9 @@ def adminGetLink(position):
     
     position = int(position)
     try:
-        link = sqlSession.getLink(position)
-        return link.toJSON()
+        with app.app_context():
+            link = sqlSession.getLink(position)
+            return link.toJSON()
     except Exception as e:
         abort(500, e)
     
@@ -798,8 +804,9 @@ def adminGetItem(modulepos, position):
     modulepos = int(modulepos)
     position = int(position)
     try:
-        item = sqlSession.getItem(modulepos, position)
-        return item.toJSON()
+        with app.app_context():
+            item = sqlSession.getItem(modulepos, position)
+            return item.toJSON()
     except Exception as e:
         abort(500, e)
     
@@ -811,8 +818,9 @@ def adminGetAnnouncement(id: str):
     
     if (id != 'all'):
         try:
-            announcement = sqlSession.getAnnouncement(id)
-            return announcement.toJSON()
+            with app.app_context():
+                announcement = sqlSession.getAnnouncement(id)
+                return announcement.toJSON()
         except Exception as e:
             abort(500, e)
     else:
@@ -834,8 +842,9 @@ def adminGetFile(key: str):
     
     if (key != 'all'):
         try:
-            file = sqlSession.getFile(key)
-            return file.toJSON()
+            with app.app_context():
+                file = sqlSession.getFile(key)
+                return file.toJSON()
         except Exception as e:
             abort(500, e)
     else:
@@ -852,8 +861,9 @@ def adminGetMusic(key: str):
     
     if (key != 'all'):
         try:
-            music = sqlSession.getMusic(key)
-            return music.toJSON()
+            with app.app_context():
+                music = sqlSession.getMusic(key)
+                return music.toJSON()
         except Exception as e:
             abort(500, e)
     else:
@@ -981,7 +991,7 @@ def clear_sessions():
         return success()
     except Exception as e:
         abort(500, e)
-        
+
 # @app.route("/kitchen/")
 # def kitchen_page():
 #     orders = session.query(Order).order_by(Order.date_created).all()
