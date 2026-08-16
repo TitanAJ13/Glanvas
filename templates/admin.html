@@ -20,7 +20,7 @@
             {% if link.type == 'external' %}
             <a link-id="{{ link.id }}" href="{{ link.url }}" target="_blank">{{ link.display_name }}</a>
             {% elif link.type == 'page' %}
-            <a link-id="{{ link.id }}" href="{{ url_for('page', id= link.url) }}">{{ link.display_name }}</a>
+            <a link-id="{{ link.id }}" href="{{ url_for('page', key= link.url) }}">{{ link.display_name }}</a>
             {% elif link.type == 'internal' %}
             <a link-id="{{ link.id }}" href="{{ url_for(link.url) }}">{{ link.display_name }}</a>
             {% elif link.type == 'file' %}
