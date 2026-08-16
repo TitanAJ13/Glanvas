@@ -33,23 +33,32 @@ def success(obj: dict[str, Any] = None):
 
 adminpages = ['adminpage', 'adminfiles', 'loadstate']
 
-def header_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        if (not request.referrer or request.referrer not in [url_for(page, _external=True) for page in adminpages]):
-            auth = request.authorization
-            if not auth:
-                abort(401)
+def header_required(*methods):
+    def decorator(f):
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            if (methods is None or request.method in methods):
+                if (not request.referrer or request.referrer not in [url_for(page, _external=True) for page in adminpages]):
+                    auth = request.authorization
+                    if not auth:
+                        abort(401)
 
-            username = auth.parameters['username']
-            password = auth.parameters['password']
-            if not username or not password:
-                abort(401)
+                    # username = auth.parameters['username']
+                    # password = auth.parameters['password']
+                    # if not username or not password:
+                    #     abort(401)
 
-            if username != 'tony' or password != 'twoshoes':
-                abort(401)
-        return f(*args, **kwargs)
-    return decorated
+                    # if username != 'tony' or password != 'twoshoes':
+                    #     abort(401)
+                    token = auth.token
+                    if not token:
+                        abort(401)
+
+                    if token != os.getenv('BEARER'):
+                        abort(401)
+            return f(*args, **kwargs)
+        return decorated
+    return decorator
 
 load_dotenv()
 app = Flask(__name__)
@@ -159,6 +168,7 @@ def home():
 
 
 @app.route("/modules/", methods=["GET","POST","PATCH","PUT","DELETE"])
+@header_required("POST","PATCH","PUT","DELETE")
 def modules():
     moduleList = sqlSession.getModulesJSON()
     length = len(moduleList)
@@ -253,6 +263,7 @@ def formatLink(type: str, url: str) -> str:
     return url_for(type, key=url)
 
 @app.route("/links/", methods=["POST","PATCH","DELETE","PUT"])
+@header_required()
 def links():
     links = sqlSession.getLinksJSON()
     length = len(links)  
@@ -334,6 +345,7 @@ def links():
 
     
 @app.route("/items/", methods=["POST","PATCH","DELETE", "PUT"])
+@header_required()
 def items():    
     json = request.json
     print(json)
@@ -427,6 +439,7 @@ def items():
 
     
 @app.route("/announcements/", methods=["GET","POST","PATCH","DELETE"])
+@header_required("POST","PATCH","DELETE")
 def announcements():
     if request.method == "GET":
         announcements = sqlSession.getAnnouncementsJSON()
@@ -508,6 +521,7 @@ def handleDriveURL(url: str) -> str:
     return '/'.join(full)
 
 @app.route("/files/", methods=["POST", "PATCH", "DELETE"])
+@header_required()
 def files():
     json = request.json
 
@@ -590,6 +604,7 @@ def file(key):
 
 
 @app.route("/musicdata/", methods=["POST", "PATCH", "DELETE"])
+@header_required()
 def musicdata():
     json = request.json
 
@@ -733,7 +748,7 @@ def logout():
 
 
 @app.route("/sync/", methods=['POST'])
-@header_required
+@header_required()
 def calendarSync():
     try:
         ics = request.get_data(as_text=True)
@@ -746,7 +761,7 @@ def calendarSync():
         abort(500, e)
 
 @app.route("/config/<key>", methods=['POST'])
-@header_required
+@header_required()
 def configuration(key):
     try:
         value = request.get_data(as_text=True)
@@ -782,7 +797,7 @@ def adminfiles():
         return render_template("adminfiles.html", links=links, files=files, musics=music, logged=('username' in ses), admin=True)
     
 @app.route("/admin/link/<position>")
-@header_required
+@header_required()
 def adminGetLink(position):
     if "username" not in ses:
         abort(403)
@@ -796,7 +811,7 @@ def adminGetLink(position):
         abort(500, e)
     
 @app.route("/admin/item/<modulepos>/<position>")
-@header_required
+@header_required()
 def adminGetItem(modulepos, position):
     if "username" not in ses:
         abort(403)
@@ -811,7 +826,7 @@ def adminGetItem(modulepos, position):
         abort(500, e)
     
 @app.route("/admin/announcement/<id>")
-@header_required
+@header_required()
 def adminGetAnnouncement(id: str):
     if "username" not in ses:
         abort(403)
@@ -835,7 +850,7 @@ def adminGetAnnouncement(id: str):
             abort(500, e)
     
 @app.route("/admin/file/<key>")
-@header_required
+@header_required()
 def adminGetFile(key: str):
     if "username" not in ses:
         abort(403)
@@ -854,7 +869,7 @@ def adminGetFile(key: str):
             abort(500, e)
     
 @app.route("/admin/music/<key>")
-@header_required
+@header_required()
 def adminGetMusic(key: str):
     if "username" not in ses:
         abort(403)
@@ -873,7 +888,7 @@ def adminGetMusic(key: str):
             abort(500, e)
     
 @app.route("/admin/page/<key>")
-@header_required
+@header_required()
 def adminGetPages(key):
     if (key != 'all'): return {}
     try:
@@ -910,7 +925,7 @@ def adminGetPages(key):
         abort(500, e)
     
 @app.route("/admin/internal/all")
-@header_required
+@header_required()
 def adminGetInternal():
     if "username" not in ses:
         abort(403)
@@ -935,6 +950,7 @@ def calendar():
     return render_template("calendar.html", links=links, logged=('username' in ses))
 
 @app.route("/savestate/")
+@header_required()
 def savestate():
     if 'username' not in ses:
         return redirect( url_for("login"))
@@ -947,6 +963,7 @@ def savestate():
     return response
 
 @app.route("/loadstate/", methods=['GET', 'POST'])
+@header_required("POST")
 def loadstate():
     if 'username' not in ses:
         return redirect( url_for("login", next='loadstate', nextargs='{}'))
@@ -984,7 +1001,7 @@ def page(key):
         return render_template("page.html", header="Page Not Found", content=None, links=sqlSession.getLinksJSON(), logged=('username' in ses))
 
 @app.route('/sesclear/')
-@header_required
+@header_required()
 def clear_sessions():
     try:
         subprocess.run(['flask', '--app', 'main.py', 'session_cleanup'])
