@@ -1,12 +1,13 @@
 from flask import Flask, render_template, abort, redirect, request, url_for, make_response, flash
 from flask import session as ses
+from alt import db
+from flask_session import Session as Ses
 from werkzeug.exceptions import HTTPException
 # from sqlalchemy import create_engine, desc
 # from sqlalchemy.orm import sessionmaker
-from models import Link, Module, Announcement, FileData, MusicData, Item
 import datetime
 from typing import Any, Tuple
-from session import MySession, generateSQLSession
+from session import generateSQLSession
 from dotenv import load_dotenv
 import os
 import re
@@ -53,7 +54,11 @@ app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY')
 app.permanent_session_lifetime = datetime.timedelta(minutes=30)
 
-sqlSession = generateSQLSession('data.db')
+sqlSession = generateSQLSession('data.db', app)
+
+app.config['SESSION_TYPE'] = 'sqlalchemy'
+app.config['SESSION_SQLALCHEMY'] = db
+Ses(app)
 
 def nicerFormat(starttime: datetime.datetime, endtime: datetime.datetime) -> Tuple[str, str]:
     today = datetime.datetime.now().date()
@@ -177,8 +182,7 @@ def modules():
         visibility = requiredVar(json, 'hidden')
         
         try:
-            moduleObj = Module(position = position, display_name = title, hidden = visibility)
-            sqlSession.addModule(moduleObj)
+            moduleObj = sqlSession.addModule(position = position, display_name = title, hidden = visibility)
             return success()
         except Exception as e:
             abort(500, e)
@@ -265,8 +269,7 @@ def links():
         url = requiredVar(json, 'url')
 
         try:
-            linkObj = Link(position = position, display_name = title, url = url, type=type)
-            sqlSession.addLink(linkObj)
+            linkObj = sqlSession.addLink(position, title, url, type)
             return success({'id': linkObj.id, 'href': formatLink(type, url)})
         except Exception as e:
             abort(500, e)
@@ -356,8 +359,7 @@ def items():
         visibility = requiredVar(json, 'hidden')
 
         try:
-            itemObj = Item(position = position, display = title, url = url, type=type, module_id=moduleObj.id, hidden=visibility)
-            sqlSession.addItem(itemObj)
+            itemObj = sqlSession.addItem(position = position, display = title, url = url, type=type, module_id=moduleObj.id, hidden=visibility)
             if (itemObj.type != 'header'):
                 return success({'href': formatLink(itemObj.type, itemObj.url)})
             return success()
@@ -446,15 +448,14 @@ def announcements():
             if not isinstance(date,datetime.datetime):
                 date = datetime.datetime.fromisoformat(date)
 
-            announcementObj = Announcement(author = author, title = title, date_posted = date, content = content, id = id)
-            sqlSession.addAnnouncement(announcementObj)
+            announcementObj = sqlSession.addAnnouncement(author = author, title = title, date_posted = date, content = content, id = id)
             return success()
         except Exception as e:
             abort(500, e)
 
     elif request.method == "DELETE":
         try:
-            announcementObj = sqlSession.session.query(Announcement).get(id)
+            announcementObj = sqlSession.getAnnouncement(id)
             sqlSession.deleteAnnouncement(announcementObj)
             return success()
         except Exception as e:
@@ -486,7 +487,7 @@ def announcements():
 
 @app.route("/announcement/<id>")
 def announcement(id):
-    announcement = sqlSession.session.query(Announcement).get(id)
+    announcement = sqlSession.getAnnouncement(id)
     if (announcement is not None):
         announcement = announcement.toJSON()
         announcement['initial'] = announcement['author'][0].upper()
@@ -519,8 +520,7 @@ def files():
             abort(400, f'key `{key}` is already in use')
 
         try:
-            fileObj = FileData(key = key, url = url, display_name = title)
-            sqlSession.addFile(fileObj)
+            fileObj = sqlSession.addFile(key = key, url = url, display_name = title)
             return success({'href': formatLink('file', fileObj.key)})
         except Exception as e:
             abort(500, e)
@@ -600,8 +600,7 @@ def musicdata():
             abort(400, f'key `{path}` is already in use')
 
         try:
-            musicObj = MusicData(key = path, url = url, display_name = filename)
-            sqlSession.addMusic(musicObj)
+            musicObj = sqlSession.addMusic(key = path, url = url, display_name = filename)
             return success({'href': formatLink('music', musicObj.key)})
         except Exception as e:
             abort(500, e)
@@ -696,7 +695,10 @@ def login():
             else:
                 ses["failcount"] = 1
             if ses["failcount"] >= 6: ses["lockout"] = datetime.datetime.now(tz=datetime.timezone.utc)
-            return render_template("login.html", failed=True, failcount=ses["failcount"])
+
+            if (request.args.get("next") in adminpages):
+                return redirect(url_for('login', next=request.args.get('next'), nextargs=request.args.get('nextargs')))
+            return redirect(url_for('login'))
         
 @app.route("/logout/")
 def logout():

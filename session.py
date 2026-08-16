@@ -1,16 +1,31 @@
 from sqlalchemy import create_engine, desc
 from sqlalchemy.orm import sessionmaker, Session
-from models import Base, Link, Module, Announcement, Config, FileData, MusicData, Item
+from flask_sqlalchemy import SQLAlchemy
+from flask import Flask
+from alt import db
+from models import Link, Module, Announcement, Config, FileData, MusicData, Item
 import datetime
-from typing import Any
+from typing import Any, Tuple
 from zoneinfo import ZoneInfo
 import json
+from functools import wraps
+
+def wrap_context():
+    def decorator(func):
+        @wraps(func)
+        def wrapper(self, *args, **kwargs):
+            with getattr(self,'app').app_context():
+                return func(self, *args, **kwargs)
+        return wrapper
+    return decorator
 
 class MySession():
-    def __init__(self, session: Session):
-        self.session = session
+    def __init__(self, session: SQLAlchemy, app: Flask):
+        self.app = app
+        self.session = session.session
         self.initConfig()
 
+    @wrap_context()
     def getLinksJSON(self) -> list[dict[str, Any]]:
         """Returns all `Link` objects in the database parsed as Python `dict` objects"""
         links = self.session.query(Link).order_by(Link.position).all()
@@ -19,6 +34,7 @@ class MySession():
             obj.append(link.toJSON())
         return obj
 
+    @wrap_context()
     def getModulesJSON(self) -> list[dict[str, Any]]:
         """Returns all `Module` objects in the database parsed as Python `dict` objects"""
         modules = self.session.query(Module).order_by(Module.position).all()
@@ -27,6 +43,7 @@ class MySession():
             obj.append(module.toJSON())
         return obj
 
+    @wrap_context()
     def getItemsJSON(self, id) -> list[dict[str, Any]]:
         items = self.session.query(Item).filter_by(module_id=id).order_by(Item.position).all()
         obj = []
@@ -34,6 +51,7 @@ class MySession():
             obj.append(item.toJSON())
         return obj
 
+    @wrap_context()
     def getFilesJSON(self) -> list[dict[str, Any]]:
         files = self.session.query(FileData).order_by(FileData.display_name).all()
         obj = []
@@ -41,6 +59,7 @@ class MySession():
             obj.append(item.toJSON())
         return obj
 
+    @wrap_context()
     def getMusicsJSON(self) -> list[dict[str, Any]]:
         musics = self.session.query(MusicData).order_by(MusicData.display_name).all()
         obj = []
@@ -48,6 +67,7 @@ class MySession():
             obj.append(item.toJSON())
         return obj
     
+    @wrap_context()
     def getAllItemsJSON(self) -> list[dict[str, Any]]:
         items = self.session.query(Item).order_by(Item.module_id, Item.position).all()
         obj = []
@@ -55,6 +75,7 @@ class MySession():
             obj.append(item.toJSON())
         return obj
 
+    @wrap_context()
     def getAnnouncementsJSON(self) -> list[dict[str, Any]]:
         announcements = self.session.query(Announcement).order_by(desc(Announcement.date_posted)).all()
         obj = []
@@ -62,6 +83,7 @@ class MySession():
             obj.append(announcement.toJSON())
         return obj
 
+    @wrap_context()
     def getAnnouncementsJSONSerialized(self) -> list[dict[str, Any]]:
         announcements = self.session.query(Announcement).order_by(desc(Announcement.date_posted)).all()
         obj = []
@@ -71,6 +93,7 @@ class MySession():
             obj.append(temp)
         return obj
 
+    @wrap_context()
     def getConfigJSON(self) -> list[dict[str, Any]]:
         configs = self.session.query(Config).all()
         obj = {}
@@ -79,6 +102,7 @@ class MySession():
             obj[js['key']] = js['value']
         return obj
 
+    @wrap_context()
     def initConfig(self):
         if not self.session.query(Config).filter_by(key='authorization').first():
             self.session.add(Config(key='authorization', value=''))
@@ -94,6 +118,7 @@ class MySession():
 
         self.session.commit()
 
+    @wrap_context()
     def getConfig(self, key):
         result = self.session.query(Config).filter_by(key=key).first()
         if not result:
@@ -101,6 +126,7 @@ class MySession():
 
         return result.value
 
+    @wrap_context()
     def editConfig(self, key: str, value: str):
         result = self.session.query(Config).filter_by(key=key).first()
         if not result:
@@ -109,6 +135,7 @@ class MySession():
         result.value = value
         self.session.commit()
 
+    @wrap_context()
     def editConfigAll(self, newConfig: dict):
         for key in newConfig.keys():
             result = self.session.query(Config).filter_by(key=key).first()
@@ -119,24 +146,31 @@ class MySession():
 
         self.session.commit()
 
+    @wrap_context()
     def getModule(self, position) -> Module | None:
         return self.session.query(Module).filter_by(position=position).first()
 
+    @wrap_context()
     def getLink(self, position) -> Link | None:
         return self.session.query(Link).filter_by(position=position).first()
 
+    @wrap_context()
     def getFile(self, key) -> FileData | None:
         return self.session.query(FileData).filter_by(key=key).first()
     
+    @wrap_context()
     def getMusic(self, key) -> MusicData | None:
         return self.session.query(MusicData).filter_by(key=key).first()
 
+    @wrap_context()
     def getItem(self, modulePos, itemPos) -> Item | None:
         return self.session.query(Item).filter_by(module_id = self.getModule(modulePos).id, position=itemPos).first()
     
+    @wrap_context()
     def getAnnouncement(self, id) -> Announcement | None:
         return self.session.query(Announcement).filter_by(id = id).first()
 
+    @wrap_context()
     def moveLink(self, pos1, pos2):
         link1 = self.getLink(pos1)
         linkList = self.session.query(Link).order_by(Link.position).all()
@@ -148,6 +182,7 @@ class MySession():
             linkList[i].position = i + 1
         self.session.commit()
 
+    @wrap_context()
     def moveModule(self, pos1, pos2):
         module1 = self.getModule(pos1)
         moduleList = self.session.query(Module).order_by(Module.position).all()
@@ -158,6 +193,7 @@ class MySession():
             moduleList[i].position = i+1
         self.session.commit()
 
+    @wrap_context()
     def moveItem(self, modulePos, pos1, pos2):
         item1 = self.getItem(modulePos, pos1)
         itemList = self.session.query(Item).filter_by(module_id = item1.module_id).order_by(Item.position).all()
@@ -168,42 +204,61 @@ class MySession():
             itemList[i].position = i+1
         self.session.commit()
 
-    def addModule(self, module: Module):
+    @wrap_context()
+    def addModule(self, position: int, display_name: str, hidden: bool) -> Module:
+        module = Module(position = position, display_name = display_name, hidden = hidden)
         all = self.session.query(Module).order_by(Module.position).all()
         self.session.add(module)
         all.insert(module.position-1, module)
         for i in range(module.position, len(all)):
             all[i].position = i + 1
         self.session.commit()
+        return module
 
-    def addLink(self, link: Link):
+    @wrap_context()
+    def addLink(self, position: int, display_name: str, url: str, type: str) -> Link:
+        link = Link(position = position, display_name = display_name, url = url, type=type)
         all = self.session.query(Link).order_by(Link.position).all()
         self.session.add(link)
         all.insert(link.position-1, link)
         for i in range(link.position, len(all)):
             all[i].position = i + 1
         self.session.commit()
+        return link
 
-    def addItem(self, item: Item):
+    @wrap_context()
+    def addItem(self, position: int, display: str, url: str, type: str, module_id: int, hidden: bool) -> Item:
+        item = Item(position = position, display = display, url = url, type=type, module_id=module_id, hidden=hidden)
         all = self.session.query(Item).filter_by(module_id = item.module_id).order_by(Item.position).all()
         self.session.add(item)
         all.insert(item.position-1, item)
         for i in range(item.position, len(all)):
             all[i].position = i + 1
         self.session.commit()
+        return item
 
-    def addFile(self, file: FileData):
+    @wrap_context()
+    def addFile(self, key: str, url: str, display_name: str) -> FileData:
+        file = FileData(key = key, url = url, display_name = display_name)
         self.session.add(file)
         self.session.commit()
+        return file
 
-    def addMusic(self, music: MusicData):
+    @wrap_context()
+    def addMusic(self, key: str, url: str, display_name: str) -> MusicData:
+        music = MusicData(key = key, url = url, display_name = display_name)
         self.session.add(music)
         self.session.commit()
+        return music
 
-    def addAnnouncement(self, announcement: Announcement):
+    @wrap_context()
+    def addAnnouncement(self, author: str, title: str, date_posted: datetime.datetime, content: str, id: int) -> Announcement:
+        announcement = Announcement(author = author, title = title, date_posted = date_posted, content = content, id = id)
         self.session.add(announcement)
         self.session.commit()
+        return announcement
 
+    @wrap_context()
     def deleteModule(self, module: Module):
         all = self.session.query(Module).order_by(Module.position).all()
         all.remove(module)
@@ -213,6 +268,7 @@ class MySession():
         self.session.delete(module)
         self.session.commit()
 
+    @wrap_context()
     def deleteLink(self, link: Link):
         all = self.session.query(Link).order_by(Link.position).all()
         all.remove(link)
@@ -221,6 +277,7 @@ class MySession():
         self.session.delete(link)
         self.session.commit()
 
+    @wrap_context()
     def deleteItem(self, item: Item):
         all = self.session.query(Item).filter_by(module_id = item.module_id).order_by(Item.position).all()
         all.remove(item)
@@ -229,18 +286,22 @@ class MySession():
         self.session.delete(item)
         self.session.commit()
 
+    @wrap_context()
     def deleteFile(self, file: FileData):
         self.session.delete(file)
         self.session.commit()
 
+    @wrap_context()
     def deleteMusic(self, music: MusicData):
         self.session.delete(music)
         self.session.commit()
 
+    @wrap_context()
     def deleteAnnouncement(self, announcement: Announcement):
         self.session.delete(announcement)
         self.session.commit()
 
+    @wrap_context()
     def updateKeys(self, keytype, old_key, new_key):
         items = self.session.query(Item).filter_by(type = keytype, url = old_key).all()
         for item in items:
@@ -271,6 +332,7 @@ class MySession():
 
         return root
 
+    @wrap_context()
     def loadState(self, jsonfile):
         try:
 
@@ -317,8 +379,10 @@ class MySession():
             self.session.rollback()
             return {'status': 'error', 'error': f'{e}'}
 
-def generateSQLSession(dbName) -> MySession:
-    engine = create_engine("sqlite:///" + dbName)
-    Base.metadata.create_all(bind=engine)
-    Session = sessionmaker(bind=engine)
-    return MySession(Session())
+def generateSQLSession(dbName: str, app: Flask) -> MySession:
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{dbName}'
+    db.init_app(app)
+    with app.app_context():
+        db.create_all()
+
+    return MySession(db, app)

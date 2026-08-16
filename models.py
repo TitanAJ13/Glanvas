@@ -1,12 +1,13 @@
 from sqlalchemy import Column, String, Integer, DateTime, JSON, Boolean
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import declarative_base
+from alt import db
 import datetime
 import os
 
-Base = declarative_base()
+# db.Model = declarative_base()
 
-class Link(Base):
+class Link(db.Model):
 
     __tablename__ = "Links"
 
@@ -50,7 +51,7 @@ class Link(Base):
 #     }
 # ]
 
-class Module(Base):
+class Module(db.Model):
     __tablename__ = "Modules"
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
@@ -66,7 +67,7 @@ class Module(Base):
             "hidden" : self.hidden
         }
     
-class Item(Base):
+class Item(db.Model):
     __tablename__ = "Items"
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
@@ -88,7 +89,7 @@ class Item(Base):
             "hidden": self.hidden
         }
     
-class Announcement(Base):
+class Announcement(db.Model):
     __tablename__ = "Announcements"
 
     id = Column("id", Integer, primary_key=True, autoincrement=False)
@@ -106,7 +107,7 @@ class Announcement(Base):
             "content" : self.content
         }
     
-class FileData(Base):
+class FileData(db.Model):
     __tablename__ = "FileData"
 
     key=Column("key", String, primary_key=True,nullable=False)
@@ -120,7 +121,7 @@ class FileData(Base):
             "display_name": self.display_name
         }
     
-class MusicData(Base):
+class MusicData(db.Model):
     __tablename__ = "MusicData"
 
     key=Column("key", String, primary_key=True,nullable=False)
@@ -134,7 +135,7 @@ class MusicData(Base):
             "display_name": self.display_name
         }
     
-class Config(Base):
+class Config(db.Model):
     __tablename__ = "Config"
 
     key = Column("key", String, primary_key=True, nullable=False)
