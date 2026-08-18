@@ -50,11 +50,11 @@ function addEventListeners() {
     isMobile.addEventListener("change", mediaChanged);
     sidebar.addEventListener("pointerdown", (event) => {
         if (isMobile.matches && event.target.id == 'sidebar1' && event.button == 0) {
-            sidebar.onpointerup = (event2) => {
+            sidebar.onclick = (event2) => {
                 if (isMobile.matches && event2.target.id == 'sidebar1' && event2.button == 0) {
                     sidebar_toggle();
                 }
-                sidebar.onpointerup = null;
+                sidebar.onclick = null;
             }
         }
     })

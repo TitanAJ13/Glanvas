@@ -644,6 +644,7 @@
     background-color: #000000CC;
     z-index: 3;
     align-items: center;
+    touch-action: auto;
 }
 
 html:has(#overlay) #overlay2 {
@@ -716,8 +717,8 @@ html:has(#overlay2) #overlay {
 .overlay form select {
     appearance: base-select;
     margin-top: 10px;
-    width: 40%;
-    height: 30px;
+    width: stretch;
+    height: fit-content;
     border-radius: 15px;
     padding-left: 15px;
     padding-right: 15px;
@@ -730,7 +731,6 @@ html:has(#overlay2) #overlay {
 }
 
 .overlay form select.big-select {
-    width: stretch;
     timeline-scope: --scroll;
     animation: --scroll forwards;
     animation-timeline: --scroll;
@@ -788,6 +788,7 @@ html:has(#overlay2) #overlay {
     margin-bottom: 50px;
     overflow-y: auto;
     scroll-timeline: --scroll y;
+    width: stretch;
 }
 
 .overlay form select option {
@@ -799,6 +800,7 @@ html:has(#overlay2) #overlay {
     background-color: #424344;
     color: white;
     border-top: 0.5px solid #767676;
+    text-wrap: auto;
 }
 
 .overlay form select option:first-of-type {

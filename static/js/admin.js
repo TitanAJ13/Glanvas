@@ -196,14 +196,14 @@ async function linkMenu(title, display_name, type, url, hasDelete) {
     document.body.appendChild(overlay);
 
     let createButton = overlay.querySelector('.create-new');
-    overlay.querySelectorAll('#linkType > option').forEach((element) => {
-        element.addEventListener('pointerup', async (event) => {
+    let typeSelect = overlay.querySelector('#linkType');
+    typeSelect.addEventListener('change', async (event) => {
             let urlSelect = overlay.querySelector('#linkURL1');
             let label1 = overlay.querySelector('#labelURL1');
             let url2 = overlay.querySelector('#linkURL2');
             let label2 = overlay.querySelector('#labelURL2');
 
-            if (element.value != 'external') {
+            if (typeSelect.value != 'external') {
                 urlSelect.setAttribute('required', '');
                 urlSelect.removeAttribute('style');
                 urlSelect.removeAttribute('disabled');
@@ -214,7 +214,7 @@ async function linkMenu(title, display_name, type, url, hasDelete) {
                 url2.style.display = 'none';
                 label2.style.display = 'none';
 
-                if (element.value == 'file' || element.value == 'music') {
+                if (typeSelect.value == 'file' || typeSelect.value == 'music') {
                     createButton.removeAttribute('style');
                     createButton.removeAttribute('disabled');
                 }
@@ -225,7 +225,7 @@ async function linkMenu(title, display_name, type, url, hasDelete) {
 
                 urlSelect.innerHTML = '<option value="" disabled selected>Loading...</option>';
                 try {
-                    let response = getOptions(element.value);
+                    let response = getOptions(typeSelect.value);
                     if (event instanceof CustomEvent)
                         event.detail.promises.push(response);
                     let newoptions = '';
@@ -254,7 +254,6 @@ async function linkMenu(title, display_name, type, url, hasDelete) {
                 createButton.setAttribute('disabled','');
             }
         })
-    })
 
     let form = overlay.querySelector('#linkForm');
         
@@ -265,12 +264,12 @@ async function linkMenu(title, display_name, type, url, hasDelete) {
     
     overlay.addEventListener('pointerdown', (event) => {
         if (event.target.id == 'overlay' && event.button == 0) {
-            overlay.onpointerup = (event2) => {
+            overlay.onclick = (event2) => {
                 if (event2.target.id == 'overlay' && event2.button == 0) {
                     windowPrevent(false);
                     document.body.removeChild(overlay);
                 }
-                overlay.onpointerup = null;
+                overlay.onclick = null;
             }
         }
     })
@@ -700,14 +699,14 @@ async function itemMenu(title, display_name, type, url, hasDelete) {
     document.body.appendChild(overlay);
 
     let createButton = overlay.querySelector('.create-new');
-    overlay.querySelectorAll('#itemType > option').forEach((element) => {
-        element.addEventListener('pointerup', async (event) => {
+    let typeSelect = overlay.querySelector('#itemType');
+    typeSelect.addEventListener('change', async (event) => {
             let urlSelect = overlay.querySelector('#itemURL1');
             let label1 = overlay.querySelector('#labelURL1');
             let url2 = overlay.querySelector('#itemURL2');
             let label2 = overlay.querySelector('#labelURL2');
 
-            if (element.value != 'header' && element.value != 'link') {
+            if (typeSelect.value != 'header' && typeSelect.value != 'link') {
                 urlSelect.setAttribute('required', '');
                 urlSelect.removeAttribute('style');
                 urlSelect.removeAttribute('disabled');
@@ -718,7 +717,7 @@ async function itemMenu(title, display_name, type, url, hasDelete) {
                 url2.style.display = 'none';
                 label2.style.display = 'none';
 
-                if (element.value == 'file' || element.value == 'music') {
+                if (typeSelect.value == 'file' || typeSelect.value == 'music') {
                     createButton.removeAttribute('style');
                     createButton.removeAttribute('disabled');
                 }
@@ -729,7 +728,7 @@ async function itemMenu(title, display_name, type, url, hasDelete) {
 
                 urlSelect.innerHTML = '<option value="" disabled selected>Loading...</option>';
                 try {
-                    let response = getOptions(element.value);
+                    let response = getOptions(typeSelect.value);
                     if (event instanceof CustomEvent)
                         event.detail.promises.push(response);
                     let newoptions = '';
@@ -749,7 +748,7 @@ async function itemMenu(title, display_name, type, url, hasDelete) {
                 urlSelect.style.display = 'none';
                 label1.style.display= 'none';
                 
-                if (element.value == 'link') {
+                if (typeSelect.value == 'link') {
                     url2.setAttribute('required', '');
                     url2.removeAttribute('disabled');
                     url2.removeAttribute('style');
@@ -766,7 +765,6 @@ async function itemMenu(title, display_name, type, url, hasDelete) {
                 createButton.setAttribute('disabled','');
             }
         })
-    })
 
     let form = overlay.querySelector('#itemForm');
         
@@ -777,12 +775,12 @@ async function itemMenu(title, display_name, type, url, hasDelete) {
 
     overlay.addEventListener('pointerdown', (event) => {
         if (event.target.id == 'overlay' && event.button == 0) {
-            overlay.onpointerup = (event2) => {
+            overlay.onclick = (event2) => {
                 if (event2.target.id == 'overlay' && event2.button == 0) {
                     windowPrevent(false);
                     document.body.removeChild(overlay);
                 }
-                overlay.onpointerup = null;
+                overlay.onclick = null;
             }
         }
     })
@@ -1431,12 +1429,12 @@ async function fileMenu(title, type, display_name, key, url, hasDelete, primary=
 
     overlay.addEventListener('pointerdown', (event) => {
         if (event.target.id == 'overlay2' && event.button == 0) {
-            overlay.onpointerup = (event2) => {
+            overlay.onclick = (event2) => {
                 if (event2.target.id == 'overlay2' && event2.button == 0) {
                     if (primary) windowPrevent(false);
                     document.body.removeChild(overlay);
                 }
-                overlay.onpointerup = null;
+                overlay.onclick = null;
             }
         }
     })
