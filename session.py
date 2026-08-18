@@ -116,6 +116,12 @@ class MySession():
         if not self.session.query(Config).filter_by(key='calendarDelta').first():
             self.session.add(Config(key='calendarDelta', value='5'))
 
+        if not self.session.query(Config).filter_by(key='username').first():
+            self.session.add(Config(key='username', value='admin'))
+
+        if not self.session.query(Config).filter_by(key='password').first():
+            self.session.add(Config(key='password', value='password'))
+
         self.session.commit()
 
     @wrap_context()

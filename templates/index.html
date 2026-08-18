@@ -13,7 +13,7 @@
         const calendarData = {{calendar | trim | tojson}};
     </script> -->
     <script type="text/javascript" src="{{ url_for('static', filename='js/main.js') }}"></script>
-    {% if admin %}
+    {% if request.endpoint in adminpages %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}" media="screen and (min-width: 760px)">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-mobile.css') }}" media="screen and (max-width: 759px)">
     <script type="text/javascript" src="{{ url_for('static', filename='js/admin.js') }}"></script>
@@ -34,7 +34,7 @@
                 <p>Calendar</p>
             </a>
         </li>
-        {% if logged %}
+        {% if session.get('username') %}
         <li>
             <a style="padding: .4375rem 0;" href="{{ url_for('logout', next=request.endpoint, nextargs = next_args) }}">
                 <div class="icon-container">
@@ -93,7 +93,7 @@
                 </div>
                 <p>Calendar</p>
             </a>
-            {% if logged %}
+            {% if session.get('username') %}
             <a id="mobile-login-button" href="{{ url_for('logout', next=request.endpoint, nextargs = next_args) }}" style="display: none;">
                 <div class="icon-container">
                     <svg xmlns="http://www.w3.org/2000/svg" class="ic-icon-svg" viewBox="0 0 52 52" enable-background="new 0 0 52 52" xml:space="preserve">
@@ -141,7 +141,7 @@
                             {% endfor %}
                         {% endblock %}
                     </ul>
-                    {% if logged %}
+                    {% if session.get('username') %}
                     <a class="adminlink" href="{{ url_for('adminpage') }}">Admin Home</a>
                     <a class="adminlink" href="{{ url_for('adminfiles') }}">Files</a>
                     <a class="adminlink" href="{{ url_for('savestate') }}">Save State</a>

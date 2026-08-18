@@ -18,6 +18,7 @@ from functools import wraps
 from bs4 import BeautifulSoup
 import subprocess
 import msgspec
+import secrets
 
 def error(message):
     return {
@@ -31,25 +32,16 @@ def success(obj: dict[str, Any] = None):
         'extra': obj
     }
 
-adminpages = ['adminpage', 'adminfiles', 'loadstate']
-
 def header_required(*methods):
     def decorator(f):
         @wraps(f)
         def decorated(*args, **kwargs):
             if (methods is None or request.method in methods):
-                if (not request.referrer or request.referrer not in [url_for(page, _external=True) for page in adminpages]):
+                if ('username' not in ses):
                     auth = request.authorization
                     if not auth:
                         abort(401)
 
-                    # username = auth.parameters['username']
-                    # password = auth.parameters['password']
-                    # if not username or not password:
-                    #     abort(401)
-
-                    # if username != 'tony' or password != 'twoshoes':
-                    #     abort(401)
                     token = auth.token
                     if not token:
                         abort(401)
@@ -153,9 +145,22 @@ def refresh_session():
     if 'username' in ses:
         ses.modified = True
 
+adminpages = ['adminpage', 'adminfiles', 'loadstate']
+
+@app.before_request
+def adminAuth():
+    if request.endpoint in adminpages and 'username' not in ses:
+        return redirect(url_for('login', next=request.endpoint, nextargs = request.view_args))
+
+@app.context_processor
+def global_template_variables():
+    return dict(
+        links = sqlSession.getLinksJSON(),
+        adminpages = adminpages
+    )
+
 @app.route("/")
 def home():
-    links = sqlSession.getLinksJSON()
     modules = sqlSession.getModulesJSON()
     for module in modules:
         module['blocks'] = sqlSession.getItemsJSON(module['id'])
@@ -163,7 +168,7 @@ def home():
     for announcement in announcements:
         announcement['date_posted'] = announcement['date_posted'].strftime("%b %d, %Y\n%I:%M %p")
     calendarItems = getCalendarEvents()
-    return render_template("home.html", links=links, modules=modules, announcements=announcements, calendarItems=calendarItems, logged=('username' in ses))
+    return render_template("home.html", modules=modules, announcements=announcements, calendarItems=calendarItems)
 
 
 
@@ -175,10 +180,9 @@ def modules():
 
 
     if request.method == "GET":
-        links = sqlSession.getLinksJSON()
         for module in moduleList:
             module['blocks'] = sqlSession.getItemsJSON(module['id'])
-        return render_template("modules.html", links=links, modules=moduleList, logged=('username' in ses))
+        return render_template("modules.html", modules=moduleList)
     
     json = request.json
     position = requiredVar(json, 'position')
@@ -445,9 +449,8 @@ def announcements():
         announcements = sqlSession.getAnnouncementsJSON()
         for announcement in announcements:
             announcement['date_posted'] = announcement['date_posted'].strftime("%b %d, %Y\n%I:%M %p")
-        links = sqlSession.getLinksJSON()
         # calendarItems = sqlSession.getCalendarItemsJSON()
-        return render_template("announcements.html", links=links, announcements=announcements, logged=('username' in ses))
+        return render_template("announcements.html", announcements=announcements)
     
 
     json = request.json
@@ -508,7 +511,7 @@ def announcement(id):
             announcement = announcement.toJSON()
             announcement['initial'] = announcement['author'][0].upper()
             announcement['date_posted'] = announcement['date_posted'].strftime("%b %d, %Y %I:%M %p")
-            return render_template("announcement.html", announcement=announcement, links=sqlSession.getLinksJSON(), logged=('username' in ses))
+            return render_template("announcement.html", announcement=announcement)
         else:
             return redirect(url_for("announcements"))
 
@@ -592,14 +595,14 @@ def file(key):
     data = sqlSession.getFile(key)
     if (data is None):
         if (str(key).startswith('https://')):
-            return render_template("file.html", header="Unnamed File", url=key, links=sqlSession.getLinksJSON(), logged=('username' in ses))
+            return render_template("file.html", header="Unnamed File", url=key)
         else:
-            return render_template("file.html", header="File Not Found", url="about:blank", links=sqlSession.getLinksJSON(), logged=('username' in ses))
+            return render_template("file.html", header="File Not Found", url="about:blank")
 
     else:
         with app.app_context():
             data = data.toJSON()
-            return render_template("file.html", header= data['display_name'], url=data['url'], links=sqlSession.getLinksJSON(), logged=('username' in ses))
+            return render_template("file.html", header= data['display_name'], url=data['url'])
     
 
 
@@ -678,13 +681,13 @@ def music(key):
     data = sqlSession.getMusic(key)
     if (data is None):
         if (str(key).startswith('https://')):
-            return render_template("music.html", header="Unnamed Sheetmusic", url=key, links=sqlSession.getLinksJSON(), logged=('username' in ses))
+            return render_template("music.html", header="Unnamed Sheetmusic", url=key)
         else:
-            return render_template("music.html", header="Music Not Found", url="about:blank", links=sqlSession.getLinksJSON(), logged=('username' in ses))
+            return render_template("music.html", header="Music Not Found", url="about:blank")
     else:
         with app.app_context():
             data = data.toJSON()
-            return render_template("music.html", header=data['display_name'], url=data['url'], links=sqlSession.getLinksJSON(), logged=('username' in ses))
+            return render_template("music.html", header=data['display_name'], url=data['url'])
     
 @app.route("/login/", methods=["GET", "POST"])
 def login():
@@ -697,14 +700,14 @@ def login():
         if "lockout" in ses and datetime.datetime.now(tz=datetime.timezone.utc) - ses["lockout"] > datetime.timedelta(minutes=10):
             ses.clear()
         if "failcount" in ses:
-            return render_template("login.html", failed=True, failcount=ses["failcount"], links=sqlSession.getLinksJSON())
+            return render_template("login.html", failed=True, failcount=ses["failcount"])
         else:
-            return render_template("login.html", failed=False, failcount=0, links=sqlSession.getLinksJSON())
+            return render_template("login.html", failed=False, failcount=0)
     
     elif request.method == "POST":
         username = request.form["user"]
         password = request.form["pass"]
-        if username == "tony" and password == "twoshoes":
+        if username == sqlSession.getConfig('username') and password == sqlSession.getConfig('password'):
             ses.clear()
             allowed = True
             with app.app_context():
@@ -773,28 +776,20 @@ def configuration(key):
 
 @app.route("/admin/")
 def adminpage():
-    if "username" not in ses:
-        return redirect( url_for("login"))
-    else:
-        links = sqlSession.getLinksJSON()
-        modules = sqlSession.getModulesJSON()
-        for module in modules:
-            module['blocks'] = sqlSession.getItemsJSON(module['id'])
-        announcements = sqlSession.getAnnouncementsJSON()[0:int(sqlSession.getConfig('homeAnnouncements'))]
-        for announcement in announcements:
-            announcement['date_posted'] = announcement['date_posted'].strftime("%b %d, %Y\n%I:%M %p")
-        calendarItems = getCalendarEvents()
-        return render_template("admin.html", links=links, modules=modules, announcements=announcements, calendarItems=calendarItems, logged=('username' in ses), admin=True)
+    modules = sqlSession.getModulesJSON()
+    for module in modules:
+        module['blocks'] = sqlSession.getItemsJSON(module['id'])
+    announcements = sqlSession.getAnnouncementsJSON()[0:int(sqlSession.getConfig('homeAnnouncements'))]
+    for announcement in announcements:
+        announcement['date_posted'] = announcement['date_posted'].strftime("%b %d, %Y\n%I:%M %p")
+    calendarItems = getCalendarEvents()
+    return render_template("admin.html", modules=modules, announcements=announcements, calendarItems=calendarItems)
     
 @app.route("/admin/files/")
 def adminfiles():
-    if "username" not in ses:
-        return redirect( url_for("login", next='adminfiles', nextargs='{}'))
-    else:
-        links = sqlSession.getLinksJSON()
-        files = sqlSession.getFilesJSON()
-        music = sqlSession.getMusicsJSON()
-        return render_template("adminfiles.html", links=links, files=files, musics=music, logged=('username' in ses), admin=True)
+    files = sqlSession.getFilesJSON()
+    music = sqlSession.getMusicsJSON()
+    return render_template("adminfiles.html", files=files, musics=music)
     
 @app.route("/admin/link/<position>")
 @header_required()
@@ -946,15 +941,11 @@ def adminGetInternal():
 
 @app.route("/calendar/")
 def calendar():
-    links = sqlSession.getLinksJSON()
-    return render_template("calendar.html", links=links, logged=('username' in ses))
+    return render_template("calendar.html")
 
 @app.route("/savestate/")
 @header_required()
 def savestate():
-    if 'username' not in ses:
-        return redirect( url_for("login"))
-
     state = json.dumps(sqlSession.saveState(), indent=4)
 
     response = make_response(state)
@@ -965,12 +956,8 @@ def savestate():
 @app.route("/loadstate/", methods=['GET', 'POST'])
 @header_required("POST")
 def loadstate():
-    if 'username' not in ses:
-        return redirect( url_for("login", next='loadstate', nextargs='{}'))
-
     if request.method == 'GET':
-        links = sqlSession.getLinksJSON()
-        return render_template("loadstate.html", links=links, admin=True, logged=('username' in ses))
+        return render_template("loadstate.html")
 
     elif request.method == 'POST':
         file = request.files['file']
@@ -995,16 +982,32 @@ def page(key):
         htmlContent = htmlContent.replace(f'https://sites.google.com/view/glanvaspages/{key}', '').replace('<header id="atIdViewHeader">', '<header id="atIdViewHeader" style="display:none!important;">').replace('data-is-preview="false"', 'data-s-preview="false" style="display:none;"')
         # htmlContent = htmlContent.replace('<body', '<div').replace('</body', '</div').replace('<style type="text/css">', '<style type="text/css">@scope{').replace('</style>', '}</style>')
 
-        return render_template("page.html", header= title, content=htmlContent, links=sqlSession.getLinksJSON(), logged=('username' in ses))
+        return render_template("page.html", header= title, content=htmlContent)
     except Exception as e:
         flash(f'{e}')
-        return render_template("page.html", header="Page Not Found", content=None, links=sqlSession.getLinksJSON(), logged=('username' in ses))
+        return render_template("page.html", header="Page Not Found", content=None)
 
-@app.route('/sesclear/')
+@app.route('/sesclear/', methods=['POST'])
 @header_required()
 def clear_sessions():
     try:
         subprocess.run(['flask', '--app', 'main.py', 'session_cleanup'])
+        return success()
+    except Exception as e:
+        abort(500, e)
+
+@app.route('/force-logout/', methods=['POST'])
+@header_required()
+def force_logout():
+    try:
+        with app.app_context():
+            SessionModel = app.session_interface.sql_session_model
+            sessions = db.session.query(SessionModel).all()
+            for session in sessions:
+                obj = msgspec.msgpack.decode(session.data)
+                if ('username' in obj and session.expiry.replace(tzinfo=datetime.UTC) > datetime.datetime.now(datetime.UTC)):
+                    db.session.delete(session)
+                    db.session.commit()
         return success()
     except Exception as e:
         abort(500, e)
