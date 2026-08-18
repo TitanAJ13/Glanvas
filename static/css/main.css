@@ -243,6 +243,10 @@ iframe {
     display: none;
 }
 
+#mobile-login-button {
+    display: none;
+}
+
 #right-of-path {
     display: flex;
     flex: 1;

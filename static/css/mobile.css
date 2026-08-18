@@ -135,7 +135,7 @@ img {
 
 #main-wrapper {
     background-color: #121212;
-    height: calc(100% - 4.5rem);
+    height: calc(100dvh - 4.5rem);
 }
 
 iframe {
@@ -294,7 +294,7 @@ iframe {
     flex: 1 0 auto;
     min-width: 1px;
     box-sizing: border-box;
-    height: calc(100dvh - 4.5rem);
+    height: 100%;
     margin-top: 4.5rem;
 }
 
