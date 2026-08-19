@@ -461,12 +461,13 @@ def announcements():
         author = requiredVar(json, 'author')
         title = requiredVar(json, 'title')
         content = requiredVar(json, 'content')
+        avatar = optionalVar(json, 'avatar')
 
         try:
             if not isinstance(date,datetime.datetime):
                 date = datetime.datetime.fromisoformat(date)
 
-            announcementObj = sqlSession.addAnnouncement(author = author, title = title, date_posted = date, content = content, id = id)
+            announcementObj = sqlSession.addAnnouncement(author = author, title = title, date_posted = date, content = content, id = id, avatar = avatar)
             return success()
         except Exception as e:
             abort(500, e)
@@ -482,6 +483,7 @@ def announcements():
         changes = requiredVar(json, 'changes')
         newTitle = optionalVar(changes, 'title')
         newContent = optionalVar(changes, 'content')
+        newAvatar = optionalVar(changes, 'avatar')
 
         if (newTitle is None and newContent is None):
             abort(400, '`changes` must include at least one of `title` or `content` attributes')
@@ -496,6 +498,8 @@ def announcements():
                     announcement.title = newTitle
                 if (newContent is not None):
                     announcement.content = newContent
+                if (newAvatar is not None):
+                    announcement.avatar = newAvatar
                 
                 sqlSession.session.commit()
                 return success()

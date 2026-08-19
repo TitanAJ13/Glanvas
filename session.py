@@ -262,8 +262,8 @@ class MySession():
         return music.toJSON()
 
     @wrap_context()
-    def addAnnouncement(self, author: str, title: str, date_posted: datetime.datetime, content: str, id: int) -> dict:
-        announcement = Announcement(author = author, title = title, date_posted = date_posted, content = content, id = id)
+    def addAnnouncement(self, author: str, title: str, date_posted: datetime.datetime, content: str, id: int, avatar: str | None) -> dict:
+        announcement = Announcement(author = author, title = title, date_posted = date_posted, content = content, id = id, avatar = avatar)
         self.session.add(announcement)
         self.session.commit()
         return announcement.toJSON()
@@ -375,7 +375,7 @@ class MySession():
                     self.session.add(linkObj)
             if ('announcements' in jsonfile):
                 for announcement in jsonfile['announcements']:
-                    announcementObj = Announcement(id = announcement['id'], author = announcement['author'], title = announcement['title'], date_posted = datetime.datetime.fromisoformat(announcement['date_posted']), content = announcement['content'])
+                    announcementObj = Announcement(id = announcement['id'], author = announcement['author'], title = announcement['title'], avatar = announcement.get('avatar', ''), date_posted = datetime.datetime.fromisoformat(announcement['date_posted']), content = announcement['content'])
                     self.session.add(announcementObj)
             if ('files' in jsonfile):
                 for file in jsonfile['files']:

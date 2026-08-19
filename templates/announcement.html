@@ -22,7 +22,7 @@
 {% block main_content %}
     <div id="announcement">
         <div id="announcement-header">
-            <span id="profile">{{ announcement.initial }}</span>
+            <span id="profile" {% if announcement.avatar %} style="background-image: url({{announcement.avatar}})"></span>{% else %}>{{ announcement.initial }}</span>{% endif %}
             <div style="float:left">
                 <p id="author">{{ announcement.author }}</p>
                 <p id="date">Posted {{ announcement.date_posted }}</p>

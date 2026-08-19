@@ -776,6 +776,10 @@ iframe {
     float: left;
     padding: 0;
     text-align: center;
+    background-position: center center;
+    background-size: cover;
+    background-clip: content-box;
+    background-repeat: no-repeat;
 }
 
 #announcement-content {

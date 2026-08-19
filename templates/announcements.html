@@ -22,7 +22,7 @@
                     <span class="circle"></span>
                 </span>
                 <div class="author">
-                    <span></span>
+                    <span {% if announcement.avatar %} style="background-image: url({{announcement.avatar}})" {% endif %}></span>
                 </div>
                 <div class="content">
                     <a href="{{ url_for('announcement', id= announcement.id) }}">

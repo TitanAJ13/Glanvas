@@ -95,6 +95,7 @@ class Announcement(db.Model):
     id = Column("id", Integer, primary_key=True, autoincrement=False)
     author = Column("author", String, nullable=False)
     title = Column("title", String, nullable=False)
+    avatar = Column("avatar", String, nullable=True)
     date_posted = Column("date_posted", DateTime, nullable=False,default=datetime.datetime.now(datetime.timezone.utc))
     content = Column("content", String, nullable=False)
 
@@ -103,6 +104,7 @@ class Announcement(db.Model):
             "id": self.id,
             "author": self.author,
             "title": self.title,
+            "avatar": self.avatar,
             "date_posted": self.date_posted,
             "content" : self.content
         }
