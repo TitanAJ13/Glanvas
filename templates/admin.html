@@ -56,7 +56,7 @@
     <div id="announcements">
         <div id="announcements-top-bar">
             <h2>Recent Announcements</h2>
-            <button type="button" onclick="editAnnouncements()">Edit Announcements</button>
+            <button type="button" onclick="editAnnouncements()">Edit Display</button>
         </div>
         <form id="edit-announcements" style="display: none;">
             <p>Number of Announcements:</p>
@@ -180,10 +180,10 @@
     <button type="button" onclick="editEvents()">Edit Events</button>
     <form id="edit-events" style="display: none">
         <label for="calendarNum">Max # of Events:</label>
-        <input id="calendarNum" name="calendarNum" type="number" min="0" max="20" value="{{ configs.calendarNum }}" placeholder="{{ configs.calendarNum }}"><br><br>
+        <input id="calendarNum" name="calendarNum" type="number" min="0" max="20" value="{{ configs.calendarNum }}" placeholder="{{ configs.calendarNum }}"><div></div>
         <label for="calendarDelta">Days in Advance:</label>
-        <input id="calendarDelta" name="calendarDelta" type="number" min="1" max="21" value="{{ configs.calendarDelta }}" placeholder="{{ configs.calendarDelta }}"><br><br>
-        <input type="submit" value="✓"><button type="button" class="menuCancel">🗙</button><br><br>
+        <input id="calendarDelta" name="calendarDelta" type="number" min="1" max="21" value="{{ configs.calendarDelta }}" placeholder="{{ configs.calendarDelta }}"><div></div>
+        <input type="submit" value="✓"><button type="button" class="menuCancel">🗙</button>
     </form>
     {% if calendarItems | length == 0 %}
     <li>
