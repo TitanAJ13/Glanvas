@@ -144,6 +144,7 @@
                     {% if session.get('username') %}
                     <a class="adminlink" href="{{ url_for('adminpage') }}">Admin Home</a>
                     <a class="adminlink" href="{{ url_for('adminfiles') }}">Files</a>
+                    <a class="adminlink" href="{{ url_for('adminannouncements') }}">Announcements (Admin)</a>
                     <a class="adminlink" href="{{ url_for('savestate') }}">Save State</a>
                     <a class="adminlink" href="{{ url_for('loadstate') }}">Load State</a>
                     {% endif %}

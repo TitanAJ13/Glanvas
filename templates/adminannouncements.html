@@ -1,0 +1,58 @@
+{% extends "index.html" %}
+
+{% block title %}Announcements | Admin View{% endblock %}
+
+{% block path %}
+    <li>
+        <a href="#">
+            <span>Announcements (Admin)</span>
+        </a>
+    </li>
+{% endblock %}
+
+{% block right_display %}
+    display: none;
+{% endblock %}
+
+{% block main_content %}
+    <div id="announcements">
+        {% for announcement in announcements %}
+            <div class="announcement">
+                <span>
+                    <span class="circle"></span>
+                </span>
+                <div class="author">
+                    <span></span>
+                </div>
+                <div class="content">
+                    <a href="{{ url_for('announcement', id= announcement.id) }}">
+                        <div>
+                            <h3>
+                                {{ announcement.title }}
+                            </h3>
+                        </div>
+                    </a>
+                    <div class="content-body">
+                        {{ announcement.content | safe }}
+                    </div>
+                </div>
+                <div class="meta">
+                    <div class="actions">
+                        <span></span>
+                    </div>
+                    <div>
+                        <div>
+                            <span>
+                                <p>Posted on:</p>
+                            </span>
+                            <span>
+                                <p>{{ announcement.date_posted }}</p>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    
+{% endblock %}

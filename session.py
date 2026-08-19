@@ -94,7 +94,7 @@ class MySession():
         return obj
 
     @wrap_context()
-    def getConfigJSON(self) -> list[dict[str, Any]]:
+    def getConfigJSON(self) -> dict[str, Any]:
         configs = self.session.query(Config).all()
         obj = {}
         for config in configs:

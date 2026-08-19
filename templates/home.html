@@ -8,46 +8,48 @@
 {% endblock %}
 
 {% block main_content %}
-    <div id="announcements">
-        <h2>Recent Announcements</h2>
-        {% for announcement in announcements %}
-            <div class="announcement" announcement-id="{{ announcement.id }}">
-                <span>
-                    <span class="circle"></span>
-                </span>
-                <div class="author">
+    {% if announcements | length > 0 %}
+        <div id="announcements">
+            <h2>Recent Announcements</h2>
+            {% for announcement in announcements %}
+                <div class="announcement" announcement-id="{{ announcement.id }}">
                     <span>
-                        
+                        <span class="circle"></span>
                     </span>
-                </div>
-                <div class="content">
-                    <a href="{{ url_for('announcement', id=announcement.id) }}">
-                        <h3>
-                            {{ announcement.title }}
-                        </h3>
-                    </a>
-                    <div class="content-body">
-                        {{ announcement.content | safe }}
+                    <div class="author">
+                        <span>
+                            
+                        </span>
                     </div>
-                </div>
-                <div class="meta">
-                    <div class="actions">
-                        <span></span>
+                    <div class="content">
+                        <a href="{{ url_for('announcement', id=announcement.id) }}">
+                            <h3>
+                                {{ announcement.title }}
+                            </h3>
+                        </a>
+                        <div class="content-body">
+                            {{ announcement.content | safe }}
+                        </div>
                     </div>
-                    <div>
+                    <div class="meta">
+                        <div class="actions">
+                            <span></span>
+                        </div>
                         <div>
-                            <span>
-                                <p>Posted on:</p>
-                            </span>
-                            <span>
-                                <p>{{ announcement.date_posted }}</p>
-                            </span>
+                            <div>
+                                <span>
+                                    <p>Posted on:</p>
+                                </span>
+                                <span>
+                                    <p>{{ announcement.date_posted }}</p>
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        {% endfor %}
-    </div>
+            {% endfor %}
+        </div>
+    {% endif %}
     <div id="modules">
         <h2>Modules</h2>
         {% for module in modules %}

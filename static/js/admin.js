@@ -1898,6 +1898,86 @@ function alphabetizeTable(tablebody, tablerow) {
     tablebody.appendChild(tablerow);
 }
 
+function editAnnouncements() {
+    let form = document.getElementById('edit-announcements');
+    form.removeAttribute('style');
+    windowPrevent(true);
+
+    if (form.hasListener) return;
+    
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const data = new FormData(form);
+        let value = +data.get("homeAnnouncementsNum");
+
+        try {
+            let response = await postData('/config/homeAnnouncements', value);
+            if (response && response.status == 'success') {
+                windowPrevent(false);
+                document.location.reload();
+            }
+            else {
+                alert(`Error: ${response.error}`)
+            }
+        }
+        catch (error) {
+            alert(`Server Error: ${error}`);
+        }
+    })
+
+    form.querySelector('.menuCancel').addEventListener('click', (event) => {
+        form.style.display = 'none';
+        windowPrevent(false);
+    })
+
+    form.hasListener = true;
+
+}
+
+function editEvents() {
+    let form = document.getElementById('edit-events');
+    form.removeAttribute('style');
+    windowPrevent(true);
+
+    if (form.hasListener) return;
+    
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const data = new FormData(form);
+        let num = +data.get("calendarNum");
+        let delta = +data.get("calendarDelta");
+
+        try {
+            let response = await postData('/config/calendarNum', num);
+            if (response && response.status == 'success') {
+                let response2 = await postData('/config/calendarDelta', delta);
+                if (response2 && response.status == 'success') {
+                    windowPrevent(false);
+                    document.location.reload();
+                }
+                else {
+                    alert(`Error: ${response2.error}`)
+                }
+            }
+            else {
+                alert(`Error: ${response.error}`)
+            }
+        }
+        catch (error) {
+            alert(`Server Error: ${error}`);
+        }
+    })
+
+    form.querySelector('.menuCancel').addEventListener('click', (event) => {
+        form.style.display = 'none';
+        windowPrevent(false);
+    })
+
+    form.hasListener = true;
+}
+
 async function patchData(url, data) {
     try {
         const response = await fetch(url, {

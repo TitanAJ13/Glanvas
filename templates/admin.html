@@ -54,7 +54,14 @@
 
 {% block main_content %}
     <div id="announcements">
-        <h2>Recent Announcements</h2>
+        <div id="announcements-top-bar">
+            <h2>Recent Announcements</h2>
+            <button type="button" onclick="editAnnouncements()">Edit Announcements</button>
+        </div>
+        <form id="edit-announcements" style="display: none;">
+            <p>Number of Announcements:</p>
+            <input id="homeAnnouncementsNum" name="homeAnnouncementsNum" type="number" min="0" max="10" value="{{ configs.homeAnnouncements }}" placeholder="{{ configs.homeAnnouncements }}"><input type="submit" value="✓"><button type="button" class="menuCancel">🗙</button>
+        </form>
         {% for announcement in announcements %}
             <div class="announcement" announcement-id="{{ announcement.id }}">
                 <span>
@@ -167,4 +174,31 @@
         <div></div>
     </div>
     
+{% endblock %}
+
+{% block calendar_events %}
+    <button type="button" onclick="editEvents()">Edit Events</button>
+    <form id="edit-events" style="display: none">
+        <label for="calendarNum">Max # of Events:</label>
+        <input id="calendarNum" name="calendarNum" type="number" min="0" max="20" value="{{ configs.calendarNum }}" placeholder="{{ configs.calendarNum }}"><br><br>
+        <label for="calendarDelta">Days in Advance:</label>
+        <input id="calendarDelta" name="calendarDelta" type="number" min="1" max="21" value="{{ configs.calendarDelta }}" placeholder="{{ configs.calendarDelta }}"><br><br>
+        <input type="submit" value="✓"><button type="button" class="menuCancel">🗙</button><br><br>
+    </form>
+    {% if calendarItems | length == 0 %}
+    <li>
+        <small>Nothing for now!</small>
+    </li>
+    {% else %}
+        {% for event in calendarItems %}
+            <li>
+                <p>{{event.title}}</p>
+                <small class="date">{{event.date1}}</small>
+                <small class="date">{{event.date2}}</small>
+                {% if event.location %}
+                    <small>{{event.location}}</small>
+                {% endif %}
+            </li>
+        {% endfor %}
+    {% endif %}
 {% endblock %}

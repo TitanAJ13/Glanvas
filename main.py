@@ -145,7 +145,7 @@ def refresh_session():
     if 'username' in ses:
         ses.modified = True
 
-adminpages = ['adminpage', 'adminfiles', 'loadstate']
+adminpages = ['adminpage', 'adminfiles', 'adminannouncements', 'loadstate']
 
 @app.before_request
 def adminAuth():
@@ -763,16 +763,23 @@ def calendarSync():
     except Exception as e: 
         abort(500, e)
 
-@app.route("/config/<key>", methods=['POST'])
+@app.route("/config/<key>", methods=['GET', 'POST'])
 @header_required()
 def configuration(key):
-    try:
-        value = request.get_data(as_text=True)
+    if request.method == 'GET':
+        try:
+            value = sqlSession.getConfig(key)
+            return value
+        except Exception as e:
+            abort(500, e)
+    elif request.method == 'POST':
+        try:
+            value = request.get_data(as_text=True)
 
-        sqlSession.editConfig(key, value)
-        return success()
-    except Exception as e:
-        abort(500, e)
+            sqlSession.editConfig(key, value)
+            return success()
+        except Exception as e:
+            abort(500, e)
 
 @app.route("/admin/")
 def adminpage():
@@ -783,13 +790,21 @@ def adminpage():
     for announcement in announcements:
         announcement['date_posted'] = announcement['date_posted'].strftime("%b %d, %Y\n%I:%M %p")
     calendarItems = getCalendarEvents()
-    return render_template("admin.html", modules=modules, announcements=announcements, calendarItems=calendarItems)
+    configs = sqlSession.getConfigJSON()
+    return render_template("admin.html", modules=modules, announcements=announcements, calendarItems=calendarItems, configs=configs)
     
 @app.route("/admin/files/")
 def adminfiles():
     files = sqlSession.getFilesJSON()
     music = sqlSession.getMusicsJSON()
     return render_template("adminfiles.html", files=files, musics=music)
+
+@app.route("/admin/announcements/")
+def adminannouncements():
+    announcements = sqlSession.getAnnouncementsJSON()
+    for announcement in announcements:
+        announcement['date_posted'] = announcement['date_posted'].strftime("%b %d, %Y\n%I:%M %p")
+    return render_template("adminannouncements.html", announcements=announcements)
     
 @app.route("/admin/link/<position>")
 @header_required()
