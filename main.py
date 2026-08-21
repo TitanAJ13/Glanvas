@@ -233,7 +233,8 @@ def modules():
                     moduleObj.hidden = visibility
                 if (newTitle is not None):
                     moduleObj.display_name = newTitle
-                sqlSession.session.commit()
+                db.session.merge(moduleObj)
+                db.session.commit()
                 return success()
         except Exception as e:
             abort(500, e)
@@ -324,7 +325,8 @@ def links():
                     linkObj.type = type
                 if (url is not None):
                     linkObj.url = url
-                sqlSession.session.commit()
+                db.session.merge(linkObj)
+                db.session.commit()
                 return success({'href': formatLink(linkObj.type, linkObj.url)})
         except Exception as e:
             abort(500, e)
@@ -417,7 +419,8 @@ def items():
                     itemObj.url = url
                 if (visibility is not None):
                     itemObj.hidden = visibility
-                sqlSession.session.commit()
+                db.session.merge(itemObj)
+                db.session.commit()
                 if (itemObj.type != 'header'):
                     return success({'href': formatLink(itemObj.type, itemObj.url)})
                 return success()
@@ -500,8 +503,9 @@ def announcements():
                     announcement.content = newContent
                 if (newAvatar is not None):
                     announcement.avatar = newAvatar
-                
-                sqlSession.session.commit()
+
+                db.session.merge(announcement)
+                db.session.commit()
                 return success()
         except Exception as e:
             abort(500, e)
@@ -586,7 +590,8 @@ def files():
                     sqlSession.updateKeys('file', key, path)
                 if (url is not None):
                     file.url = handleDriveURL(url)
-                sqlSession.session.commit()
+                db.session.merge(file)
+                db.session.commit()
                 return success({'href': formatLink('file', file.key), 'oldhref': formatLink('file', key)})
         except Exception as e:
             if isinstance(e, HTTPException):
@@ -672,7 +677,8 @@ def musicdata():
                     musicObj.display_name = filename
                 if (url is not None):
                     musicObj.url = url
-                sqlSession.session.commit()
+                db.session.merge(musicObj)
+                db.session.commit()
                 return success({'href': formatLink('music', musicObj.key), 'oldhref': formatLink('music', path)})
         except Exception as e:
             if isinstance(e, HTTPException):
@@ -726,6 +732,8 @@ def login():
                 ses["username"] = username
                 if (request.args.get('next') in adminpages):
                     return redirect(url_for(request.args.get('next'), **json.loads(request.args.get('nextargs'))))
+                elif (request.args.get('next') in ['announcements']):
+                    return redirect(url_for('adminannouncements'))
                 else:
                     return redirect(url_for('adminpage'))
             else:
@@ -807,8 +815,26 @@ def adminfiles():
 def adminannouncements():
     announcements = sqlSession.getAnnouncementsJSON()
     for announcement in announcements:
+        announcement['jsDate'] = announcement['date_posted'].strftime("%Y-%m-%d")
         announcement['date_posted'] = announcement['date_posted'].strftime("%b %d, %Y\n%I:%M %p")
     return render_template("adminannouncements.html", announcements=announcements)
+
+@app.route("/batch/announcements/", methods=['DELETE'])
+@header_required()
+def batchAnnouncements():
+    json = request.json
+
+    if (not isinstance(json, list)): abort(400, 'Batch operations must be lists')
+
+    try:
+        with app.app_context():
+            for id in json:
+                sqlSession.session.delete(sqlSession.getAnnouncement(id))
+            sqlSession.session.commit()
+            return success()
+    except Exception as e:
+        sqlSession.session.rollback()
+        abort(500, e)
     
 @app.route("/admin/link/<position>")
 @header_required()
