@@ -122,6 +122,12 @@ class MySession():
         if not self.session.query(Config).filter_by(key='password').first():
             self.session.add(Config(key='password', value='password'))
 
+        if not self.session.query(Config).filter_by(key='web-user').first():
+            self.session.add(Config(key='web-user', value='admin'))
+
+        if not self.session.query(Config).filter_by(key='web-pass').first():
+            self.session.add(Config(key='web-pass', value='password'))
+
         self.session.commit()
 
     @wrap_context()

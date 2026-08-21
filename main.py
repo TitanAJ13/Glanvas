@@ -1059,6 +1059,56 @@ def force_logout():
     except Exception as e:
         abort(500, e)
 
+@app.route('/renew/', methods=['POST'])
+@header_required()
+def renew_site():
+    try:
+        s = req.Session()
+        s.headers.update({
+            'Cache-Control': 'no-cache',
+            'Accept': '*/*',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Connection':'keep-alive',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+        })
+
+        get1 = s.get(os.getenv('LOGIN'), headers={'Referer': os.getenv('BASE')})
+        get1.raise_for_status()
+
+        token1 = re.search(r'name="csrfmiddlewaretoken".*?value=".+?"', get1.text, re.DOTALL).group().split('value="')[1].split('"')[0]
+
+        formdata1 = {
+            'csrfmiddlewaretoken': token1,
+            'auth-username': sqlSession.getConfig('web-user'),
+            'auth-password': sqlSession.getConfig('web-pass'),
+            'login_view-current_step': 'auth'
+        }
+        post1 = s.post(os.getenv('LOGIN'), data=formdata1, headers={'Referer': os.getenv('LOGIN')})
+        post1.raise_for_status()
+
+        get2 = s.get(os.getenv('WEBAPP'), headers={'Referer': os.getenv('LOGIN')})
+        get2.raise_for_status()
+
+        token2 = re.search(r'name="csrfmiddlewaretoken".*?value=".+?"', get2.text, re.DOTALL).group().split('value="')[1].split('"')[0]
+
+        formdata2 = {
+            'csrfmiddlewaretoken': token2
+        }
+        post2 = s.post(os.getenv('RENEW'), data=formdata2, headers={'Referer': os.getenv('WEBAPP')})
+        post2.raise_for_status()
+
+        token3 = re.search(r'name="csrfmiddlewaretoken".*?value=".+?"', post2.text, re.DOTALL).group().split('value="')[1].split('"')[0]
+
+        formdata3 = {
+            'csrfmiddlewaretoken': token3
+        }
+        post3 = s.post(os.getenv('LOGOUT'), data=formdata3, headers={'Referer': os.getenv('WEBAPP')})
+        post3.raise_for_status()
+        return success()
+    except Exception as e:
+        abort(500, e)
+        
+
 # @app.route("/kitchen/")
 # def kitchen_page():
 #     orders = session.query(Order).order_by(Order.date_created).all()
