@@ -15,9 +15,37 @@
 {% endblock %}
 
 {% block main_content %}
+    <div id="announcements-top">
+        <div id="filters">
+            <h3>Filters:</h3>
+            <form>
+                <div id="filter-section">
+                    <input type="radio" id="filterBefore" name="filter" value="before">
+                    <label for="filterBefore">Before Date</label>
+                    <input type="radio" id="filterAfter" name="filter" value="after">
+                    <label for="filterAfter">After Date</label>
+                    <input type="radio" id="filterBetween" name="filter" value="between">
+                    <label for="filterBetween">Between Dates</label><br>
+                </div>
+                <div id="date-section">
+                    <label for="afterDate">From: </label>
+                    <input type="date" id="afterDate" name="after" disabled>
+                    <label for="beforeDate">To: </label>
+                    <input type="date" id="beforeDate" name="before" disabled>
+                </div>
+                <input type="reset" id="reset" value="Reset">
+                <input type="submit" id="apply" value="Apply Filters">
+            </form>
+        </div>
+        <div id="selectorButtons">
+            <button type="button" onclick="deleteAnnouncements()" id="delete-announcements">Delete Selected</button>
+            <button type="button" onclick="selectAllAnnouncements(false)" id="deselect-announcements">Deselect All</button>
+            <button type="button" onclick="selectAllAnnouncements()" id="select-announcements">Select All</button>
+        </div>
+    </div>
     <div id="announcements">
         {% for announcement in announcements %}
-            <div class="announcement">
+            <div class="announcement" data-date="{{ announcement.jsDate }}" data-id="{{ announcement.id }}">
                 <span>
                     <span class="circle"></span>
                 </span>
@@ -38,7 +66,7 @@
                 </div>
                 <div class="meta">
                     <div class="actions">
-                        <span></span>
+                        <input type="checkbox" class="announcement-check">
                     </div>
                     <div>
                         <div>
@@ -55,4 +83,14 @@
         {% endfor %}
     </div>
     
+{% endblock %}
+
+{% block extra_scripts %}
+<script class="toDelete">
+    document.querySelectorAll('div.announcement').forEach((div) => {
+        let stuff = div.dataset.date.split('-');
+        div.date = new Date(Date.UTC(parseInt(stuff[0]), parseInt(stuff[1]) - 1, parseInt(stuff[2])));
+        div.identifier = div.dataset.id;
+    })
+</script>
 {% endblock %}

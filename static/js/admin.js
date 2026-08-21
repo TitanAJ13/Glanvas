@@ -12,6 +12,7 @@ function adminsetup() {
     linkDragAndDrop();
     itemDragAndDrop();
     moduleDragAndDrop();
+    announcementFilters();
 }
 
 function linkDragAndDrop() {
@@ -1976,6 +1977,100 @@ function editEvents() {
     })
 
     form.hasListener = true;
+}
+
+function announcementFilters() {
+    let form = document.querySelector('#filters > form');
+    if (!form) return;
+
+    let before = form.querySelector('#beforeDate');
+    let after = form.querySelector('#afterDate');
+
+    form.querySelectorAll('input[type="radio"]').forEach((radio) => {
+        radio.addEventListener('change', (event) => {
+            if (radio.value != 'before') {
+                after.removeAttribute('disabled')
+                after.setAttribute('required', '');
+            }
+            if (radio.value != 'after') {
+                before.removeAttribute('disabled')
+                before.setAttribute('required', '');
+            }
+            if (radio.value == 'before') {
+                after.removeAttribute('required')
+                after.setAttribute('disabled', '');
+            }
+            if (radio.value == 'after') {
+                before.removeAttribute('required')
+                before.setAttribute('disabled', '');
+            }
+        })
+    })
+
+    form.addEventListener('submit', (event) => {
+        event.preventDefault();
+
+        let data = new FormData(form);
+        let filter = data.get('filter');
+        if (!filter) return;
+
+        let start = new Date(0)
+        let end = new Date();
+        if (filter != 'after') {
+            let stuff = data.get('before').split('-');
+            end = new Date(Date.UTC(parseInt(stuff[0]), parseInt(stuff[1]) - 1, parseInt(stuff[2])));
+        }
+        if (filter != 'before') {
+            let stuff = data.get('after').split('-');
+            start = new Date(Date.UTC(parseInt(stuff[0]), parseInt(stuff[1]) - 1, parseInt(stuff[2])));
+        }
+
+        document.querySelectorAll('div.announcement').forEach((div) => {
+            if (div.date > end || div.date < start) div.classList.add('filtered');
+            else div.classList.remove('filtered');
+        })
+    })
+
+    form.addEventListener('reset', (event) => {
+        before.removeAttribute('required')
+        before.setAttribute('disabled', '');
+        after.removeAttribute('required')
+        after.setAttribute('disabled', '');
+
+        document.querySelectorAll('div.announcement').forEach((div) => {
+            div.classList.remove('filtered');
+        })
+    })
+}
+
+function selectAllAnnouncements(select = true) {
+    document.querySelectorAll('div.announcement:not(.filtered) .announcement-check').forEach((box) => {
+        box.checked = select;
+    })
+}
+
+async function deleteAnnouncements() {
+    let list = [];
+    document.querySelectorAll('div.announcement:has(.announcement-check:checked)').forEach((announcement) => {
+        list.push(announcement.identifier);
+    })
+
+    if (list.length == 0) return;
+
+    if (!window.confirm(`Delete ${list.length} announcements?\nThis action cannot be undone`)) return;
+
+    try {
+        let response = await deleteData('/batch/announcements/', list);
+        if (response && response.status == 'success') {
+            document.location.reload();
+        }
+        else {
+            alert(`Error: ${response.error}`)
+        }
+    }
+    catch (error) {
+        alert(`Server Error: ${error}`);
+    }
 }
 
 async function patchData(url, data) {

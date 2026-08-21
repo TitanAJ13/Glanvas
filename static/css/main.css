@@ -468,12 +468,16 @@ iframe {
 }
 
 .announcement {
-    box-shadow: 0 -1px #e8eaec, inset 0 -1px #e8eaec;
+    border-bottom: 1px solid #e8eaec;
     padding: 16px 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
     position: relative;
+}
+
+.announcement:first-of-type {
+    border-top: 1px solid #e8eaec;
 }
 
 .announcement>span {

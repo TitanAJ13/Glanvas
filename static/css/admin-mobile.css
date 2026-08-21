@@ -1133,6 +1133,11 @@ html:has(#overlay2) #overlay {
     border-top: 0;
     border-top-right-radius: 0;
     border-top-left-radius: 0;
+    cursor: pointer;
+}
+
+#fileSubmitter:hover {
+    background-color: #004b00;
 }
 
 #announcements-top-bar {
@@ -1307,4 +1312,181 @@ html:has(#overlay2) #overlay {
     color: #ffb81c;
     border: 2px solid #ffb81c;
     transition: all 0.25s;
+}
+
+.announcement-check {
+    height: 20px;
+    width: 20px;
+    margin: 0;
+    margin-right: 23px;
+    border-radius: 50%;
+    appearance: none;
+    border: 2px solid white;
+    color: #ffb81c;
+    text-align: center;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.announcement-check:checked {
+    background-color: black;
+    border: 2px solid #ffb81c;
+}
+
+.announcement-check::before {
+    content: "✓";
+    visibility: hidden;
+}
+
+.announcement-check:checked::before {
+    visibility: visible;
+}
+
+.announcement:has(.announcement-check:checked) {
+    background-color: #1c2329;
+}
+
+#announcements-top {
+    position: fixed;
+    top: 82px;
+    z-index: 1;
+    left: 5;
+    right: 5;
+    background-color: #121212;
+    padding: 5px;
+    padding-top: 10px;
+    margin: -5px;
+    margin-top: -10px;
+}
+
+#filters {
+    background-color: #363636;
+    border: 1px solid white;
+    border-radius: 15px;
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+#filters h3 {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+#filters form {
+    margin-bottom: 5px;
+    overflow: hidden;
+}
+
+#filter-section {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+#filter-section input[type="radio"] {
+    margin-left: auto;
+    margin-top: 0;
+    height: 30px;
+}
+
+#filter-section label {
+    font: inherit;
+    padding: 5px;
+}
+
+#filter-section label:last-of-type {
+    margin-right: auto;
+}
+
+#date-section {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+#date-section label:first-child {
+    margin-left: auto;
+}
+
+#date-section input[type="date"] {
+    margin-right: auto;
+    margin-left: 10px;
+    font: inherit;
+    min-width: 125px;
+}
+
+#apply {
+    appearance: none;
+    height: 30px;
+    background-color: green;
+    color: white;
+    font: inherit;
+    border: 1px solid white;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+#apply:hover {
+    background-color: #004b00;
+}
+
+#reset {
+    appearance: none;
+    height: 30px;
+    background-color: #bf1010;
+    color: white;
+    font: inherit;
+    border: 1px solid white;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+#reset:hover {
+    background-color: #941010;
+}
+
+.announcement.filtered {
+    display: none;
+}
+
+#selectorButtons {
+    display:flex;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    background-color: #121212;
+}
+
+#selectorButtons button {
+    font:inherit;
+    appearance: none;
+    background-color: transparent;
+    color: #a0bded;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+#selectorButtons button#delete-announcements {
+    appearance: none;
+    height: 30px;
+    background-color: #bf1010;
+    color: white;
+    font: inherit;
+    border: 1px solid white;
+    border-radius: 10px;
+    cursor: pointer;
+    padding-inline: 6px;
+    padding-block: 1px;
+}
+
+#selectorButtons button#delete-announcements:hover {
+    background-color: #941010;
+}
+
+#deselect-announcements {
+    margin-left: auto;
+}
+
+#select-announcements {
+    margin-left: 20px;
 }
