@@ -756,7 +756,9 @@ def login():
 def logout():
     ses.clear()
     endpt = request.args.get('next')
-    if endpt in adminpages:
+    if endpt in ['adminannouncements']:
+        return redirect(url_for("announcements"))
+    elif endpt in adminpages:
         return redirect(url_for("home"))
     else:
         return redirect(url_for(endpt, **json.loads(request.args.get('nextargs'))))

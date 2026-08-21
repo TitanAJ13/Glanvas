@@ -1144,6 +1144,7 @@ html:has(#overlay2) #overlay {
     display: flex;
     align-items: center;
     margin-bottom: 0.75rem;
+    overflow: hidden;
 }
 
 #announcements-top-bar h2 {
@@ -1161,6 +1162,7 @@ html:has(#overlay2) #overlay {
     cursor: pointer;
     border-radius: 10px;
     min-height: 30px;
+    min-width: 100px;
     transition: all 0.25s;
 }
 
@@ -1174,9 +1176,11 @@ html:has(#overlay2) #overlay {
     display: flex;
     align-items: center;
     margin-bottom: 0.75rem;
-    margin-top: -47px;
     background-color: #121212;
-    position: relative;
+    position: absolute;
+    top: 82px;
+    left: 10px;
+    right: 10px;
 }
 
 #edit-announcements p{
@@ -1347,8 +1351,8 @@ html:has(#overlay2) #overlay {
 }
 
 #announcements-top {
-    position: fixed;
-    top: 82px;
+    position: sticky;
+    top: 72px;
     z-index: 1;
     left: 5;
     right: 5;

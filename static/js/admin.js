@@ -859,7 +859,7 @@ async function editItem(listitem) {
             changes: {
                 display_name: data.get('title').trim(),
                 type: data.get('type').trim(),
-                url: (data.get('url1') ?? data.get('url2')).trim()
+                url: (data.get('url1') ?? data.get('url2') ?? '').trim()
             }
         };
 
@@ -938,7 +938,7 @@ async function addItem(item) {
             position: position,
             display: data.get('title').trim(),
             type: data.get('type').trim(),
-            url: (data.get('url1') ?? data.get('url2')).trim(),
+            url: (data.get('url1') ?? data.get('url2') ?? '').trim(),
             hidden: false
         };
 

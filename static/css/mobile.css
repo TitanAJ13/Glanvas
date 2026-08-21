@@ -1011,7 +1011,7 @@ iframe {
     display: block;
     text-align: center;
     padding-bottom: 20px;
-    width: 400px;
+    width: min(99%, 400px);
     border: 1px solid white;
     border-radius: 15px;
     position: absolute;
