@@ -777,11 +777,14 @@ def calendarSync():
     except Exception as e: 
         abort(500, e)
 
-@app.route("/config/<key>", methods=['GET', 'POST'])
+@app.route("/config/<key>", methods=['GET', 'POST', 'DELETE'])
 @header_required()
 def configuration(key):
     if request.method == 'GET':
         try:
+            if (key == 'all'):
+                return sqlSession.getConfigJSON()
+            
             value = sqlSession.getConfig(key)
             return value
         except Exception as e:
@@ -791,6 +794,12 @@ def configuration(key):
             value = request.get_data(as_text=True)
 
             sqlSession.editConfig(key, value)
+            return success()
+        except Exception as e:
+            abort(500, e)
+    elif request.method == 'DELETE':
+        try:
+            sqlSession.delConfig(key)
             return success()
         except Exception as e:
             abort(500, e)

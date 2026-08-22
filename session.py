@@ -151,6 +151,16 @@ class MySession():
         self.session.commit()
 
     @wrap_context()
+    def delConfig(self, key: str):
+        result = self.session.query(Config).filter_by(key=key).first()
+        if not result:
+            raise KeyError(f'{key} is not a valid Configuration key')
+
+        self.session.delete(result)
+        self.session.commit()
+        self.initConfig()
+
+    @wrap_context()
     def editConfigAll(self, newConfig: dict):
         for key in newConfig.keys():
             result = self.session.query(Config).filter_by(key=key).first()
