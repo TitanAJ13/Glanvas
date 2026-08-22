@@ -107,6 +107,9 @@ class MySession():
         if not self.session.query(Config).filter_by(key='authorization').first():
             self.session.add(Config(key='authorization', value=''))
 
+        if not self.session.query(Config).filter_by(key='pageBase').first():
+            self.session.add(Config(key='pageBase', value=''))
+
         if not self.session.query(Config).filter_by(key='homeAnnouncements').first():
             self.session.add(Config(key='homeAnnouncements', value='3'))
 

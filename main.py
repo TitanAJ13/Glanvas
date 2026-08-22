@@ -934,27 +934,19 @@ def adminGetMusic(key: str):
 def adminGetPages(key):
     if (key != 'all'): return {}
     try:
-        response = req.request(method='GET', url=f'https://sites.google.com/view/glanvaspages/do-not-change-this')
+        base = sqlSession.getConfig('pageBase')
+        response = req.request(method='GET', url=f'https://sites.google.com/view/{base}/do-not-change-this')
 
         response.raise_for_status()
 
         htmlContent = response.text
 
         results = []
-        # for match in re.finditer(r'<a.*?>.*?</a>', re.split(r'<nav.*?>', htmlContent, maxsplit=1)[1].split('</nav>')[0]):
-        #     href = match.group().split('glanvaspages/')[1].split('"')[0]
-        #     if (href == 'do-not-change-this'): continue
-        #     obj = {
-        #         'key': href,
-        #         'display_name': match.group().split(">")[1].split("</")[0]
-        #     }
-        #     results.append(obj)
-
 
         soup = BeautifulSoup(htmlContent, 'html.parser')
         links = soup.select("nav")[0].select("ul > li > div > div > a")
         for link in links:
-            href = 'glanvaspages/'.join(link['href'].split('glanvaspages/')[1:])
+            href = f'{base}/'.join(link['href'].split(f'{base}/')[1:])
             if (href == 'do-not-change-this'): continue
             obj = {
                 'key': href,
@@ -1021,13 +1013,14 @@ def loadstate():
 @app.route("/page/<path:key>")
 def page(key):
     try:
-        response = req.request(method='GET', url=f'https://sites.google.com/view/glanvaspages/{key}')
+        base = sqlSession.getConfig('pageBase')
+        response = req.request(method='GET', url=f'https://sites.google.com/view/{base}/{key}')
 
         response.raise_for_status()
 
         htmlContent = response.text
         title = '</'.join('>'.join(re.search(r'<title>.+?</title>', htmlContent).group().split('>')[1:]).split('</')[:-1])
-        htmlContent = htmlContent.replace(f'https://sites.google.com/view/glanvaspages/{key}', '').replace('<header id="atIdViewHeader">', '<header id="atIdViewHeader" style="display:none!important;">').replace('data-is-preview="false"', 'data-s-preview="false" style="display:none;"')
+        htmlContent = htmlContent.replace(f'https://sites.google.com/view/{base}/{key}', '').replace('<header id="atIdViewHeader">', '<header id="atIdViewHeader" style="display:none!important;">').replace('data-is-preview="false"', 'data-s-preview="false" style="display:none;"')
         # htmlContent = htmlContent.replace('<body', '<div').replace('</body', '</div').replace('<style type="text/css">', '<style type="text/css">@scope{').replace('</style>', '}</style>')
 
         return render_template("page.html", header= title, content=htmlContent)
