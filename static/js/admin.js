@@ -15,6 +15,10 @@ function adminsetup() {
     announcementFilters();
 }
 
+const escapeHTML = (str) => str.replace(/[&<>"']/g, 
+  tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[tag] || tag)
+);
+
 function linkDragAndDrop() {
     let link_list = document.querySelector('#sidebar2>ul');
     let dragged_link = null;
@@ -301,7 +305,7 @@ async function linkMenu(title, display_name, type, url, hasDelete) {
             let response = await getOptions(type);
             let newoptions = '';
             response.options.forEach((obj) => {
-                newoptions = newoptions + `\n<option value="${obj.id ?? obj.key}" ${(url == (obj.id ?? obj.key))? 'selected=""': ''}>${obj.title ?? obj.display_name}</option>`
+                newoptions = newoptions + `\n<option value="${obj.id ?? obj.key}" ${(url == (obj.id ?? obj.key))? 'selected=""': ''}>${escapeHTML(obj.title ?? obj.display_name)}</option>`
             })
             
             form.querySelector('#linkURL1').innerHTML = newoptions;
@@ -420,7 +424,7 @@ async function addLink() {
                     <div></div>
                 </div>
                 
-                <a link-id="${response.extra.id}" href="${response.extra.href}">${obj.display_name}</a>
+                <a link-id="${response.extra.id}" href="${response.extra.href}">${escapeHTML(obj.display_name)}</a>
                 
                 <button class="edit-link" type="button" onclick="editLink(this.parentNode)">
                     <svg xmlns="http://www.w3.org/2000/svg" x="0" y="0" viewBox="0 0 400 400">
@@ -734,7 +738,7 @@ async function itemMenu(title, display_name, type, url, hasDelete) {
                         event.detail.promises.push(response);
                     let newoptions = '';
                     (await response).options.forEach((obj) => {
-                        newoptions = newoptions + `\n<option value="${obj.id ?? obj.key}">${obj.title ?? obj.display_name}</option>`
+                        newoptions = newoptions + `\n<option value="${obj.id ?? obj.key}">${escapeHTML(obj.title ?? obj.display_name)}</option>`
                     })
     
                     urlSelect.innerHTML = newoptions;
@@ -811,7 +815,7 @@ async function itemMenu(title, display_name, type, url, hasDelete) {
             let response = await getOptions(type);
             let newoptions = '';
             response.options.forEach((obj) => {
-                newoptions = newoptions + `\n<option value="${obj.id ?? obj.key}" ${(url == (obj.id ?? obj.key))? 'selected=""': ''}>${obj.title ?? obj.display_name}</option>`
+                newoptions = newoptions + `\n<option value="${obj.id ?? obj.key}" ${(url == (obj.id ?? obj.key))? 'selected=""': ''}>${escapeHTML(obj.title ?? obj.display_name)}</option>`
             })
         
             form.querySelector('#itemURL1').innerHTML = newoptions;
@@ -956,7 +960,7 @@ async function addItem(item) {
                     <div></div>
                 </div>
                 <span></span>
-                ${(obj.type == 'header')? `<h3>${obj.display}</h3>` : `<a href="${response.extra.href}">${obj.display}</a>`}
+                ${(obj.type == 'header')? `<h3>${obj.display}</h3>` : `<a href="${response.extra.href}">${escapeHTML(obj.display)}</a>`}
                 <input type="checkbox" class="visibility-toggle" onclick="toggleItemVisibility(this)">      
                 <button class="edit-item" type="button" onclick="editItem(this.parentNode)">
                     <svg xmlns="http://www.w3.org/2000/svg" x="0" y="0" viewBox="0 0 400 400">
@@ -1570,10 +1574,10 @@ async function addFile(useTable = true) {
                     newFile.dataset.display = obj.display_name;
                     newFile.innerHTML = `
                     <td class="title">
-                        <a href="${response.extra.href}" target="_blank"> ${obj.display_name}</a>
+                        <a href="${response.extra.href}" target="_blank"> ${escapeHTML(obj.display_name)}</a>
                     </td>
-                    <td class="key" title="${obj.key}">${obj.key}</td>
-                    <td class="url" title="${obj.url}">${obj.url}</td>
+                    <td class="key" title="${obj.key}">${escapeHTML(obj.key)}</td>
+                    <td class="url" title="${obj.url}">${escapeHTML(obj.url)}</td>
                     <td class="button">
                         <button class="table-edit-button" type="button" onclick="editFile(this.parentNode.parentNode)">
                             <svg xmlns="http://www.w3.org/2000/svg" x="0" y="0" viewBox="0 0 400 400">
@@ -1732,10 +1736,10 @@ async function addMusic(useTable = true) {
                     newFile.dataset.display = obj.display_name;
                     newFile.innerHTML = `
                     <td class="title">
-                        <a href="${response.extra.href}" target="_blank"> ${obj.display_name}</a>
+                        <a href="${response.extra.href}" target="_blank"> ${escapeHTML(obj.display_name)}</a>
                     </td>
-                    <td class="key" title="${obj.key}">${obj.key}</td>
-                    <td class="url" title="${obj.url}">${obj.url}</td>
+                    <td class="key" title="${obj.key}">${escapeHTML(obj.key)}</td>
+                    <td class="url" title="${obj.url}">${escapeHTML(obj.url)}</td>
                     <td class="button">
                         <button class="table-edit-button" type="button" onclick="editMusic(this.parentNode.parentNode)">
                             <svg xmlns="http://www.w3.org/2000/svg" x="0" y="0" viewBox="0 0 400 400">
