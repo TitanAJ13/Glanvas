@@ -105,6 +105,7 @@ function linkDragAndDrop() {
                 document.removeEventListener("touchmove", preventTouchScroll,{passive: false});
                 dragged_link.classList.remove("dragging");
                 dragged_link.removeAttribute("style");
+                if (spaceInserted) link_list.removeChild(spacer);
 
                 let last_over = link_list.querySelector('li.over');
                 if (last_over) {
@@ -136,7 +137,6 @@ function linkDragAndDrop() {
                 
             
                 dragged_link = null;
-                if (spaceInserted) link_list.removeChild(spacer);
             }
         }
             // getLinkListTarget(e.target).setAttribute('draggable', true);
@@ -573,6 +573,7 @@ function itemDragAndDrop() {
                 document.removeEventListener("touchmove", preventTouchScroll,{passive: false});
                 dragged_item.classList.remove("dragging");
                 dragged_item.removeAttribute("style");
+                if (spaceInserted) item_list.removeChild(spacer);
 
                 let last_over = item_list.querySelector('li.over');
                 if (last_over) {
@@ -607,7 +608,6 @@ function itemDragAndDrop() {
                 
             
                 dragged_item = null;
-                if (spaceInserted) item_list.removeChild(spacer);
             }
         }
             // getLinkListTarget(e.target).setAttribute('draggable', true);
@@ -1119,8 +1119,9 @@ function moduleDragAndDrop() {
                 document.removeEventListener("touchmove", preventTouchScroll,{passive: false});
                 dragged_module.classList.remove("dragging");
                 dragged_module.removeAttribute("style");
-
+                
                 let module_list = document.getElementById('modules');
+                if (spaceInserted) module_list.removeChild(spacer);
 
                 let last_over = module_list.querySelector('div.over');
                 if (last_over) {
@@ -1178,7 +1179,6 @@ function moduleDragAndDrop() {
                 }
 
                 dragged_module = null;
-                if (spaceInserted) module_list.removeChild(spacer);
             }
         }
             // getLinkListTarget(e.target).setAttribute('draggable', true);
