@@ -9,6 +9,7 @@ from typing import Any, Tuple
 from zoneinfo import ZoneInfo
 import json
 from functools import wraps
+import os
 
 def wrap_context():
     def decorator(func):
@@ -108,7 +109,7 @@ class MySession():
             self.session.add(Config(key='authorization', value=''))
 
         if not self.session.query(Config).filter_by(key='pageBase').first():
-            self.session.add(Config(key='pageBase', value=''))
+            self.session.add(Config(key='pageBase', value=os.getenv('PAGE_BASE')))
 
         if not self.session.query(Config).filter_by(key='homeAnnouncements').first():
             self.session.add(Config(key='homeAnnouncements', value='3'))
@@ -120,16 +121,16 @@ class MySession():
             self.session.add(Config(key='calendarDelta', value='5'))
 
         if not self.session.query(Config).filter_by(key='username').first():
-            self.session.add(Config(key='username', value='admin'))
+            self.session.add(Config(key='username', value=os.getenv('USERNAME')))
 
         if not self.session.query(Config).filter_by(key='password').first():
-            self.session.add(Config(key='password', value='password'))
+            self.session.add(Config(key='password', value=os.getenv('PASSWORD')))
 
         if not self.session.query(Config).filter_by(key='web-user').first():
-            self.session.add(Config(key='web-user', value='admin'))
+            self.session.add(Config(key='web-user', value=os.getenv('WEB_USERNAME')))
 
         if not self.session.query(Config).filter_by(key='web-pass').first():
-            self.session.add(Config(key='web-pass', value='password'))
+            self.session.add(Config(key='web-pass', value=os.getenv('WEB_PASSWORD')))
 
         self.session.commit()
 
