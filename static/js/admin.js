@@ -103,9 +103,6 @@ function linkDragAndDrop() {
                 document.onpointermove = null;
                 document.onpointerup = null;
                 document.removeEventListener("touchmove", preventTouchScroll,{passive: false});
-                dragged_link.classList.remove("dragging");
-                dragged_link.removeAttribute("style");
-                if (spaceInserted) link_list.removeChild(spacer);
 
                 let last_over = link_list.querySelector('li.over');
                 if (last_over) {
@@ -135,6 +132,9 @@ function linkDragAndDrop() {
                     last_over.classList.remove('over');
                 }
                 
+                dragged_link.classList.remove("dragging");
+                dragged_link.removeAttribute("style");
+                if (spaceInserted) link_list.removeChild(spacer);
             
                 dragged_link = null;
             }
@@ -571,9 +571,6 @@ function itemDragAndDrop() {
                 document.onpointermove = null;
                 document.onpointerup = null;
                 document.removeEventListener("touchmove", preventTouchScroll,{passive: false});
-                dragged_item.classList.remove("dragging");
-                dragged_item.removeAttribute("style");
-                if (spaceInserted) item_list.removeChild(spacer);
 
                 let last_over = item_list.querySelector('li.over');
                 if (last_over) {
@@ -606,6 +603,9 @@ function itemDragAndDrop() {
                     last_over.classList.remove('over');
                 }
                 
+                dragged_item.classList.remove("dragging");
+                dragged_item.removeAttribute("style");
+                if (spaceInserted) item_list.removeChild(spacer);
             
                 dragged_item = null;
             }
@@ -1117,11 +1117,6 @@ function moduleDragAndDrop() {
                 document.onpointermove = null;
                 document.onpointerup = null;
                 document.removeEventListener("touchmove", preventTouchScroll,{passive: false});
-                dragged_module.classList.remove("dragging");
-                dragged_module.removeAttribute("style");
-                
-                let module_list = document.getElementById('modules');
-                if (spaceInserted) module_list.removeChild(spacer);
 
                 let last_over = module_list.querySelector('div.over');
                 if (last_over) {
@@ -1152,6 +1147,12 @@ function moduleDragAndDrop() {
                     }
                     last_over.classList.remove('over');
                 }
+
+                dragged_module.classList.remove("dragging");
+                dragged_module.removeAttribute("style");
+                
+                let module_list = document.getElementById('modules');
+                if (spaceInserted) module_list.removeChild(spacer);
                 
                 
                 document.querySelectorAll('.module details').forEach((element) => {
