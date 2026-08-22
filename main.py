@@ -149,7 +149,7 @@ adminpages = ['adminpage', 'adminfiles', 'adminannouncements', 'loadstate']
 
 @app.before_request
 def adminAuth():
-    if request.endpoint in adminpages and 'username' not in ses:
+    if request.endpoint in adminpages and request.method == 'GET' and 'username' not in ses:
         return redirect(url_for('login', next=request.endpoint, nextargs = request.view_args))
 
 @app.context_processor
@@ -1004,7 +1004,8 @@ def savestate():
 @header_required("POST")
 def loadstate():
     if request.method == 'GET':
-        return render_template("loadstate.html")
+        configs = sqlSession.getConfigJSON()
+        return render_template("loadstate.html", configs=configs)
 
     elif request.method == 'POST':
         file = request.files['file']
