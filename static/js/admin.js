@@ -1117,6 +1117,7 @@ function moduleDragAndDrop() {
                 document.onpointermove = null;
                 document.onpointerup = null;
                 document.removeEventListener("touchmove", preventTouchScroll,{passive: false});
+                let module_list = document.getElementById('modules');
 
                 let last_over = module_list.querySelector('div.over');
                 if (last_over) {
@@ -1151,7 +1152,6 @@ function moduleDragAndDrop() {
                 dragged_module.classList.remove("dragging");
                 dragged_module.removeAttribute("style");
                 
-                let module_list = document.getElementById('modules');
                 if (spaceInserted) module_list.removeChild(spacer);
                 
                 
