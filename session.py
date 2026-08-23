@@ -132,6 +132,9 @@ class MySession():
         if not self.session.query(Config).filter_by(key='web-pass').first():
             self.session.add(Config(key='web-pass', value=os.getenv('WEB_PASSWORD')))
 
+        if not self.session.query(Config).filter_by(key='calendarID').first():
+            self.session.add(Config(key='calendarID', value=os.getenv('CALENDAR_ID')))
+
         self.session.commit()
 
     @wrap_context()

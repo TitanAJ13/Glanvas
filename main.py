@@ -989,7 +989,8 @@ def adminGetInternal():
 
 @app.route("/calendar/")
 def calendar():
-    return render_template("calendar.html")
+    configs = sqlSession.getConfigJSON()
+    return render_template("calendar.html", configs=configs)
 
 @app.route("/savestate/")
 @header_required()
