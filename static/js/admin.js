@@ -1202,8 +1202,8 @@ function editModule(item) {
     let form = document.createElement('form');
     form.classList.add('module-editor')
     form.innerHTML = `<input type="text" name="title" placeholder="${title}" value="${title}" required>
-    <input type="submit" value="✓">
-    <button type="button">🗙</button>`;
+    <input type="submit" value="✓&#xFE0E;">
+    <button type="button">🗙&#xFE0E;</button>`;
 
     form.querySelector('button').addEventListener('click', (event) => {
         moduleButtons.removeChild(form);
@@ -1325,8 +1325,8 @@ function addModule(item) {
         <button class="delete-module" onclick="delModule(this)"></button>
         <form class="module-adder">
             <input type="text" name="title" placeholder="New Module" value="" required>
-            <input type="submit" value="✓">
-            <button type="button">🗙</button>
+            <input type="submit" value="✓&#xFE0E;">
+            <button type="button">🗙&#xFE0E;</button>
         </form>
     </div>
     <details class="disabled">
