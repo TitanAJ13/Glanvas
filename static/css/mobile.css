@@ -868,6 +868,10 @@ iframe {
     margin: 1px;
 }
 
+.emoji {
+    height: 1.5em;
+}
+
 .codehilite code {
     display:block;
     padding: 4px !important;
