@@ -52,6 +52,27 @@ def header_required(*methods):
         return decorated
     return decorator
 
+def unique_login(*methods):
+    def decorator(f):
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            if (methods is None or request.method in methods):
+                if ('username' not in ses):
+                    allowed = True
+                    with app.app_context():
+                        SessionModel = app.session_interface.sql_session_model
+                        sessions = db.session.query(SessionModel).all()
+                        for session in sessions:
+                            obj = msgspec.msgpack.decode(session.data)
+                            if ('username' in obj and session.expiry.replace(tzinfo=datetime.UTC) > datetime.datetime.now(datetime.UTC)):
+                                allowed = False
+                                break
+                    if not allowed:
+                        return {'status': 'error', 'error': 'Cannot make edits while someone is logged in.'}
+            return f(*args, **kwargs)
+        return decorated
+    return decorator
+
 load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY')
@@ -174,6 +195,7 @@ def home():
 
 @app.route("/modules/", methods=["GET","POST","PATCH","PUT","DELETE"])
 @header_required("POST","PATCH","PUT","DELETE")
+@unique_login("POST","PATCH","PUT","DELETE")
 def modules():
     moduleList = sqlSession.getModulesJSON()
     length = len(moduleList)
@@ -269,6 +291,7 @@ def formatLink(type: str, url: str) -> str:
 
 @app.route("/links/", methods=["POST","PATCH","DELETE","PUT"])
 @header_required()
+@unique_login()
 def links():
     links = sqlSession.getLinksJSON()
     length = len(links)  
@@ -352,6 +375,7 @@ def links():
     
 @app.route("/items/", methods=["POST","PATCH","DELETE", "PUT"])
 @header_required()
+@unique_login()
 def items():    
     json = request.json
     print(json)
@@ -447,6 +471,7 @@ def items():
     
 @app.route("/announcements/", methods=["GET","POST","PATCH","DELETE"])
 @header_required("POST","PATCH","DELETE")
+@unique_login("POST","PATCH","PUT","DELETE")
 def announcements():
     if request.method == "GET":
         announcements = sqlSession.getAnnouncementsJSON()
@@ -533,6 +558,7 @@ def handleDriveURL(url: str) -> str:
 
 @app.route("/files/", methods=["POST", "PATCH", "DELETE"])
 @header_required()
+@unique_login()
 def files():
     json = request.json
 
@@ -617,6 +643,7 @@ def file(key):
 
 @app.route("/musicdata/", methods=["POST", "PATCH", "DELETE"])
 @header_required()
+@unique_login()
 def musicdata():
     json = request.json
 
