@@ -18,6 +18,7 @@ from functools import wraps
 from bs4 import BeautifulSoup
 import subprocess
 import msgspec
+from zoneinfo import ZoneInfo
 import secrets
 
 def error(message):
@@ -99,7 +100,7 @@ def nicerFormat(starttime: datetime.datetime, endtime: datetime.datetime) -> Tup
         startFormat = "%A"
 
     if startDelta == endDelta:
-        return (starttime.strftime(startFormat + ", %I:%M%p —"), endtime.strftime("%I:%M%p"))
+        return (starttime.astimezone(ZoneInfo('America/New_York')).strftime(startFormat + ", %I:%M%p —"), endtime.astimezone(ZoneInfo('America/New_York')).strftime("%I:%M%p"))
 
     endFormat = "%b %d"
     if (endDelta == 0):
@@ -109,7 +110,7 @@ def nicerFormat(starttime: datetime.datetime, endtime: datetime.datetime) -> Tup
     elif (1 < endDelta < 7 - today.weekday()):
         endFormat = "%A"
 
-    return (starttime.strftime(startFormat + ", %I:%M%p —"), endtime.strftime(endFormat + ", %I:%M%p"))
+    return (starttime.astimezone(ZoneInfo('America/New_York')).strftime(startFormat + ", %I:%M%p —"), endtime.astimezone(ZoneInfo('America/New_York')).strftime(endFormat + ", %I:%M%p"))
 
 def getCalendarEvents():
     start = datetime.datetime.now()
@@ -471,7 +472,7 @@ def items():
     
 @app.route("/announcements/", methods=["GET","POST","PATCH","DELETE"])
 @header_required("POST","PATCH","DELETE")
-@unique_login("POST","PATCH","PUT","DELETE")
+@unique_login("DELETE")
 def announcements():
     if request.method == "GET":
         announcements = sqlSession.getAnnouncementsJSON()
